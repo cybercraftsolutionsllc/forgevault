@@ -1,0 +1,360 @@
+import 'dart:convert';
+import 'dart:io';
+
+import '../database/database_service.dart';
+import '../database/schemas/core_identity.dart';
+import '../database/schemas/timeline_event.dart';
+import '../database/schemas/trouble.dart';
+import '../database/schemas/finance_record.dart';
+import '../database/schemas/relationship_node.dart';
+import '../database/schemas/health_profile.dart';
+import '../database/schemas/goal.dart';
+import '../database/schemas/habit_vice.dart';
+import '../database/schemas/audit_log.dart';
+import 'ollama_client.dart';
+import 'gemini_nano_bridge.dart';
+import 'forge_prompt.dart';
+import 'forge_api_client.dart';
+
+/// The Forge — AI synthesis orchestration layer.
+///
+/// 1. Receives extracted text from VacuumService
+/// 2. Routes to cloud API (if BYOK configured) → Gemini Nano → Ollama
+/// 3. Sends system prompt + extracted text → receives structured JSON
+/// 4. Parses JSON into Isar collection objects and merges into the database
+class ForgeService {
+  final OllamaClient _ollama;
+  final GeminiNanoBridge _geminiNano;
+  final ForgeApiClient? _cloudApi;
+  final DatabaseService _database;
+
+  /// Default Ollama model to use for synthesis.
+  String ollamaModel;
+
+  ForgeService({
+    required OllamaClient ollama,
+    required GeminiNanoBridge geminiNano,
+    required DatabaseService database,
+    ForgeApiClient? cloudApi,
+    this.ollamaModel = 'llama3.2',
+  }) : _ollama = ollama,
+       _geminiNano = geminiNano,
+       _cloudApi = cloudApi,
+       _database = database;
+
+  /// Synthesize extracted text AND auto-commit to Isar.
+  ///
+  /// Routes to the best available LLM backend:
+  ///   - Cloud API (Grok/Claude/Gemini if BYOK configured)
+  ///   - Android → Gemini Nano (if available)
+  ///   - Ollama (localhost:11434)
+  Future<ForgeResult> synthesize(String extractedText) async {
+    final result = await synthesizeWithReview(extractedText);
+    await _mergeIntoDatabase(result);
+    await _writeAuditLog('FORGE_SYNTHESIS');
+    return result;
+  }
+
+  /// Synthesize WITHOUT auto-committing — for Diff Review flow.
+  ///
+  /// Returns the parsed ForgeResult for user review/editing before commit.
+  Future<ForgeResult> synthesizeWithReview(String extractedText) async {
+    final prompt = ForgePrompt.buildPrompt(extractedText);
+    String rawJson;
+
+    // Priority 1: Cloud API (if BYOK keys are configured)
+    if (_cloudApi != null) {
+      try {
+        rawJson = await _cloudApi.synthesize(extractedText);
+        return _parseForgeJson(rawJson);
+      } catch (_) {
+        // Cloud API failed; try local backends
+      }
+    }
+
+    // Priority 2: Gemini Nano (Android only)
+    if (Platform.isAndroid) {
+      final nanoAvailable = await _geminiNano.isAvailable();
+      if (nanoAvailable) {
+        rawJson = await _geminiNano.generateJson(
+          prompt: prompt,
+          systemPrompt: ForgePrompt.systemPrompt,
+        );
+        return _parseForgeJson(rawJson);
+      }
+    }
+
+    // Priority 3: Ollama (local)
+    rawJson = await _generateViaOllama(prompt);
+    return _parseForgeJson(rawJson);
+  }
+
+  /// Commit a reviewed ForgeResult to Isar.
+  Future<void> commitReviewedResult(ForgeResult result) async {
+    await _mergeIntoDatabase(result);
+    await _writeAuditLog('FORGE_SYNTHESIS_REVIEWED');
+  }
+
+  /// Check if any LLM backend is available.
+  Future<bool> isAvailable() async {
+    if (Platform.isAndroid) {
+      final nano = await _geminiNano.isAvailable();
+      if (nano) return true;
+    }
+    return _ollama.isAvailable();
+  }
+
+  // ── Private: LLM Communication ──
+
+  Future<String> _generateViaOllama(String prompt) async {
+    return _ollama.generate(
+      model: ollamaModel,
+      prompt: prompt,
+      systemPrompt: ForgePrompt.systemPrompt,
+      temperature: 0.2, // Low temp for structured output
+    );
+  }
+
+  // ── Private: JSON Parsing ──
+
+  ForgeResult _parseForgeJson(String rawJson) {
+    // Clean up common LLM artifacts
+    var cleaned = rawJson.trim();
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.substring(7);
+    }
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.substring(3);
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.substring(0, cleaned.length - 3);
+    }
+    cleaned = cleaned.trim();
+
+    try {
+      final json = jsonDecode(cleaned) as Map<String, dynamic>;
+      return ForgeResult.fromJson(json);
+    } catch (e) {
+      throw ForgeException('Failed to parse Forge JSON output: $e');
+    }
+  }
+
+  // ── Private: Database Merge ──
+
+  Future<void> _mergeIntoDatabase(ForgeResult result) async {
+    final db = _database.db;
+
+    await db.writeTxn(() async {
+      // Identity
+      if (result.identity != null) {
+        await db.coreIdentitys.put(result.identity!);
+      }
+
+      // Timeline Events
+      for (final event in result.timelineEvents) {
+        await db.timelineEvents.put(event);
+      }
+
+      // Troubles
+      for (final trouble in result.troubles) {
+        await db.troubles.put(trouble);
+      }
+
+      // Finances
+      for (final finance in result.finances) {
+        await db.financeRecords.put(finance);
+      }
+
+      // Relationships
+      for (final rel in result.relationships) {
+        await db.relationshipNodes.put(rel);
+      }
+
+      // Health
+      if (result.healthProfile != null) {
+        await db.healthProfiles.put(result.healthProfile!);
+      }
+
+      // Goals
+      for (final goal in result.goals) {
+        await db.goals.put(goal);
+      }
+
+      // Habits/Vices
+      for (final hv in result.habitsVices) {
+        await db.habitVices.put(hv);
+      }
+    });
+  }
+
+  Future<void> _writeAuditLog(String action) async {
+    final db = _database.db;
+    await db.writeTxn(() async {
+      await db.auditLogs.put(
+        AuditLog()
+          ..timestamp = DateTime.now()
+          ..action = action
+          ..fileHashDestroyed = 'N/A',
+      );
+    });
+  }
+}
+
+/// Parsed result from the Forge LLM synthesis.
+class ForgeResult {
+  CoreIdentity? identity;
+  List<TimelineEvent> timelineEvents;
+  List<Trouble> troubles;
+  List<FinanceRecord> finances;
+  List<RelationshipNode> relationships;
+  HealthProfile? healthProfile;
+  List<Goal> goals;
+  List<HabitVice> habitsVices;
+  List<String> contradictions;
+
+  ForgeResult({
+    this.identity,
+    this.timelineEvents = const [],
+    this.troubles = const [],
+    this.finances = const [],
+    this.relationships = const [],
+    this.healthProfile,
+    this.goals = const [],
+    this.habitsVices = const [],
+    this.contradictions = const [],
+  });
+
+  factory ForgeResult.fromJson(Map<String, dynamic> json) {
+    return ForgeResult(
+      identity: _parseIdentity(json['identity']),
+      timelineEvents: _parseTimelineEvents(json['timelineEvents']),
+      troubles: _parseTroubles(json['troubles']),
+      finances: _parseFinances(json['finances']),
+      relationships: _parseRelationships(json['relationships']),
+      healthProfile: _parseHealth(json['health']),
+      goals: _parseGoals(json['goals']),
+      habitsVices: _parseHabitsVices(json['habitsVices']),
+      contradictions: _parseStringList(json['contradictions']),
+    );
+  }
+
+  // ── Parsers ──
+
+  static CoreIdentity? _parseIdentity(dynamic data) {
+    if (data == null || data is! Map<String, dynamic>) return null;
+    return CoreIdentity()
+      ..fullName = data['fullName'] as String? ?? 'Unknown'
+      ..dateOfBirth = _parseDate(data['dateOfBirth'])
+      ..location = data['location'] as String? ?? ''
+      ..immutableTraits = _parseStringList(data['immutableTraits'])
+      ..lastUpdated = DateTime.now()
+      ..completenessScore = 0;
+  }
+
+  static List<TimelineEvent> _parseTimelineEvents(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return TimelineEvent()
+        ..eventDate = _parseDate(e['eventDate']) ?? DateTime.now()
+        ..title = e['title'] as String? ?? ''
+        ..description = e['description'] as String? ?? ''
+        ..category = e['category'] as String? ?? 'Personal'
+        ..emotionalImpactScore =
+            (e['emotionalImpactScore'] as num?)?.toInt() ?? 1
+        ..isVerified = e['isVerified'] as bool? ?? false;
+    }).toList();
+  }
+
+  static List<Trouble> _parseTroubles(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return Trouble()
+        ..title = e['title'] as String? ?? ''
+        ..detailText = e['detailText'] as String? ?? ''
+        ..category = e['category'] as String? ?? ''
+        ..severity = (e['severity'] as num?)?.toInt() ?? 1
+        ..isResolved = e['isResolved'] as bool? ?? false
+        ..dateIdentified = _parseDate(e['dateIdentified']) ?? DateTime.now()
+        ..relatedEntities = _parseStringList(e['relatedEntities']);
+    }).toList();
+  }
+
+  static List<FinanceRecord> _parseFinances(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return FinanceRecord()
+        ..assetOrDebtName = e['assetOrDebtName'] as String? ?? ''
+        ..amount = (e['amount'] as num?)?.toDouble() ?? 0.0
+        ..isDebt = e['isDebt'] as bool? ?? false
+        ..notes = e['notes'] as String?
+        ..lastUpdated = DateTime.now();
+    }).toList();
+  }
+
+  static List<RelationshipNode> _parseRelationships(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return RelationshipNode()
+        ..personName = e['personName'] as String? ?? ''
+        ..relationType = e['relationType'] as String? ?? ''
+        ..trustLevel = (e['trustLevel'] as num?)?.toInt() ?? 1
+        ..recentConflictOrSupport = e['recentConflictOrSupport'] as String?;
+    }).toList();
+  }
+
+  static HealthProfile? _parseHealth(dynamic data) {
+    if (data == null || data is! Map<String, dynamic>) return null;
+    return HealthProfile()
+      ..conditions = _parseStringList(data['conditions'])
+      ..medications = _parseStringList(data['medications'])
+      ..allergies = _parseStringList(data['allergies'])
+      ..bloodType = data['bloodType'] as String?
+      ..lastUpdated = DateTime.now();
+  }
+
+  static List<Goal> _parseGoals(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return Goal()
+        ..title = e['title'] as String? ?? ''
+        ..category = e['category'] as String? ?? 'Personal'
+        ..description = e['description'] as String?
+        ..targetDate = _parseDate(e['targetDate'])
+        ..progress = (e['progress'] as num?)?.toInt() ?? 0
+        ..isCompleted = false
+        ..dateCreated = DateTime.now();
+    }).toList();
+  }
+
+  static List<HabitVice> _parseHabitsVices(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.cast<Map<String, dynamic>>().map((e) {
+      return HabitVice()
+        ..name = e['name'] as String? ?? ''
+        ..isVice = e['isVice'] as bool? ?? false
+        ..frequency = e['frequency'] as String? ?? 'Occasional'
+        ..severity = (e['severity'] as num?)?.toInt() ?? 1
+        ..notes = e['notes'] as String?
+        ..dateIdentified = DateTime.now();
+    }).toList();
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
+
+  static List<String> _parseStringList(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.map((e) => e.toString()).toList();
+  }
+}
+
+class ForgeException implements Exception {
+  final String message;
+  ForgeException(this.message);
+
+  @override
+  String toString() => 'ForgeException: $message';
+}
