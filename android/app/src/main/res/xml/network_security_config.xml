@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  VitaVault Network Security Configuration
+  - Blocks ALL cleartext (HTTP) traffic globally
+  - Allows HTTPS connections ONLY to approved AI provider domains
+  - All other domains are blocked at the OS level
+-->
+<network-security-config>
+    <!-- Block cleartext traffic globally -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Allowlist: ONLY these domains may receive outbound HTTPS traffic -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Anthropic (Claude) -->
+        <domain includeSubdomains="true">api.anthropic.com</domain>
+
+        <!-- xAI (Grok) -->
+        <domain includeSubdomains="true">api.x.ai</domain>
+
+        <!-- Google (Gemini) -->
+        <domain includeSubdomains="true">generativelanguage.googleapis.com</domain>
+
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

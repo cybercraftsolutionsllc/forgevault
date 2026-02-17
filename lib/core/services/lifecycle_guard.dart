@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/providers.dart';
+import 'clipboard_service.dart';
 
 /// App-Level Panic Blur — covers the entire MaterialApp with a
 /// high-opacity `BackdropFilter` when the app is backgrounded.
 ///
 /// Behavior:
 ///   1. `inactive` / `paused` / `hidden` → instant blur overlay
+///      + memory scrub of sensitive providers + clipboard clear
 ///   2. `resumed` within 60 seconds → remove blur, continue session
 ///   3. `resumed` after 60+ seconds → clear state, force re-auth
 ///
@@ -60,6 +62,14 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
         if (!_isBlurred) {
           _backgroundedAt = DateTime.now();
           setState(() => _isBlurred = true);
+
+          // ── Memory Scrub: clear sensitive in-memory data ──
+          // Overwrite active providers that may hold PII, extracted
+          // text, or decrypted data to protect against RAM-dump attacks.
+          _scrubSensitiveMemory();
+
+          // ── Clipboard Wipe: prevent cross-app snooping ──
+          ClipboardTimebomb.clearNow();
         }
         break;
 
@@ -85,8 +95,21 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
         break;
 
       case AppLifecycleState.detached:
+        // Final cleanup — scrub everything before process death.
+        _scrubSensitiveMemory();
         break;
     }
+  }
+
+  /// Overwrite sensitive Riverpod state providers with null/empty
+  /// to prevent RAM dump recovery of PII.
+  void _scrubSensitiveMemory() {
+    // Invalidate providers that may hold extracted raw text,
+    // decrypted data, or user-entered sensitive content.
+    ref.invalidate(vacuumStateProvider);
+
+    // Clear the master PIN from memory.
+    ref.read(masterPinProvider.notifier).state = null;
   }
 
   @override

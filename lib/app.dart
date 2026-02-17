@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'core/config/environment_config.dart';
 import 'features/home/home_screen.dart';
@@ -53,7 +54,8 @@ class _NavigationShellState extends State<_NavigationShell> {
             Positioned(
               top: MediaQuery.of(context).padding.top + 4,
               right: 8,
-              child: IgnorePointer(
+              child: GestureDetector(
+                onTap: () => _showSafeModeDialog(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
@@ -121,6 +123,58 @@ class _NavigationShellState extends State<_NavigationShell> {
             icon: Icon(Icons.settings_suggest_outlined),
             selectedIcon: Icon(Icons.settings_suggest_rounded),
             label: 'Engine',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSafeModeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: VaultColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: VaultColors.border, width: 0.5),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.shield_outlined,
+              color: VaultColors.destructive,
+              size: 22,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Safe Mode',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                color: VaultColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Safe Mode is active. Files purged in the Vacuum will be moved '
+          'to a debug folder instead of permanently destroyed.\n\n'
+          'To arm the physical shredder, compile VitaVault in Release Mode.',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: VaultColors.textSecondary,
+            height: 1.6,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Understood',
+              style: GoogleFonts.inter(
+                color: VaultColors.phosphorGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/theme.dart';
+import '../help/help_screen.dart';
 
 /// Home Dashboard — the primary screen after authentication.
 ///
@@ -28,8 +29,12 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, size: 20),
-            onPressed: () {},
+            icon: const Icon(Icons.help_outline, size: 20),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const HelpScreen()));
+            },
           ),
         ],
       ),
