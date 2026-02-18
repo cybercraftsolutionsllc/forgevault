@@ -29,6 +29,7 @@ dependencies:
   desktop_drop: ^0.5.0
   path_provider: ^2.1.5
   shared_preferences: ^2.3.5
+  image_picker: ^1.1.2
 
   # ── OCR (mobile-only) ──
   google_mlkit_text_recognition: ^0.14.0

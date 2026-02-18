@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/database/database_service.dart';
+import '../../core/services/api_key_service.dart';
 import '../../core/services/forge_api_client.dart';
 import '../../core/services/local_rag_service.dart';
 import '../../theme/theme.dart';
@@ -203,7 +204,11 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     String? blueprintTitle,
   }) async {
     try {
-      if (widget.forgeClient == null) {
+      // ── Dynamic LLM routing: check for ANY configured BYOK key ──
+      final keyService = ApiKeyService();
+      final activeProvider = await keyService.getFirstAvailableProvider();
+
+      if (activeProvider == null) {
         setState(() {
           _messages.add(
             _ChatMessage(
@@ -219,7 +224,10 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
         return;
       }
 
-      final response = await widget.forgeClient!.synthesize(prompt);
+      if (!mounted) return;
+
+      final client = ForgeApiClient(keyService: keyService);
+      final response = await client.synthesize(prompt);
 
       setState(() {
         _messages.add(
@@ -244,6 +252,16 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
         );
         _isProcessing = false;
       });
+      // Surface exact error in SnackBar for immediate visibility
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString(), style: GoogleFonts.inter(fontSize: 13)),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
     }
   }
 
@@ -932,8 +950,11 @@ class _ChatBubble extends StatelessWidget {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   color: message.isError
-                      ? VaultColors.destructiveLight
+                      ? const Color(0xFFFF6B6B)
                       : VaultColors.textPrimary,
+                  fontWeight: message.isError
+                      ? FontWeight.w600
+                      : FontWeight.normal,
                   height: 1.5,
                 ),
               ),

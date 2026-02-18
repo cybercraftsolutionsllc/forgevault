@@ -71,10 +71,6 @@ class _VitaVaultRootState extends State<VitaVaultRoot> {
     setState(() => _authenticated = true);
   }
 
-  void _handleForceReauth() {
-    setState(() => _authenticated = false);
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -93,10 +89,7 @@ class _VitaVaultRootState extends State<VitaVaultRoot> {
           : _needsOnboarding
           ? OnboardingScreen(onComplete: _handleOnboardingComplete)
           : _authenticated
-          ? LifecycleGuard(
-              onForceReauth: _handleForceReauth,
-              child: const VitaVaultApp(),
-            )
+          ? LifecycleGuard(child: const VitaVaultApp())
           : AuthScreen(onAuthenticated: _handleAuthenticated),
     );
   }

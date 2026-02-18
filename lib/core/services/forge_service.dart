@@ -11,34 +11,27 @@ import '../database/schemas/health_profile.dart';
 import '../database/schemas/goal.dart';
 import '../database/schemas/habit_vice.dart';
 import '../database/schemas/audit_log.dart';
-import 'ollama_client.dart';
 import 'gemini_nano_bridge.dart';
 import 'forge_prompt.dart';
 import 'forge_api_client.dart';
+import 'no_api_key_exception.dart';
 
 /// The Forge — AI synthesis orchestration layer.
 ///
 /// 1. Receives extracted text from VacuumService
-/// 2. Routes to cloud API (if BYOK configured) → Gemini Nano → Ollama
+/// 2. Routes to cloud API (if BYOK configured) → Gemini Nano
 /// 3. Sends system prompt + extracted text → receives structured JSON
 /// 4. Parses JSON into Isar collection objects and merges into the database
 class ForgeService {
-  final OllamaClient _ollama;
   final GeminiNanoBridge _geminiNano;
   final ForgeApiClient? _cloudApi;
   final DatabaseService _database;
 
-  /// Default Ollama model to use for synthesis.
-  String ollamaModel;
-
   ForgeService({
-    required OllamaClient ollama,
     required GeminiNanoBridge geminiNano,
     required DatabaseService database,
     ForgeApiClient? cloudApi,
-    this.ollamaModel = 'llama3.2',
-  }) : _ollama = ollama,
-       _geminiNano = geminiNano,
+  }) : _geminiNano = geminiNano,
        _cloudApi = cloudApi,
        _database = database;
 
@@ -47,7 +40,7 @@ class ForgeService {
   /// Routes to the best available LLM backend:
   ///   - Cloud API (Grok/Claude/Gemini if BYOK configured)
   ///   - Android → Gemini Nano (if available)
-  ///   - Ollama (localhost:11434)
+  ///   - Throws NoApiKeyException if nothing is configured
   Future<ForgeResult> synthesize(String extractedText) async {
     final result = await synthesizeWithReview(extractedText);
     await _mergeIntoDatabase(result);
@@ -84,9 +77,8 @@ class ForgeService {
       }
     }
 
-    // Priority 3: Ollama (local)
-    rawJson = await _generateViaOllama(prompt);
-    return _parseForgeJson(rawJson);
+    // NO Ollama fallback — cloud AI is mandatory.
+    throw NoApiKeyException('Go to Engine Room to configure Cloud AI.');
   }
 
   /// Commit a reviewed ForgeResult to Isar.
@@ -97,38 +89,21 @@ class ForgeService {
 
   /// Check if any LLM backend is available.
   Future<bool> isAvailable() async {
+    if (_cloudApi != null) return true;
     if (Platform.isAndroid) {
-      final nano = await _geminiNano.isAvailable();
-      if (nano) return true;
+      return _geminiNano.isAvailable();
     }
-    return _ollama.isAvailable();
-  }
-
-  // ── Private: LLM Communication ──
-
-  Future<String> _generateViaOllama(String prompt) async {
-    return _ollama.generate(
-      model: ollamaModel,
-      prompt: prompt,
-      systemPrompt: ForgePrompt.systemPrompt,
-      temperature: 0.2, // Low temp for structured output
-    );
+    return false;
   }
 
   // ── Private: JSON Parsing ──
 
   ForgeResult _parseForgeJson(String rawJson) {
-    // Clean up common LLM artifacts
+    // Strip markdown code fences that LLMs love to wrap JSON in.
+    // Handles: ```json, ```JSON, ```\n{...}\n```, etc.
     var cleaned = rawJson.trim();
-    if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.substring(7);
-    }
-    if (cleaned.startsWith('```')) {
-      cleaned = cleaned.substring(3);
-    }
-    if (cleaned.endsWith('```')) {
-      cleaned = cleaned.substring(0, cleaned.length - 3);
-    }
+    cleaned = cleaned.replaceAll(RegExp(r'^```\w*\s*', multiLine: true), '');
+    cleaned = cleaned.replaceAll(RegExp(r'```\s*$', multiLine: true), '');
     cleaned = cleaned.trim();
 
     try {

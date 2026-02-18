@@ -34,12 +34,18 @@ class _NavigationShell extends StatefulWidget {
 class _NavigationShellState extends State<_NavigationShell> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    VacuumScreen(),
-    BioViewerScreen(),
-    OracleChatScreen(),
-    EngineRoomScreen(),
+  void _switchTab(int index) {
+    if (index >= 0 && index < 5) {
+      setState(() => _currentIndex = index);
+    }
+  }
+
+  late final List<Widget> _screens = [
+    HomeScreen(onSwitchTab: _switchTab),
+    const VacuumScreen(),
+    const BioViewerScreen(),
+    const OracleChatScreen(),
+    const EngineRoomScreen(),
   ];
 
   @override

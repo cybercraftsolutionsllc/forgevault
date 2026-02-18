@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/auth_screen.dart';
 import '../../providers/providers.dart';
 import 'clipboard_service.dart';
 
@@ -13,21 +14,14 @@ import 'clipboard_service.dart';
 ///   1. `inactive` / `paused` / `hidden` → instant blur overlay
 ///      + memory scrub of sensitive providers + clipboard clear
 ///   2. `resumed` within 60 seconds → remove blur, continue session
-///   3. `resumed` after 60+ seconds → clear state, force re-auth
+///   3. `resumed` after 60+ seconds → push AuthScreen as fullscreen
+///      modal on top, preserving the current navigation stack
 ///
 /// Wrap this around the authenticated content in [VitaVaultRoot].
 class LifecycleGuard extends ConsumerStatefulWidget {
   final Widget child;
 
-  /// Callback fired when the user must re-authenticate after a
-  /// prolonged background period (>60 seconds).
-  final VoidCallback onForceReauth;
-
-  const LifecycleGuard({
-    super.key,
-    required this.child,
-    required this.onForceReauth,
-  });
+  const LifecycleGuard({super.key, required this.child});
 
   @override
   ConsumerState<LifecycleGuard> createState() => _LifecycleGuardState();
@@ -36,6 +30,7 @@ class LifecycleGuard extends ConsumerStatefulWidget {
 class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
     with WidgetsBindingObserver {
   bool _isBlurred = false;
+  bool _isLockScreenShowing = false;
   DateTime? _backgroundedAt;
 
   static const Duration _reauthThreshold = Duration(seconds: 60);
@@ -64,8 +59,6 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
           setState(() => _isBlurred = true);
 
           // ── Memory Scrub: clear sensitive in-memory data ──
-          // Overwrite active providers that may hold PII, extracted
-          // text, or decrypted data to protect against RAM-dump attacks.
           _scrubSensitiveMemory();
 
           // ── Clipboard Wipe: prevent cross-app snooping ──
@@ -80,12 +73,12 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
               : Duration.zero;
 
           if (elapsed > _reauthThreshold) {
-            // Exceeded 60s — invalidate state and force re-auth.
+            // Exceeded 60s — push lock screen as fullscreen modal.
+            // The underlying navigation stack is preserved.
             ref.invalidate(vacuumStateProvider);
-            ref.invalidate(isAuthenticatedProvider);
             _backgroundedAt = null;
             setState(() => _isBlurred = false);
-            widget.onForceReauth();
+            _pushLockScreen();
           } else {
             // Under 60s — just remove the blur.
             _backgroundedAt = null;
@@ -101,14 +94,33 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
     }
   }
 
+  /// Push AuthScreen as a fullscreen modal dialog on top of the
+  /// current navigation stack. When the user successfully authenticates,
+  /// Navigator.pop returns them exactly where they left off.
+  void _pushLockScreen() {
+    if (_isLockScreenShowing) return; // Prevent double-push
+    _isLockScreenShowing = true;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => PopScope(
+          canPop: false, // Prevent back-button dismissal
+          child: AuthScreen(
+            onAuthenticated: () {
+              _isLockScreenShowing = false;
+              Navigator.of(context).pop(); // Return to previous screen
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Overwrite sensitive Riverpod state providers with null/empty
   /// to prevent RAM dump recovery of PII.
   void _scrubSensitiveMemory() {
-    // Invalidate providers that may hold extracted raw text,
-    // decrypted data, or user-entered sensitive content.
     ref.invalidate(vacuumStateProvider);
-
-    // Clear the master PIN from memory.
     ref.read(masterPinProvider.notifier).state = null;
   }
 

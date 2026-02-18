@@ -62,6 +62,47 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     }
   }
 
+  /// Force re-read all keys and re-validate via Live Spark HTTP ping.
+  Future<void> _revalidateAllKeys() async {
+    for (final provider in LlmProvider.values) {
+      final key = await _keyService.getKey(provider);
+      if (!mounted) return;
+      if (key == null || key.isEmpty) {
+        setState(() {
+          _keyStates[provider] = _KeyState.empty;
+          _controllers[provider]!.clear();
+        });
+        continue;
+      }
+      // Force refresh the text field
+      _controllers[provider]!.text = key;
+      setState(() => _keyStates[provider] = _KeyState.validating);
+
+      final result = await _apiClient.validateKey(provider, key);
+      if (!mounted) return;
+
+      switch (result) {
+        case ValidationResult.valid:
+        case ValidationResult.validWithWarning:
+          setState(() => _keyStates[provider] = _KeyState.valid);
+          _pulseControllers[provider]!.repeat(reverse: true);
+        case ValidationResult.invalid:
+          setState(() => _keyStates[provider] = _KeyState.invalid);
+      }
+    }
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'All keys re-validated',
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
+        backgroundColor: VaultColors.primary,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     for (final controller in _controllers.values) {
@@ -101,6 +142,13 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
         ),
         backgroundColor: VaultColors.background,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.sync, color: VaultColors.phosphorGreen),
+            tooltip: 'Re-validate all keys',
+            onPressed: _revalidateAllKeys,
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
@@ -637,55 +685,87 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     await _keyService.saveKey(provider, key);
 
     // Live Spark validation
-    final valid = await _apiClient.validateKey(provider, key);
+    final result = await _apiClient.validateKey(provider, key);
 
     if (!mounted) return;
 
-    if (valid) {
-      setState(() => _keyStates[provider] = _KeyState.valid);
-      _pulseControllers[provider]!.repeat(reverse: true);
-      _isEditing[provider] = false;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.bolt_rounded,
-                color: VaultColors.phosphorGreen,
-                size: 18,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '${provider.displayName} Live Spark — Connection verified!',
-                style: GoogleFonts.inter(fontSize: 13),
-              ),
-            ],
+    switch (result) {
+      case ValidationResult.valid:
+        setState(() => _keyStates[provider] = _KeyState.valid);
+        _pulseControllers[provider]!.repeat(reverse: true);
+        _isEditing[provider] = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.bolt_rounded,
+                  color: VaultColors.phosphorGreen,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${provider.displayName} Live Spark — Connection verified!',
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+              ],
+            ),
+            backgroundColor: VaultColors.primary,
           ),
-          backgroundColor: VaultColors.primary,
-        ),
-      );
-    } else {
-      setState(() => _keyStates[provider] = _KeyState.invalid);
-      HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.error_rounded,
-                color: VaultColors.destructiveLight,
-                size: 18,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                '${provider.displayName} key validation failed. Check your key.',
-                style: GoogleFonts.inter(fontSize: 13),
-              ),
-            ],
+        );
+
+      case ValidationResult.validWithWarning:
+        // Key format is valid but account needs credits/billing.
+        // Save anyway and show warning.
+        setState(() => _keyStates[provider] = _KeyState.valid);
+        _pulseControllers[provider]!.repeat(reverse: true);
+        _isEditing[provider] = false;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Color(0xFFFFD600),
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '${provider.displayName}: Key format valid, but account '
+                    'requires credits/billing.',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF5C4800),
+            duration: const Duration(seconds: 5),
           ),
-          backgroundColor: VaultColors.destructive,
-        ),
-      );
+        );
+
+      case ValidationResult.invalid:
+        setState(() => _keyStates[provider] = _KeyState.invalid);
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.error_rounded,
+                  color: VaultColors.destructiveLight,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${provider.displayName} key validation failed. Check your key.',
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+              ],
+            ),
+            backgroundColor: VaultColors.destructive,
+          ),
+        );
     }
   }
 

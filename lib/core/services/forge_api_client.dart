@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import 'api_key_service.dart';
+import 'no_api_key_exception.dart';
 
 /// Dynamic HTTP client that routes synthesis requests to cloud LLM APIs.
 ///
@@ -79,7 +80,7 @@ Rules:
       }
     }
 
-    throw ForgeApiException('No cloud LLM providers configured or all failed.');
+    throw NoApiKeyException();
   }
 
   /// Synthesize using a specific provider.
@@ -99,8 +100,16 @@ Rules:
   }
 
   /// Validate an API key by pinging the provider with a minimal request.
-  /// Returns true if the key is valid and the provider responds successfully.
-  Future<bool> validateKey(LlmProvider provider, String apiKey) async {
+  ///
+  /// Returns [ValidationResult.valid] if the API returns 200.
+  /// Returns [ValidationResult.validWithWarning] if the API returns
+  /// 400, 402, 403, or 429 (key format is correct, but account needs
+  /// credits, billing, or has hit rate limits).
+  /// Returns [ValidationResult.invalid] for all other failures.
+  Future<ValidationResult> validateKey(
+    LlmProvider provider,
+    String apiKey,
+  ) async {
     try {
       switch (provider) {
         case LlmProvider.grok:
@@ -111,7 +120,7 @@ Rules:
           return await _validateGemini(apiKey);
       }
     } catch (_) {
-      return false;
+      return ValidationResult.invalid;
     }
   }
 
@@ -177,14 +186,14 @@ Rules:
     return (choices[0]['message']['content'] as String).trim();
   }
 
-  Future<bool> _validateGrok(String apiKey) async {
+  Future<ValidationResult> _validateGrok(String apiKey) async {
     final response = await _httpClient
         .get(
           Uri.parse('https://api.x.ai/v1/models'),
           headers: {'Authorization': 'Bearer $apiKey'},
         )
         .timeout(const Duration(seconds: 10));
-    return response.statusCode == 200;
+    return _interpretStatusCode(response.statusCode);
   }
 
   // ── Claude (Anthropic) ──
@@ -223,7 +232,7 @@ Rules:
     return (content[0]['text'] as String).trim();
   }
 
-  Future<bool> _validateClaude(String apiKey) async {
+  Future<ValidationResult> _validateClaude(String apiKey) async {
     final response = await _httpClient
         .post(
           Uri.parse('https://api.anthropic.com/v1/messages'),
@@ -241,7 +250,7 @@ Rules:
           }),
         )
         .timeout(const Duration(seconds: 15));
-    return response.statusCode == 200;
+    return _interpretStatusCode(response.statusCode);
   }
 
   // ── Gemini (Google) ──
@@ -287,7 +296,7 @@ Rules:
     return (parts[0]['text'] as String).trim();
   }
 
-  Future<bool> _validateGemini(String apiKey) async {
+  Future<ValidationResult> _validateGemini(String apiKey) async {
     final response = await _httpClient
         .get(
           Uri.parse(
@@ -295,7 +304,23 @@ Rules:
           ),
         )
         .timeout(const Duration(seconds: 10));
-    return response.statusCode == 200;
+    return _interpretStatusCode(response.statusCode);
+  }
+
+  /// Interpret an HTTP status code into a [ValidationResult].
+  ///
+  /// 200 → valid.
+  /// 400, 402, 403, 429 → key format recognized, account needs credits.
+  /// Everything else → invalid.
+  static ValidationResult _interpretStatusCode(int statusCode) {
+    if (statusCode == 200) return ValidationResult.valid;
+    if (statusCode == 400 ||
+        statusCode == 402 ||
+        statusCode == 403 ||
+        statusCode == 429) {
+      return ValidationResult.validWithWarning;
+    }
+    return ValidationResult.invalid;
   }
 }
 
@@ -305,4 +330,17 @@ class ForgeApiException implements Exception {
 
   @override
   String toString() => 'ForgeApiException: $message';
+}
+
+/// Result of an API key validation attempt.
+enum ValidationResult {
+  /// Key is valid and the API responded with 200.
+  valid,
+
+  /// Key format is recognized (400/402/403/429), but the account
+  /// needs credits, billing setup, or has hit rate limits.
+  validWithWarning,
+
+  /// Key is invalid — unrecognized or authentication failure.
+  invalid,
 }

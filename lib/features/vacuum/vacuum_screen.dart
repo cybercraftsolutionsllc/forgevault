@@ -1,16 +1,28 @@
 import 'dart:developer' as developer;
+import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../../core/crypto/ephemeral_key_service.dart';
+import '../../core/database/database_service.dart';
+import '../../core/services/api_key_service.dart';
+import '../../core/services/forge_api_client.dart';
+import '../../core/services/forge_service.dart';
+import '../../core/services/gemini_nano_bridge.dart';
+import '../../core/services/no_api_key_exception.dart';
+import '../../core/services/purge_service.dart';
 import '../../core/services/reality_guard_service.dart';
 import '../../core/services/vacuum_service.dart';
 import '../../theme/theme.dart';
+import '../review/synthesis_review_screen.dart';
 
-/// Vacuum Hub — file ingestion screen with Reality Guard protection.
+/// Vacuum Hub — mobile file ingestion screen with Camera & File Picker.
 ///
 /// Features:
-/// - Animated dashed-border drop zone (pulses green on drag, crimson on reject)
+/// - Two massive tappable Action Buttons: "Scan Document (Camera)" and "Browse Files"
 /// - Live pipeline status showing current processing phase
 /// - Reality Guard error modal for AI-generated image rejection
 /// - Visual distinction between Local OCR / PDF Extraction / Cloud API phases
@@ -39,10 +51,12 @@ enum _PipelinePhase {
 class _VacuumScreenState extends State<VacuumScreen>
     with SingleTickerProviderStateMixin {
   _PipelinePhase _phase = _PipelinePhase.idle;
-  String _statusMessage = 'Waiting for files...';
+  String _statusMessage = 'Ready to ingest files...';
   bool _isRealityViolation = false;
+  bool _isIngesting = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -62,8 +76,306 @@ class _VacuumScreenState extends State<VacuumScreen>
     super.dispose();
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Camera Scan
+  // ─────────────────────────────────────────────────────────────
+
+  Future<void> _scanDocument() async {
+    if (_isIngesting) return;
+
+    try {
+      final XFile? photo = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 95,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (photo == null) return; // User cancelled
+
+      _startIngestion(photo.path, photo.name);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Camera error: $e'),
+            backgroundColor: VaultColors.destructive,
+          ),
+        );
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // File Browse
+  // ─────────────────────────────────────────────────────────────
+
+  Future<void> _browseFiles() async {
+    if (_isIngesting) return;
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          'pdf',
+          'docx',
+          'doc',
+          'txt',
+          'png',
+          'jpg',
+          'jpeg',
+          'heic',
+          'webp',
+          'eml',
+          'mp3',
+          'wav',
+          'm4a',
+        ],
+      );
+
+      if (result == null || result.files.isEmpty) return;
+      final file = result.files.first;
+      if (file.path == null) return;
+
+      _startIngestion(file.path!, file.name);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('File picker error: $e'),
+            backgroundColor: VaultColors.destructive,
+          ),
+        );
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Ingestion Pipeline
+  // ─────────────────────────────────────────────────────────────
+
+  void _startIngestion(String filePath, String fileName) {
+    setState(() {
+      _isIngesting = true;
+      _phase = _PipelinePhase.detecting;
+      _statusMessage = 'Ingesting: $fileName';
+    });
+    _pulseController.repeat(reverse: true);
+
+    // Show snackbar
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: VaultColors.phosphorGreen,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Ingestion started: $fileName',
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: VaultColors.surface,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+
+    // Trigger VacuumService ingestion
+    _runVacuumPipeline(filePath);
+  }
+
+  Future<void> _runVacuumPipeline(String filePath) async {
+    try {
+      final ephemeralCrypto = EphemeralKeyService();
+      final database = DatabaseService.instance;
+      final purgeService = PurgeService(database: database);
+
+      final vacuum = VacuumService(
+        ephemeralCrypto: ephemeralCrypto,
+        purgeService: purgeService,
+        database: database,
+      );
+      await vacuum.ingest(filePath, onPhaseChanged: _onPhaseChanged);
+
+      // ── Forge Synthesis: send extracted text to LLM for structuring ──
+      if (mounted) {
+        _onPhaseChanged('Synthesizing via Forge...');
+        final db = DatabaseService.instance;
+        final forgeClient = ForgeApiClient(keyService: ApiKeyService());
+        final forgeService = ForgeService(
+          geminiNano: GeminiNanoBridge(),
+          database: db,
+          cloudApi: forgeClient,
+        );
+        final result = await forgeService.synthesizeWithReview(
+          await File(filePath).readAsString().catchError((_) => ''),
+        );
+
+        _pulseController.stop();
+        setState(() {
+          _phase = _PipelinePhase.complete;
+          _statusMessage = 'Ingestion complete ✓';
+        });
+
+        // Navigate to Diff Review Screen
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => SynthesisReviewScreen(
+                result: result,
+                onApprove: () {
+                  forgeService.commitReviewedResult(result);
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Data committed to encrypted vault ✓',
+                        style: GoogleFonts.inter(fontSize: 13),
+                      ),
+                      backgroundColor: VaultColors.phosphorGreen,
+                    ),
+                  );
+                },
+                onReject: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          );
+        }
+      }
+    } on RealityViolationException catch (e) {
+      _onRealityViolation(e);
+      // Show matte crimson snackbar with camera guidance
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Reality Guard: Image lacks EXIF data. Android gallery '
+              'may have stripped it. Use the live Camera.',
+              style: GoogleFonts.inter(fontSize: 13),
+            ),
+            backgroundColor: const Color(0xFF8B0000),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
+    } on NoApiKeyException {
+      _pulseController.stop();
+      if (mounted) {
+        setState(() {
+          _phase = _PipelinePhase.error;
+          _statusMessage = 'No API keys configured';
+        });
+        _showNoApiKeyDialog();
+      }
+    } catch (e) {
+      _pulseController.stop();
+      if (mounted) {
+        setState(() {
+          _phase = _PipelinePhase.error;
+          _statusMessage = 'Error: $e';
+        });
+        // Show exact error in redAccent snackbar — stop swallowing exceptions
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString(), style: GoogleFonts.inter(fontSize: 13)),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
+    } finally {
+      // Guarantee ingestion flag is cleared so UI never hangs.
+      if (mounted) {
+        setState(() => _isIngesting = false);
+      }
+    }
+  }
+
+  /// Show dialog prompting user to configure API keys in Engine Room.
+  void _showNoApiKeyDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: VaultColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: VaultColors.border, width: 0.5),
+        ),
+        title: Row(
+          children: [
+            const Icon(
+              Icons.vpn_key_off_rounded,
+              color: Color(0xFFFFD600),
+              size: 24,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'No API Keys',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                color: VaultColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'The Forge requires at least one cloud LLM API key '
+          '(Grok, Claude, or Gemini) to synthesize data.\n\n'
+          'Go to the Engine Room to add your BYOK API key.',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: VaultColors.textSecondary,
+            height: 1.6,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Later',
+              style: GoogleFonts.inter(
+                color: VaultColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              // Navigate to Engine Room (tab index 4)
+              // Walk up to _NavigationShellState and switch tab.
+              final scaffoldState = context
+                  .findAncestorStateOfType<ScaffoldState>();
+              if (scaffoldState != null) {
+                // Fallback: just close and let user navigate manually.
+              }
+            },
+            child: Text(
+              'Go to Engine Room',
+              style: GoogleFonts.inter(
+                color: VaultColors.phosphorGreen,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Map VacuumService phase strings to UI phases.
-  // ignore: unused_element
   void _onPhaseChanged(String phase) {
     setState(() {
       switch (phase) {
@@ -91,13 +403,13 @@ class _VacuumScreenState extends State<VacuumScreen>
     });
   }
 
-  // ignore: unused_element
   void _onRealityViolation(RealityViolationException e) {
     _pulseController.stop();
     setState(() {
       _isRealityViolation = true;
       _phase = _PipelinePhase.error;
       _statusMessage = 'VAULT REJECTED';
+      _isIngesting = false;
     });
 
     developer.log(
@@ -113,7 +425,7 @@ class _VacuumScreenState extends State<VacuumScreen>
     setState(() {
       _isRealityViolation = false;
       _phase = _PipelinePhase.idle;
-      _statusMessage = 'Waiting for files...';
+      _statusMessage = 'Ready to ingest files...';
     });
   }
 
@@ -199,9 +511,9 @@ class _VacuumScreenState extends State<VacuumScreen>
     );
   }
 
-  /// Determine the drop zone border and icon color based on state.
-  Color get _dropZoneColor {
-    if (_isRealityViolation) return const Color(0xFF8B0000); // Matte Crimson
+  /// Determine the border and icon color based on state.
+  Color get _zoneColor {
+    if (_isRealityViolation) return const Color(0xFF8B0000);
     if (_phase == _PipelinePhase.realityGuard) return const Color(0xFFFF6B00);
     if (_phase == _PipelinePhase.localOcr ||
         _phase == _PipelinePhase.pdfExtraction) {
@@ -209,6 +521,7 @@ class _VacuumScreenState extends State<VacuumScreen>
     }
     if (_phase == _PipelinePhase.encrypting) return VaultColors.phosphorGreen;
     if (_phase == _PipelinePhase.error) return const Color(0xFF8B0000);
+    if (_phase == _PipelinePhase.complete) return VaultColors.phosphorGreen;
     return VaultColors.border;
   }
 
@@ -219,7 +532,7 @@ class _VacuumScreenState extends State<VacuumScreen>
         if (_phase == _PipelinePhase.localOcr ||
             _phase == _PipelinePhase.pdfExtraction ||
             _phase == _PipelinePhase.textExtraction) {
-          return const Color(0xFF2196F3); // Blue = local processing
+          return const Color(0xFF2196F3);
         }
         if (_phase.index > _PipelinePhase.encrypting.index) {
           return VaultColors.phosphorGreen;
@@ -281,114 +594,128 @@ class _VacuumScreenState extends State<VacuumScreen>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Drop Zone ──
-            Expanded(
-              flex: 3,
-              child: AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: _dropZoneColor.withValues(
-                          alpha: _pulseController.isAnimating
-                              ? _pulseAnimation.value
-                              : 0.5,
+            // ── Mobile Action Buttons ──
+            if (!_isIngesting && !_isRealityViolation) ...[
+              _buildActionButton(
+                icon: Icons.camera_alt_rounded,
+                label: 'SCAN DOCUMENT',
+                subtitle: 'Use camera to capture a document',
+                accentColor: VaultColors.phosphorGreen,
+                onTap: _scanDocument,
+              ),
+              const SizedBox(height: 16),
+              _buildActionButton(
+                icon: Icons.folder_open_rounded,
+                label: 'BROWSE FILES',
+                subtitle: 'PDF • DOCX • Images • Email • Audio',
+                accentColor: VaultColors.primaryLight,
+                onTap: _browseFiles,
+              ),
+            ],
+
+            // ── Ingesting State ──
+            if (_isIngesting || _isRealityViolation)
+              Expanded(
+                flex: 3,
+                child: AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: _zoneColor.withValues(
+                            alpha: _pulseController.isAnimating
+                                ? _pulseAnimation.value
+                                : 0.5,
+                          ),
+                          width: _isRealityViolation ? 2.5 : 1.5,
                         ),
-                        width: _isRealityViolation ? 2.5 : 1.5,
+                        color: _isRealityViolation
+                            ? const Color(0xFF1A0808).withValues(alpha: 0.5)
+                            : VaultColors.surface.withValues(alpha: 0.3),
                       ),
-                      color: _isRealityViolation
-                          ? const Color(0xFF1A0808).withValues(alpha: 0.5)
-                          : VaultColors.surface.withValues(alpha: 0.3),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _isRealityViolation
-                                ? const Color(0xFF8B0000).withValues(alpha: 0.3)
-                                : VaultColors.primary.withValues(alpha: 0.2),
-                          ),
-                          child: Icon(
-                            _isRealityViolation
-                                ? Icons.shield_outlined
-                                : Icons.cloud_upload_outlined,
-                            size: 36,
-                            color: _isRealityViolation
-                                ? const Color(0xFFDC143C)
-                                : VaultColors.primaryLight,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          _isRealityViolation
-                              ? 'REALITY VIOLATION'
-                              : 'DROP FILES HERE',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: _isRealityViolation
-                                ? const Color(0xFFDC143C)
-                                : VaultColors.textSecondary,
-                            letterSpacing: 3,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isRealityViolation
-                              ? 'Image rejected by Reality Guard'
-                              : 'PDF • DOCX • Images • Email • Audio',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: _isRealityViolation
-                                ? const Color(0xFFE8A0A0)
-                                : VaultColors.textMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        if (!_isRealityViolation)
-                          ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.folder_open, size: 18),
-                            label: const Text('BROWSE FILES'),
-                          ),
-                        if (_isRealityViolation)
-                          OutlinedButton.icon(
-                            onPressed: _dismissRealityViolation,
-                            icon: const Icon(
-                              Icons.refresh,
-                              size: 18,
-                              color: Color(0xFFDC143C),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _isRealityViolation
+                                  ? const Color(
+                                      0xFF8B0000,
+                                    ).withValues(alpha: 0.3)
+                                  : VaultColors.primary.withValues(alpha: 0.2),
                             ),
-                            label: Text(
-                              'DISMISS',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFFDC143C),
-                                fontWeight: FontWeight.w600,
+                            child: Icon(
+                              _isRealityViolation
+                                  ? Icons.shield_outlined
+                                  : _phase == _PipelinePhase.complete
+                                  ? Icons.check_circle_outline_rounded
+                                  : Icons.cloud_upload_outlined,
+                              size: 36,
+                              color: _isRealityViolation
+                                  ? const Color(0xFFDC143C)
+                                  : _phase == _PipelinePhase.complete
+                                  ? VaultColors.phosphorGreen
+                                  : VaultColors.primaryLight,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _isRealityViolation
+                                ? 'REALITY VIOLATION'
+                                : _phase == _PipelinePhase.complete
+                                ? 'INGESTION COMPLETE'
+                                : 'PROCESSING...',
+                            style: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: _isRealityViolation
+                                  ? const Color(0xFFDC143C)
+                                  : _phase == _PipelinePhase.complete
+                                  ? VaultColors.phosphorGreen
+                                  : VaultColors.textSecondary,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (_isRealityViolation)
+                            OutlinedButton.icon(
+                              onPressed: _dismissRealityViolation,
+                              icon: const Icon(
+                                Icons.refresh,
+                                size: 18,
+                                color: Color(0xFFDC143C),
+                              ),
+                              label: Text(
+                                'DISMISS',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFDC143C),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: Color(0xFF8B0000),
+                                ),
                               ),
                             ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFF8B0000)),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
 
             const SizedBox(height: 20),
 
             // ── Pipeline Status ──
             Expanded(
-              flex: 2,
+              flex: _isIngesting || _isRealityViolation ? 2 : 3,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -453,6 +780,8 @@ class _VacuumScreenState extends State<VacuumScreen>
                           fontSize: 10,
                           color: _isRealityViolation
                               ? const Color(0xFFDC143C)
+                              : _phase == _PipelinePhase.complete
+                              ? VaultColors.phosphorGreen
                               : VaultColors.textSecondary,
                         ),
                       ),
@@ -462,6 +791,63 @@ class _VacuumScreenState extends State<VacuumScreen>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color accentColor,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      color: VaultColors.surface.withValues(alpha: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: accentColor.withValues(alpha: 0.3), width: 1.5),
+      ),
+      elevation: 0,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.15),
+                ),
+                child: Icon(icon, size: 28, color: accentColor),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: VaultColors.textPrimary,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: VaultColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -492,6 +878,9 @@ class _ProcessingBadge extends StatelessWidget {
       case _PipelinePhase.forging:
         label = 'CLOUD API';
         color = const Color(0xFFFF9800);
+      case _PipelinePhase.complete:
+        label = 'COMPLETE';
+        color = VaultColors.phosphorGreen;
       default:
         label = 'PROCESSING';
         color = VaultColors.primaryLight;

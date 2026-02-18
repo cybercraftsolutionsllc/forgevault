@@ -12,7 +12,8 @@ import '../help/help_screen.dart';
 ///   Middle: "Quick AI Query" text input
 ///   Bottom: Horizontal scrolling cards (Recent Vacuums, Money, Troubles)
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final ValueChanged<int>? onSwitchTab;
+  const HomeScreen({super.key, this.onSwitchTab});
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,10 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 32),
 
             // ── Quick AI Query ──
-            _QuickQueryInput(),
+            GestureDetector(
+              onTap: () => onSwitchTab?.call(3), // Switch to Oracle tab
+              child: AbsorbPointer(child: _QuickQueryInput()),
+            ),
 
             const SizedBox(height: 32),
 
@@ -122,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                   child: _QuickActionButton(
                     icon: Icons.file_upload_outlined,
                     label: 'VACUUM',
-                    onTap: () {},
+                    onTap: () => onSwitchTab?.call(1), // Vacuum tab
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -130,7 +134,7 @@ class HomeScreen extends StatelessWidget {
                   child: _QuickActionButton(
                     icon: Icons.auto_stories_outlined,
                     label: 'VIEW BIO',
-                    onTap: () {},
+                    onTap: () => onSwitchTab?.call(2), // Bio tab
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -138,7 +142,7 @@ class HomeScreen extends StatelessWidget {
                   child: _QuickActionButton(
                     icon: Icons.chat_outlined,
                     label: 'ORACLE',
-                    onTap: () {},
+                    onTap: () => onSwitchTab?.call(3), // Oracle tab
                   ),
                 ),
               ],

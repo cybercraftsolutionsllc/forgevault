@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:math';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:pointycastle/export.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,12 +20,27 @@ class KeyDerivationService {
 
   /// Derive a 32-byte AES-256 key from the given [pin].
   ///
-  /// On first invocation, generates and persists a random salt.
-  /// Subsequent calls read the persisted salt so the same PIN
-  /// always produces the same key.
+  /// Runs PBKDF2 on a background isolate via [Isolate.run] so the
+  /// 100k-iteration derivation does NOT block the main UI thread.
   Future<Uint8List> deriveKey(String pin) async {
     final salt = await _getOrCreateSalt();
-    return _pbkdf2(pin, salt);
+    final iterations = _iterations;
+    final keyLen = _keyLength;
+
+    return Isolate.run(() {
+      final params = Pbkdf2Parameters(salt, iterations, keyLen);
+      final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
+      derivator.init(params);
+
+      final pinBytes = Uint8List.fromList(utf8.encode(pin));
+      final key = derivator.process(pinBytes);
+
+      // Zero-fill the pin bytes in the isolate.
+      for (var i = 0; i < pinBytes.length; i++) {
+        pinBytes[i] = 0;
+      }
+      return key;
+    });
   }
 
   /// Verify that [pin] produces a key matching the stored verification hash.
@@ -60,20 +76,6 @@ class KeyDerivationService {
   }
 
   // ── Private Helpers ──
-
-  Uint8List _pbkdf2(String pin, Uint8List salt) {
-    final params = Pbkdf2Parameters(salt, _iterations, _keyLength);
-    final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
-    derivator.init(params);
-
-    final pinBytes = Uint8List.fromList(utf8.encode(pin));
-    final key = derivator.process(pinBytes);
-
-    // Zero-fill the pin bytes from memory.
-    _zeroFill(pinBytes);
-
-    return key;
-  }
 
   String _hashKey(Uint8List key) {
     final digest = SHA256Digest();
