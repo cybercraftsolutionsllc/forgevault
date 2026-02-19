@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/database/database_service.dart';
@@ -204,11 +205,22 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     String? blueprintTitle,
   }) async {
     try {
-      // ── Dynamic LLM routing: check for ANY configured BYOK key ──
-      final keyService = ApiKeyService();
-      final activeProvider = await keyService.getFirstAvailableProvider();
+      // ── Absolute Keystore Bypass ──
+      // Read directly from FlutterSecureStorage to avoid Riverpod caching.
+      const storage = FlutterSecureStorage(
+        aOptions: AndroidOptions(encryptedSharedPreferences: true),
+      );
 
-      if (activeProvider == null) {
+      String? key;
+      key = await storage.read(key: 'vitavault_api_key_gemini');
+      if (key == null || key.trim().isEmpty) {
+        key = await storage.read(key: 'vitavault_api_key_claude');
+      }
+      if (key == null || key.trim().isEmpty) {
+        key = await storage.read(key: 'vitavault_api_key_grok');
+      }
+
+      if (key == null || key.trim().isEmpty) {
         setState(() {
           _messages.add(
             _ChatMessage(
@@ -226,6 +238,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
 
       if (!mounted) return;
 
+      final keyService = ApiKeyService();
       final client = ForgeApiClient(keyService: keyService);
       final response = await client.synthesize(prompt);
 

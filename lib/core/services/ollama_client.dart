@@ -68,6 +68,7 @@ class OllamaClient {
       'stream': false, // We collect the full response
       'options': {
         'temperature': temperature,
+        // ignore: use_null_aware_elements
         if (maxTokens != null) 'num_predict': maxTokens,
       },
     };

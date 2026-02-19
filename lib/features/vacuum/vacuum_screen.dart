@@ -8,8 +8,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/crypto/ephemeral_key_service.dart';
 import '../../core/database/database_service.dart';
-import '../../core/services/api_key_service.dart';
-import '../../core/services/forge_api_client.dart';
 import '../../core/services/forge_service.dart';
 import '../../core/services/gemini_nano_bridge.dart';
 import '../../core/services/no_api_key_exception.dart';
@@ -211,11 +209,9 @@ class _VacuumScreenState extends State<VacuumScreen>
       if (mounted) {
         _onPhaseChanged('Synthesizing via Forge...');
         final db = DatabaseService.instance;
-        final forgeClient = ForgeApiClient(keyService: ApiKeyService());
         final forgeService = ForgeService(
           geminiNano: GeminiNanoBridge(),
           database: db,
-          cloudApi: forgeClient,
         );
         final result = await forgeService.synthesizeWithReview(
           await File(filePath).readAsString().catchError((_) => ''),
@@ -590,265 +586,290 @@ class _VacuumScreenState extends State<VacuumScreen>
           ),
         ),
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // ── Mobile Action Buttons ──
-            if (!_isIngesting && !_isRealityViolation) ...[
-              _buildActionButton(
-                icon: Icons.camera_alt_rounded,
-                label: 'SCAN DOCUMENT',
-                subtitle: 'Use camera to capture a document',
-                accentColor: VaultColors.phosphorGreen,
-                onTap: _scanDocument,
-              ),
-              const SizedBox(height: 16),
-              _buildActionButton(
-                icon: Icons.folder_open_rounded,
-                label: 'BROWSE FILES',
-                subtitle: 'PDF • DOCX • Images • Email • Audio',
-                accentColor: VaultColors.primaryLight,
-                onTap: _browseFiles,
-              ),
-            ],
-
-            // ── Ingesting State ──
-            if (_isIngesting || _isRealityViolation)
-              Expanded(
-                flex: 3,
-                child: AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: _zoneColor.withValues(
-                            alpha: _pulseController.isAnimating
-                                ? _pulseAnimation.value
-                                : 0.5,
-                          ),
-                          width: _isRealityViolation ? 2.5 : 1.5,
-                        ),
-                        color: _isRealityViolation
-                            ? const Color(0xFF1A0808).withValues(alpha: 0.5)
-                            : VaultColors.surface.withValues(alpha: 0.3),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: _isRealityViolation
-                                  ? const Color(
-                                      0xFF8B0000,
-                                    ).withValues(alpha: 0.3)
-                                  : VaultColors.primary.withValues(alpha: 0.2),
-                            ),
-                            child: Icon(
-                              _isRealityViolation
-                                  ? Icons.shield_outlined
-                                  : _phase == _PipelinePhase.complete
-                                  ? Icons.check_circle_outline_rounded
-                                  : Icons.cloud_upload_outlined,
-                              size: 36,
-                              color: _isRealityViolation
-                                  ? const Color(0xFFDC143C)
-                                  : _phase == _PipelinePhase.complete
-                                  ? VaultColors.phosphorGreen
-                                  : VaultColors.primaryLight,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text(
-                            _isRealityViolation
-                                ? 'REALITY VIOLATION'
-                                : _phase == _PipelinePhase.complete
-                                ? 'INGESTION COMPLETE'
-                                : 'PROCESSING...',
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: _isRealityViolation
-                                  ? const Color(0xFFDC143C)
-                                  : _phase == _PipelinePhase.complete
-                                  ? VaultColors.phosphorGreen
-                                  : VaultColors.textSecondary,
-                              letterSpacing: 3,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          if (_isRealityViolation)
-                            OutlinedButton.icon(
-                              onPressed: _dismissRealityViolation,
-                              icon: const Icon(
-                                Icons.refresh,
-                                size: 18,
-                                color: Color(0xFFDC143C),
-                              ),
-                              label: Text(
-                                'DISMISS',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFFDC143C),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: Color(0xFF8B0000),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    );
-                  },
+        children: [
+          // ── Mobile Action Buttons ──
+          if (!_isIngesting && !_isRealityViolation) ...[
+            ElevatedButton(
+              onPressed: _scanDocument,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: VaultColors.surface,
+                foregroundColor: VaultColors.textPrimary,
+                padding: const EdgeInsets.all(24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: VaultColors.phosphorGreen.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
                 ),
+                elevation: 0,
               ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: VaultColors.phosphorGreen.withValues(alpha: 0.15),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 28,
+                      color: VaultColors.phosphorGreen,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'SCAN DOCUMENT',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: VaultColors.textPrimary,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Use camera to capture a document',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: VaultColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _browseFiles,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: VaultColors.surface,
+                foregroundColor: VaultColors.textPrimary,
+                padding: const EdgeInsets.all(24),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: VaultColors.primaryLight.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                elevation: 0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: VaultColors.primaryLight.withValues(alpha: 0.15),
+                    ),
+                    child: Icon(
+                      Icons.folder_open_rounded,
+                      size: 28,
+                      color: VaultColors.primaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'BROWSE FILES',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: VaultColors.textPrimary,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'PDF • DOCX • Images • Email • Audio',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: VaultColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
 
-            const SizedBox(height: 20),
-
-            // ── Pipeline Status ──
-            Expanded(
-              flex: _isIngesting || _isRealityViolation ? 2 : 3,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: VaultDecorations.metallicCard(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          'PIPELINE STATUS',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: VaultColors.textMuted,
-                            letterSpacing: 2,
-                          ),
+          // ── Ingesting State ──
+          if (_isIngesting || _isRealityViolation)
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _zoneColor.withValues(
+                        alpha: _pulseController.isAnimating
+                            ? _pulseAnimation.value
+                            : 0.5,
+                      ),
+                      width: _isRealityViolation ? 2.5 : 1.5,
+                    ),
+                    color: _isRealityViolation
+                        ? const Color(0xFF1A0808).withValues(alpha: 0.5)
+                        : VaultColors.surface.withValues(alpha: 0.3),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isRealityViolation
+                              ? const Color(0xFF8B0000).withValues(alpha: 0.3)
+                              : VaultColors.primary.withValues(alpha: 0.2),
                         ),
-                        const Spacer(),
-                        if (_phase != _PipelinePhase.idle &&
-                            _phase != _PipelinePhase.error)
-                          _ProcessingBadge(phase: _phase),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _PipelineStep(
-                      label: 'EXTRACT',
-                      icon: Icons.document_scanner_outlined,
-                      status: _getStepStatus('EXTRACT'),
-                      statusColor: _getStepColor('EXTRACT'),
-                    ),
-                    const SizedBox(height: 12),
-                    _PipelineStep(
-                      label: 'FORGE',
-                      icon: Icons.auto_fix_high_outlined,
-                      status: _getStepStatus('FORGE'),
-                      statusColor: _getStepColor('FORGE'),
-                    ),
-                    const SizedBox(height: 12),
-                    _PipelineStep(
-                      label: 'PURGE',
-                      icon: Icons.delete_sweep_outlined,
-                      status: _getStepStatus('PURGE'),
-                      isDestructive: true,
-                      statusColor: _getStepColor('PURGE'),
-                    ),
-                    const Spacer(),
-                    // ── Status message ──
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
+                        child: Icon(
+                          _isRealityViolation
+                              ? Icons.shield_outlined
+                              : _phase == _PipelinePhase.complete
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.cloud_upload_outlined,
+                          size: 36,
+                          color: _isRealityViolation
+                              ? const Color(0xFFDC143C)
+                              : _phase == _PipelinePhase.complete
+                              ? VaultColors.phosphorGreen
+                              : VaultColors.primaryLight,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                        color: VaultColors.surfaceVariant,
-                      ),
-                      child: Text(
-                        _statusMessage,
-                        style: GoogleFonts.jetBrainsMono(
-                          fontSize: 10,
+                      const SizedBox(height: 20),
+                      Text(
+                        _isRealityViolation
+                            ? 'REALITY VIOLATION'
+                            : _phase == _PipelinePhase.complete
+                            ? 'INGESTION COMPLETE'
+                            : 'PROCESSING...',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
                           color: _isRealityViolation
                               ? const Color(0xFFDC143C)
                               : _phase == _PipelinePhase.complete
                               ? VaultColors.phosphorGreen
                               : VaultColors.textSecondary,
+                          letterSpacing: 3,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      if (_isRealityViolation)
+                        OutlinedButton.icon(
+                          onPressed: _dismissRealityViolation,
+                          icon: const Icon(
+                            Icons.refresh,
+                            size: 18,
+                            color: Color(0xFFDC143C),
+                          ),
+                          label: Text(
+                            'DISMISS',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFDC143C),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF8B0000)),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+          const SizedBox(height: 20),
+
+          // ── Pipeline Status ──
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: VaultDecorations.metallicCard(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'PIPELINE STATUS',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: VaultColors.textMuted,
+                        letterSpacing: 2,
+                      ),
                     ),
+                    const Spacer(),
+                    if (_phase != _PipelinePhase.idle &&
+                        _phase != _PipelinePhase.error)
+                      _ProcessingBadge(phase: _phase),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                _PipelineStep(
+                  label: 'EXTRACT',
+                  icon: Icons.document_scanner_outlined,
+                  status: _getStepStatus('EXTRACT'),
+                  statusColor: _getStepColor('EXTRACT'),
+                ),
+                const SizedBox(height: 12),
+                _PipelineStep(
+                  label: 'FORGE',
+                  icon: Icons.auto_fix_high_outlined,
+                  status: _getStepStatus('FORGE'),
+                  statusColor: _getStepColor('FORGE'),
+                ),
+                const SizedBox(height: 12),
+                _PipelineStep(
+                  label: 'PURGE',
+                  icon: Icons.delete_sweep_outlined,
+                  status: _getStepStatus('PURGE'),
+                  isDestructive: true,
+                  statusColor: _getStepColor('PURGE'),
+                ),
+                const SizedBox(height: 16),
+                // ── Status message ──
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: VaultColors.surfaceVariant,
+                  ),
+                  child: Text(
+                    _statusMessage,
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 10,
+                      color: _isRealityViolation
+                          ? const Color(0xFFDC143C)
+                          : _phase == _PipelinePhase.complete
+                          ? VaultColors.phosphorGreen
+                          : VaultColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required Color accentColor,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      color: VaultColors.surface.withValues(alpha: 0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: accentColor.withValues(alpha: 0.3), width: 1.5),
-      ),
-      elevation: 0,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.15),
-                ),
-                child: Icon(icon, size: 28, color: accentColor),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: VaultColors.textPrimary,
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: VaultColors.textMuted,
-                ),
-              ),
-            ],
           ),
-        ),
+        ],
       ),
     );
   }

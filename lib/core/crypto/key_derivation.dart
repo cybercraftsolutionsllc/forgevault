@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:math';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:pointycastle/export.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,32 +14,33 @@ import 'package:path_provider/path_provider.dart';
 class KeyDerivationService {
   static const int _keyLength = 32; // 256 bits
   static const int _saltLength = 16; // 128 bits
-  static const int _iterations = 100000;
+  static const int _iterations = 15000;
   static const String _saltFileName = '.vitavault_salt';
 
   /// Derive a 32-byte AES-256 key from the given [pin].
   ///
-  /// Runs PBKDF2 on a background isolate via [Isolate.run] so the
-  /// 100k-iteration derivation does NOT block the main UI thread.
+  /// Runs PBKDF2 synchronously (15k iterations is fast enough for main thread).
+  /// The result is strictly guaranteed to be exactly 32 bytes.
   Future<Uint8List> deriveKey(String pin) async {
     final salt = await _getOrCreateSalt();
-    final iterations = _iterations;
-    final keyLen = _keyLength;
 
-    return Isolate.run(() {
-      final params = Pbkdf2Parameters(salt, iterations, keyLen);
-      final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
-      derivator.init(params);
+    final params = Pbkdf2Parameters(salt, _iterations, _keyLength);
+    final derivator = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64));
+    derivator.init(params);
 
-      final pinBytes = Uint8List.fromList(utf8.encode(pin));
-      final key = derivator.process(pinBytes);
+    final pinBytes = Uint8List.fromList(utf8.encode(pin));
+    final rawKey = derivator.process(pinBytes);
 
-      // Zero-fill the pin bytes in the isolate.
-      for (var i = 0; i < pinBytes.length; i++) {
-        pinBytes[i] = 0;
-      }
-      return key;
-    });
+    // Zero-fill the pin bytes immediately.
+    for (var i = 0; i < pinBytes.length; i++) {
+      pinBytes[i] = 0;
+    }
+
+    // Guarantee exactly 32 bytes for Isar AES-256 key.
+    if (rawKey.length == _keyLength) return rawKey;
+    final key = Uint8List(_keyLength);
+    key.setRange(0, rawKey.length.clamp(0, _keyLength), rawKey);
+    return key;
   }
 
   /// Verify that [pin] produces a key matching the stored verification hash.

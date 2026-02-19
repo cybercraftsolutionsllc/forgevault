@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/api_key_service.dart';
@@ -34,6 +36,8 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
   final Map<LlmProvider, _KeyState> _keyStates = {};
   final Map<LlmProvider, bool> _isEditing = {};
   final Map<LlmProvider, AnimationController> _pulseControllers = {};
+  bool _biometricsAvailable = false;
+  bool _useBiometrics = false;
 
   @override
   void initState() {
@@ -48,6 +52,29 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
       );
     }
     _loadExistingKeys();
+    _loadBiometricPref();
+  }
+
+  Future<void> _loadBiometricPref() async {
+    try {
+      final localAuth = LocalAuthentication();
+      final canCheck = await localAuth.canCheckBiometrics;
+      final isSupported = await localAuth.isDeviceSupported();
+      if (!mounted) return;
+      setState(() => _biometricsAvailable = canCheck && isSupported);
+
+      final prefs = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() => _useBiometrics = prefs.getBool('useBiometrics') ?? false);
+    } catch (_) {
+      // No biometric hardware.
+    }
+  }
+
+  Future<void> _toggleBiometric(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('useBiometrics', value);
+    if (mounted) setState(() => _useBiometrics = value);
   }
 
   Future<void> _loadExistingKeys() async {
@@ -142,17 +169,36 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
         ),
         backgroundColor: VaultColors.background,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync, color: VaultColors.phosphorGreen),
-            tooltip: 'Re-validate all keys',
-            onPressed: _revalidateAllKeys,
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
         children: [
+          // ── Sleek Sync Button ──
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _revalidateAllKeys,
+              icon: const Icon(Icons.security_update_good_rounded, size: 20),
+              label: Text(
+                'SCAN KEYSTORE & VERIFY',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.greenAccent,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: const BorderSide(color: Colors.greenAccent, width: 0.8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
           // Header
           _buildHeader(),
           const SizedBox(height: 24),
@@ -826,6 +872,92 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
         ),
 
         const SizedBox(height: 16),
+
+        // Biometric Toggle
+        if (_biometricsAvailable)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _useBiometrics
+                      ? VaultColors.phosphorGreenDim
+                      : VaultColors.border,
+                  width: _useBiometrics ? 1 : 0.5,
+                ),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: _useBiometrics
+                      ? [
+                          VaultColors.primary.withValues(alpha: 0.15),
+                          VaultColors.surface,
+                        ]
+                      : [VaultColors.surface, VaultColors.cardSurface],
+                ),
+              ),
+              child: SwitchListTile(
+                secondary: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: _useBiometrics
+                        ? VaultColors.primary.withValues(alpha: 0.3)
+                        : VaultColors.surfaceVariant,
+                  ),
+                  child: Icon(
+                    Icons.fingerprint_rounded,
+                    size: 22,
+                    color: _useBiometrics
+                        ? VaultColors.phosphorGreen
+                        : VaultColors.textMuted,
+                  ),
+                ),
+                title: Text(
+                  'Biometric Unlock',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: VaultColors.textPrimary,
+                  ),
+                ),
+                subtitle: Text(
+                  _useBiometrics ? 'Enabled' : 'Tap to enable',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                  ),
+                ),
+                value: _useBiometrics,
+                onChanged: (val) {
+                  final isPro = ref.read(isProUnlockedProvider);
+                  if (!isPro) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Biometric Unlock is a Pro feature.',
+                          style: GoogleFonts.inter(color: Colors.white),
+                        ),
+                        backgroundColor: Colors.amber.shade700,
+                      ),
+                    );
+                    return;
+                  }
+                  _toggleBiometric(val);
+                },
+                activeTrackColor: VaultColors.phosphorGreen,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
 
         // Vault Sync Tile
         _buildSettingsTile(

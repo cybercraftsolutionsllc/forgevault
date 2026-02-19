@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/theme.dart';
 import '../../core/database/database_service.dart';
@@ -35,6 +36,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   bool _showPinInput = false;
   bool _pinError = false;
   bool _biometricsAvailable = false;
+  bool _useBiometrics = false;
   String? _confirmPin; // For first-time PIN setup
 
   @override
@@ -65,14 +67,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Future<void> _checkBiometrics() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final userEnabled = prefs.getBool('useBiometrics') ?? false;
+      _useBiometrics = userEnabled;
+
+      if (!userEnabled) return; // User has NOT opted in — skip entirely.
+
       final isSupported = await _localAuth.isDeviceSupported();
       final canCheck = await _localAuth.canCheckBiometrics;
-      final isPro = ref.read(isProUnlockedProvider);
 
-      if (isSupported && canCheck && isPro) {
+      if (isSupported && canCheck) {
         setState(() => _biometricsAvailable = true);
 
-        // Auto-trigger biometric auth on first load.
+        // Auto-trigger biometric auth only if user has opted in.
         _authenticateWithBiometrics();
       }
     } catch (_) {
@@ -182,6 +189,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       }
     } catch (e) {
       setState(() => _pinError = true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString(),
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isVerifying = false);
     }
@@ -453,6 +472,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                   ),
                           ),
                         ),
+
+                        // ── Manual Biometric Trigger (on PIN pad) ──
+                        if (_useBiometrics &&
+                            _biometricsAvailable &&
+                            !_isFirstTime)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: IconButton(
+                              onPressed: _isVerifying
+                                  ? null
+                                  : _authenticateWithBiometrics,
+                              icon: const Icon(
+                                Icons.fingerprint_rounded,
+                                size: 28,
+                                color: VaultColors.phosphorGreen,
+                              ),
+                              tooltip: 'Unlock with biometrics',
+                            ),
+                          ),
                       ],
                     ),
                   ),

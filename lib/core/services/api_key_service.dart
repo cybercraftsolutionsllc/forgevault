@@ -96,6 +96,38 @@ class ApiKeyService {
     return statuses;
   }
 
+  /// Get the active (first available) provider by reading directly from
+  /// the hardware keystore every time. NEVER returns a cached value.
+  ///
+  /// Alias for [getFirstAvailableProvider] — named for spec compliance.
+  Future<LlmProvider?> getActiveProvider() async {
+    for (final provider in LlmProvider.values) {
+      final key = await _storage.read(key: _storageKey(provider));
+      if (key != null && key.isNotEmpty) return provider;
+    }
+    return null;
+  }
+
+  /// Retrieve an API key by reading directly from the hardware keystore
+  /// every time. NEVER returns a cached value.
+  ///
+  /// Named alias for [getKey] — named for spec compliance.
+  Future<String?> getApiKey(LlmProvider provider) async {
+    return _storage.read(key: _storageKey(provider));
+  }
+
+  /// Force-read ALL keys from the hardware keystore.
+  ///
+  /// Returns a map of provider → key (null if not stored).
+  /// Used by the Engine Room's "SCAN KEYSTORE & VERIFY" button.
+  Future<Map<LlmProvider, String?>> forceReadAllKeys() async {
+    final result = <LlmProvider, String?>{};
+    for (final provider in LlmProvider.values) {
+      result[provider] = await _storage.read(key: _storageKey(provider));
+    }
+    return result;
+  }
+
   /// Mask a key for display (show first 8 + last 4 chars).
   static String maskKey(String key) {
     if (key.length <= 12) return '••••••••';

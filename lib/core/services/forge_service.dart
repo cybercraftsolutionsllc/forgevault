@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../database/database_service.dart';
 import '../database/schemas/core_identity.dart';
 import '../database/schemas/timeline_event.dart';
@@ -11,6 +13,7 @@ import '../database/schemas/health_profile.dart';
 import '../database/schemas/goal.dart';
 import '../database/schemas/habit_vice.dart';
 import '../database/schemas/audit_log.dart';
+import 'api_key_service.dart';
 import 'gemini_nano_bridge.dart';
 import 'forge_prompt.dart';
 import 'forge_api_client.dart';
@@ -24,15 +27,12 @@ import 'no_api_key_exception.dart';
 /// 4. Parses JSON into Isar collection objects and merges into the database
 class ForgeService {
   final GeminiNanoBridge _geminiNano;
-  final ForgeApiClient? _cloudApi;
   final DatabaseService _database;
 
   ForgeService({
     required GeminiNanoBridge geminiNano,
     required DatabaseService database,
-    ForgeApiClient? cloudApi,
   }) : _geminiNano = geminiNano,
-       _cloudApi = cloudApi,
        _database = database;
 
   /// Synthesize extracted text AND auto-commit to Isar.
@@ -55,13 +55,31 @@ class ForgeService {
     final prompt = ForgePrompt.buildPrompt(extractedText);
     String rawJson;
 
-    // Priority 1: Cloud API (if BYOK keys are configured)
-    if (_cloudApi != null) {
+    // ── Absolute Keystore Bypass ──
+    // Bypass Riverpod / ApiKeyService entirely. Read keys directly from
+    // FlutterSecureStorage to avoid any caching of empty strings.
+    const storage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    );
+
+    String? key;
+
+    key = await storage.read(key: 'vitavault_api_key_gemini');
+    if (key == null || key.trim().isEmpty) {
+      key = await storage.read(key: 'vitavault_api_key_claude');
+    }
+    if (key == null || key.trim().isEmpty) {
+      key = await storage.read(key: 'vitavault_api_key_grok');
+    }
+
+    if (key != null && key.trim().isNotEmpty) {
       try {
-        rawJson = await _cloudApi.synthesize(extractedText);
+        final keyService = ApiKeyService();
+        final client = ForgeApiClient(keyService: keyService);
+        rawJson = await client.synthesize(extractedText);
         return _parseForgeJson(rawJson);
       } catch (_) {
-        // Cloud API failed; try local backends
+        // Cloud API call failed — try local backends
       }
     }
 
@@ -77,8 +95,8 @@ class ForgeService {
       }
     }
 
-    // NO Ollama fallback — cloud AI is mandatory.
-    throw NoApiKeyException('Go to Engine Room to configure Cloud AI.');
+    // No backend available.
+    throw NoApiKeyException('No API Key configured. Go to Engine Room.');
   }
 
   /// Commit a reviewed ForgeResult to Isar.
@@ -89,7 +107,14 @@ class ForgeService {
 
   /// Check if any LLM backend is available.
   Future<bool> isAvailable() async {
-    if (_cloudApi != null) return true;
+    // Absolute keystore bypass — read directly from FlutterSecureStorage.
+    const storage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    );
+    for (final name in ['gemini', 'claude', 'grok']) {
+      final key = await storage.read(key: 'vitavault_api_key_$name');
+      if (key != null && key.trim().isNotEmpty) return true;
+    }
     if (Platform.isAndroid) {
       return _geminiNano.isAvailable();
     }

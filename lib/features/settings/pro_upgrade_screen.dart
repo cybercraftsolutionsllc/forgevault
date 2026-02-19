@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/providers.dart';
 import '../../theme/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Upgrade to Pro — sleek monetization screen.
 ///
@@ -50,18 +52,26 @@ class _ProUpgradeScreenState extends ConsumerState<ProUpgradeScreen>
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
+      // Persist Pro status
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isPro', true);
+
       ref.read(isProUnlockedProvider.notifier).state = true;
       setState(() => _purchasing = false);
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Pro unlocked! Biometrics & Sync are now available.',
-            style: GoogleFonts.inter(color: VaultColors.textPrimary),
+            'Pro Unlocked!',
+            style: GoogleFonts.inter(color: Colors.white),
           ),
-          backgroundColor: VaultColors.primary,
+          backgroundColor: Colors.green,
         ),
       );
+
+      Navigator.pop(context);
     }
   }
 
@@ -208,6 +218,13 @@ class _ProUpgradeScreenState extends ConsumerState<ProUpgradeScreen>
               description:
                   'Direct access to the development team for bug reports and feature requests.',
               isActive: isPro,
+              onTap: isPro
+                  ? () => launchUrl(
+                      Uri.parse(
+                        'mailto:cyber.craft@craftedcybersolutions.com?subject=VitaVault%20Pro%20Support',
+                      ),
+                    )
+                  : null,
             ),
 
             const SizedBox(height: 40),
@@ -304,83 +321,89 @@ class _ProUpgradeScreenState extends ConsumerState<ProUpgradeScreen>
     required String title,
     required String description,
     required bool isActive,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isActive ? VaultColors.phosphorGreenDim : VaultColors.border,
-          width: isActive ? 1 : 0.5,
-        ),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isActive
-              ? [
-                  VaultColors.primary.withValues(alpha: 0.15),
-                  VaultColors.surface,
-                ]
-              : [VaultColors.surface, VaultColors.cardSurface],
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isActive
-                  ? VaultColors.primary.withValues(alpha: 0.3)
-                  : VaultColors.surfaceVariant,
-            ),
-            child: Icon(
-              icon,
-              size: 22,
-              color: isActive
-                  ? VaultColors.phosphorGreen
-                  : VaultColors.textMuted,
-            ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isActive ? VaultColors.phosphorGreenDim : VaultColors.border,
+            width: isActive ? 1 : 0.5,
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: VaultColors.textPrimary,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isActive
+                ? [
+                    VaultColors.primary.withValues(alpha: 0.15),
+                    VaultColors.surface,
+                  ]
+                : [VaultColors.surface, VaultColors.cardSurface],
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isActive
+                    ? VaultColors.primary.withValues(alpha: 0.3)
+                    : VaultColors.surfaceVariant,
+              ),
+              child: Icon(
+                icon,
+                size: 22,
+                color: isActive
+                    ? VaultColors.phosphorGreen
+                    : VaultColors.textMuted,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: VaultColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    if (isActive) ...[
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.check_circle,
-                        size: 14,
-                        color: VaultColors.phosphorGreen.withValues(alpha: 0.7),
-                      ),
+                      if (isActive) ...[
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: VaultColors.phosphorGreen.withValues(
+                            alpha: 0.7,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: VaultColors.textMuted,
-                    height: 1.4,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: VaultColors.textMuted,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
