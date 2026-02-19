@@ -280,9 +280,9 @@ class LocalRagService {
   }) {
     final buffer = StringBuffer();
 
-    buffer.writeln('<<VITAVAULT_CONTEXT>>');
+    buffer.writeln('<<ForgeVault_CONTEXT>>');
     buffer.writeln(contextBlob);
-    buffer.writeln('<</VITAVAULT_CONTEXT>>');
+    buffer.writeln('<</ForgeVault_CONTEXT>>');
 
     if (blueprintInstruction != null) {
       buffer.writeln();

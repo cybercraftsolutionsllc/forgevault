@@ -67,7 +67,7 @@ class RealityGuardService {
     if (exifData.isEmpty) {
       throw RealityViolationException(
         'Image lacks EXIF data entirely. '
-        'VitaVault only accepts verified photographs with hardware metadata.',
+        'ForgeVault only accepts verified photographs with hardware metadata.',
       );
     }
 
@@ -84,7 +84,7 @@ class RealityGuardService {
       if (combinedMeta.contains(aiTag)) {
         throw RealityViolationException(
           'AI-generated image detected (software: "$aiTag"). '
-          'VitaVault only accepts verified reality — no synthetic content.',
+          'ForgeVault only accepts verified reality — no synthetic content.',
         );
       }
     }
@@ -101,7 +101,7 @@ class RealityGuardService {
       throw RealityViolationException(
         'Image has EXIF data but no hardware camera fields '
         '(Make, Model, DateTime, etc.). This may be a screenshot, '
-        'download, or processed image. VitaVault requires verified '
+        'download, or processed image. ForgeVault requires verified '
         'photographs from a physical camera or phone.',
       );
     }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// ─────────────────────────────────────────────────
-/// VitaVault: Dark Forest Vault — Design System
+/// ForgeVault: Dark Forest Vault — Design System
 /// ─────────────────────────────────────────────────
 /// Secure, premium, impenetrable, calming.
 /// Heavy mechanical animations. No bright colors.
@@ -235,8 +235,8 @@ class VaultTheme {
 
       // ── Snack Bar ──
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: VaultColors.surface,
-        contentTextStyle: GoogleFonts.inter(color: VaultColors.textPrimary),
+        backgroundColor: const Color(0xFF1E1E1E),
+        contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
       ),

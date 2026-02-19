@@ -714,6 +714,24 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
 
     if (confirmed == true) {
       widget.onApprove();
+
+      // Show green confirmation SnackBar and safely pop back.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Vault Updated ✓',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            backgroundColor: VaultColors.phosphorGreen,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
     }
   }
 

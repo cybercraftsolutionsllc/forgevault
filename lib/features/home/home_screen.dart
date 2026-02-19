@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: VaultColors.background,
       appBar: AppBar(
         title: Text(
-          'VITAVAULT',
+          'ForgeVault',
           style: GoogleFonts.inter(
             letterSpacing: 4,
             fontWeight: FontWeight.w700,

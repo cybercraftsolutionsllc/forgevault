@@ -1,13 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/services/api_key_service.dart';
 import '../../theme/theme.dart';
 import '../../core/database/database_service.dart';
 import '../../providers/providers.dart';
+import '../welcome/welcome_screen.dart';
 
 /// Biometric Gate — the first screen the user sees.
 ///
@@ -92,7 +98,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       setState(() => _isVerifying = true);
 
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Unlock VitaVault',
+        localizedReason: 'Unlock ForgeVault',
         options: const AuthenticationOptions(
           stickyAuth: true,
           biometricOnly: false, // Allow device credentials fallback
@@ -104,6 +110,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         final storedPin = ref.read(masterPinProvider);
         if (storedPin != null) {
           await DatabaseService.instance.initialize(storedPin);
+          // Fire-and-forget: warm the API key cache.
+          ApiKeyService().getActiveProvider();
           widget.onAuthenticated();
           return;
         }
@@ -168,6 +176,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         // Store PIN in memory for biometric re-auth.
         ref.read(masterPinProvider.notifier).state = pin;
 
+        // Fire-and-forget: warm the API key cache.
+        ApiKeyService().getActiveProvider();
         widget.onAuthenticated();
       } else {
         // Returning user — verify PIN
@@ -178,6 +188,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           // Store PIN in memory for biometric re-auth.
           ref.read(masterPinProvider.notifier).state = pin;
 
+          // Fire-and-forget: warm the API key cache.
+          ApiKeyService().getActiveProvider();
           widget.onAuthenticated();
         } else {
           setState(() {
@@ -210,6 +222,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      bottomNavigationBar: !_isFirstTime
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TextButton(
+                  onPressed: _showNukeDialog,
+                  style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                  child: Text(
+                    'Forgot PIN? (Reset Vault)',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -279,7 +309,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
                 // ── Title ──
                 Text(
-                  'VITAVAULT',
+                  'ForgeVault',
                   style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -495,7 +525,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     ),
                   ),
 
-                const SizedBox(height: 64),
+                const SizedBox(height: 40),
 
                 // ── Version Tag ──
                 Text(
@@ -511,6 +541,176 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           ),
         ),
       ),
+    );
+  }
+
+  // ── Factory Reset ──
+
+  /// Permanently wipe ALL app state: secure storage, preferences, and Isar DB.
+  Future<void> _factoryReset() async {
+    // 1. Wipe FlutterSecureStorage (salt, PIN hash, API keys)
+    const storage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    );
+    await storage.deleteAll();
+
+    // 2. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // 3. Physically delete the Isar database files
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final dbFile = File('${dir.path}${Platform.pathSeparator}default.isar');
+      final lockFile = File(
+        '${dir.path}${Platform.pathSeparator}default.isar.lock',
+      );
+      if (dbFile.existsSync()) dbFile.deleteSync();
+      if (lockFile.existsSync()) lockFile.deleteSync();
+    } catch (_) {
+      // Best-effort — the database may already be gone.
+    }
+
+    // 4. Also wipe the salt and PIN verification files from app support dir
+    try {
+      final supportDir = await getApplicationSupportDirectory();
+      final saltFile = File(
+        '${supportDir.path}${Platform.pathSeparator}.vitavault_salt',
+      );
+      final verifyFile = File(
+        '${supportDir.path}${Platform.pathSeparator}.vitavault_pin_verify',
+      );
+      if (saltFile.existsSync()) saltFile.deleteSync();
+      if (verifyFile.existsSync()) verifyFile.deleteSync();
+    } catch (_) {
+      // Best-effort.
+    }
+  }
+
+  /// Show the NUKE confirmation dialog requiring the user to type 'NUKE'.
+  Future<void> _showNukeDialog() async {
+    final nukeController = TextEditingController();
+    bool canNuke = false;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: VaultColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: VaultColors.destructive.withValues(alpha: 0.5),
+              width: 1,
+            ),
+          ),
+          title: Text(
+            '\u{1F6D1} WARNING: PERMANENT DATA LOSS',
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Colors.redAccent,
+              letterSpacing: 1,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'If you forgot your PIN, your data cannot be recovered. '
+                'This will permanently wipe your local database and '
+                'hardware-bound API keys. You will only be able to recover '
+                'your data if you have an Encrypted Backup file.\n\n'
+                'Type NUKE to confirm.',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: VaultColors.textSecondary,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nukeController,
+                autofocus: true,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 18,
+                  color: Colors.redAccent,
+                  letterSpacing: 6,
+                ),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: VaultColors.surfaceVariant,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: VaultColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: VaultColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.redAccent),
+                  ),
+                  hintText: 'NUKE',
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    fontSize: 18,
+                    color: VaultColors.textMuted,
+                  ),
+                ),
+                onChanged: (value) {
+                  setDialogState(() => canNuke = value == 'NUKE');
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(color: VaultColors.textMuted),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: canNuke ? () => Navigator.of(context).pop(true) : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade900,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: VaultColors.surfaceVariant,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'NUKE VAULT',
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await _factoryReset();
+
+    if (!mounted) return;
+
+    // Navigate to WelcomeScreen, clearing the entire navigation stack.
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) =>
+            WelcomeScreen(onInitialize: () {}, onRestoreComplete: () {}),
+      ),
+      (_) => false,
     );
   }
 }

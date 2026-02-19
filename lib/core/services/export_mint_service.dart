@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
@@ -35,20 +36,36 @@ class ExportMintService {
     required String content,
     required String filename,
   }) async {
+    final sanitized = filename.replaceAll(RegExp(r'[^\w\-.]'), '_');
+
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // Desktop: native save dialog
+      final String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Markdown',
+        fileName: '$sanitized.md',
+        type: FileType.custom,
+        allowedExtensions: ['md'],
+      );
+      if (outputFile != null) {
+        await File(outputFile).writeAsString(content);
+        return outputFile;
+      }
+      return ''; // User cancelled
+    }
+
+    // Mobile: save to app dir + share sheet
     final dir = await getApplicationDocumentsDirectory();
     final mintDir = Directory(
-      '${dir.path}${Platform.pathSeparator}vitavault_mint',
+      '${dir.path}${Platform.pathSeparator}ForgeVault_mint',
     );
     if (!await mintDir.exists()) {
       await mintDir.create(recursive: true);
     }
 
-    final sanitized = filename.replaceAll(RegExp(r'[^\w\-.]'), '_');
     final filePath = '${mintDir.path}${Platform.pathSeparator}$sanitized.md';
     final file = File(filePath);
     await file.writeAsString(content);
 
-    // Share via system share sheet
     await Share.shareXFiles([XFile(filePath)], subject: sanitized);
 
     return filePath;
@@ -60,100 +77,139 @@ class ExportMintService {
 
   /// Render markdown-style text into a styled PDF and save locally.
   ///
-  /// Returns the path of the generated PDF file.
+  /// On desktop, opens a native Save dialog. On mobile, saves to the app
+  /// documents directory. Returns the path of the generated PDF file,
+  /// or an empty string if the user cancelled.
   static Future<String> mintAsPdf({
     required String content,
     required String title,
   }) async {
-    final dir = await getApplicationDocumentsDirectory();
-    final mintDir = Directory(
-      '${dir.path}${Platform.pathSeparator}vitavault_mint',
-    );
-    if (!await mintDir.exists()) {
-      await mintDir.create(recursive: true);
-    }
-
     final sanitized = title.replaceAll(RegExp(r'[^\w\-.]'), '_');
-    final filePath = '${mintDir.path}${Platform.pathSeparator}$sanitized.pdf';
 
-    final pdf = pw.Document(
-      theme: pw.ThemeData.withFont(
-        base: pw.Font.courier(),
-        bold: pw.Font.courierBold(),
-        italic: pw.Font.courierOblique(),
-        boldItalic: pw.Font.courierBoldOblique(),
-      ),
-    );
+    try {
+      final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: pw.Font.courier(),
+          bold: pw.Font.courierBold(),
+          italic: pw.Font.courierOblique(),
+          boldItalic: pw.Font.courierBoldOblique(),
+        ),
+      );
 
-    // Parse the markdown-ish content into PDF widgets
-    final paragraphs = _parseMarkdownToPdfWidgets(content);
+      // Parse the markdown-ish content into PDF widgets
+      final paragraphs = _parseMarkdownToPdfWidgets(content);
 
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.letter,
-        margin: const pw.EdgeInsets.all(48),
-        header: (context) => pw.Container(
-          margin: const pw.EdgeInsets.only(bottom: 16),
-          padding: const pw.EdgeInsets.only(bottom: 8),
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.5),
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.letter,
+          margin: const pw.EdgeInsets.all(48),
+          header: (context) => pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 16),
+            padding: const pw.EdgeInsets.only(bottom: 8),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(
+                bottom: pw.BorderSide(color: PdfColors.grey400, width: 0.5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'ForgeVault MINT',
+                  style: pw.TextStyle(
+                    fontSize: 8,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.grey500,
+                    letterSpacing: 2,
+                  ),
+                ),
+                pw.Text(
+                  _sanitizeForPdf(title.toUpperCase()),
+                  style: pw.TextStyle(
+                    fontSize: 8,
+                    color: PdfColors.grey500,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
             ),
           ),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                'VITAVAULT MINT',
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.grey500,
-                  letterSpacing: 2,
+          footer: (context) => pw.Container(
+            margin: const pw.EdgeInsets.only(top: 12),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  'Generated by ForgeVault',
+                  style: const pw.TextStyle(
+                    fontSize: 7,
+                    color: PdfColors.grey400,
+                  ),
                 ),
-              ),
-              pw.Text(
-                title.toUpperCase(),
-                style: pw.TextStyle(
-                  fontSize: 8,
-                  color: PdfColors.grey500,
-                  letterSpacing: 1,
+                pw.Text(
+                  'Page ${context.pageNumber} of ${context.pagesCount}',
+                  style: const pw.TextStyle(
+                    fontSize: 7,
+                    color: PdfColors.grey400,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          build: (context) => paragraphs,
         ),
-        footer: (context) => pw.Container(
-          margin: const pw.EdgeInsets.only(top: 12),
-          child: pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                'Generated by VitaVault',
-                style: const pw.TextStyle(
-                  fontSize: 7,
-                  color: PdfColors.grey400,
-                ),
-              ),
-              pw.Text(
-                'Page ${context.pageNumber} of ${context.pagesCount}',
-                style: const pw.TextStyle(
-                  fontSize: 7,
-                  color: PdfColors.grey400,
-                ),
-              ),
-            ],
-          ),
-        ),
-        build: (context) => paragraphs,
-      ),
-    );
+      );
 
-    final bytes = await pdf.save();
-    final file = File(filePath);
-    await file.writeAsBytes(bytes);
+      final bytes = await pdf.save();
 
-    return filePath;
+      // ── Desktop: native save dialog ──
+      if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        final String? outputFile = await FilePicker.platform.saveFile(
+          dialogTitle: 'Save PDF',
+          fileName: '$sanitized.pdf',
+          type: FileType.custom,
+          allowedExtensions: ['pdf'],
+        );
+        if (outputFile != null) {
+          await File(outputFile).writeAsBytes(bytes);
+          return outputFile;
+        }
+        return ''; // User cancelled
+      }
+
+      // ── Mobile: save to app documents ──
+      final dir = await getApplicationDocumentsDirectory();
+      final mintDir = Directory(
+        '${dir.path}${Platform.pathSeparator}ForgeVault_mint',
+      );
+      if (!await mintDir.exists()) {
+        await mintDir.create(recursive: true);
+      }
+
+      final filePath = '${mintDir.path}${Platform.pathSeparator}$sanitized.pdf';
+      final file = File(filePath);
+      await file.writeAsBytes(bytes);
+
+      return filePath;
+    } catch (e) {
+      throw Exception('PDF generation failed: $e');
+    }
+  }
+
+  /// Sanitize text for PDF rendering — strip Unicode chars that
+  /// Courier/Helvetica base fonts cannot render.
+  static String _sanitizeForPdf(String text) {
+    return text
+        .replaceAll('\u2022', '-') // bullet •
+        .replaceAll('\u201C', '"') // left double quote
+        .replaceAll('\u201D', '"') // right double quote
+        .replaceAll('\u2018', "'") // left single quote
+        .replaceAll('\u2019', "'") // right single quote
+        .replaceAll('\u2013', '-') // en dash
+        .replaceAll('\u2014', '--') // em dash
+        .replaceAll('\u2026', '...') // ellipsis
+        .replaceAll('\u2713', 'v') // check mark ✓
+        .replaceAll('\u2717', 'x'); // cross mark ✗
   }
 
   /// Simple markdown-to-PDF parser.
@@ -177,7 +233,7 @@ class ExportMintService {
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 12, bottom: 4),
             child: pw.Text(
-              trimmed.substring(2),
+              _sanitizeForPdf(trimmed.substring(2)),
               style: pw.TextStyle(
                 fontSize: 18,
                 fontWeight: pw.FontWeight.bold,
@@ -195,7 +251,7 @@ class ExportMintService {
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 10, bottom: 3),
             child: pw.Text(
-              trimmed.substring(3),
+              _sanitizeForPdf(trimmed.substring(3)),
               style: pw.TextStyle(
                 fontSize: 14,
                 fontWeight: pw.FontWeight.bold,
@@ -213,7 +269,7 @@ class ExportMintService {
           pw.Padding(
             padding: const pw.EdgeInsets.only(top: 8, bottom: 2),
             child: pw.Text(
-              trimmed.substring(4),
+              _sanitizeForPdf(trimmed.substring(4)),
               style: pw.TextStyle(
                 fontSize: 12,
                 fontWeight: pw.FontWeight.bold,
@@ -233,10 +289,10 @@ class ExportMintService {
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('• ', style: const pw.TextStyle(fontSize: 10)),
+                pw.Text('- ', style: const pw.TextStyle(fontSize: 10)),
                 pw.Expanded(
                   child: pw.Text(
-                    trimmed.substring(2),
+                    _sanitizeForPdf(trimmed.substring(2)),
                     style: const pw.TextStyle(
                       fontSize: 10,
                       color: PdfColors.grey800,
@@ -262,7 +318,7 @@ class ExportMintService {
         pw.Padding(
           padding: const pw.EdgeInsets.only(bottom: 3),
           child: pw.Text(
-            trimmed,
+            _sanitizeForPdf(trimmed),
             style: const pw.TextStyle(
               fontSize: 10,
               color: PdfColors.grey800,

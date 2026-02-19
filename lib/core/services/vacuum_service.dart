@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart' as crypto_lib;
+import 'package:docx_to_text/docx_to_text.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../crypto/ephemeral_key_service.dart';
@@ -190,6 +191,56 @@ class VacuumService {
   /// Release resources held by extraction services.
   Future<void> dispose() async {
     await _visionService.dispose();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Static: Quick text extraction for 1-click upload
+  // ─────────────────────────────────────────────────────────────
+
+  /// Extract raw text from a file based on its extension.
+  ///
+  /// Supports: .txt, .md, .csv, .json, .pdf, .docx
+  /// Throws an [Exception] if the document yields no text.
+  static Future<String> extractTextFromFile(String path, String ext) async {
+    final lower = ext.toLowerCase();
+    String text;
+
+    switch (lower) {
+      case '.txt':
+      case '.md':
+      case '.csv':
+      case '.json':
+        text = await File(path).readAsString();
+
+      case '.pdf':
+        try {
+          final pdfService = PdfExtractionService();
+          text = await pdfService.extractText(File(path));
+        } catch (e) {
+          throw Exception(
+            'PDF extraction failed for ${path.split(Platform.pathSeparator).last}: $e',
+          );
+        }
+
+      case '.docx':
+        try {
+          final bytes = await File(path).readAsBytes();
+          text = docxToText(bytes);
+        } catch (e) {
+          throw Exception(
+            'DOCX extraction failed for ${path.split(Platform.pathSeparator).last}: $e',
+          );
+        }
+
+      default:
+        throw Exception('Unsupported file type: $ext');
+    }
+
+    if (text.trim().isEmpty) {
+      throw Exception('Could not extract readable text from this document.');
+    }
+
+    return text;
   }
 
   // ── Private Helpers ──

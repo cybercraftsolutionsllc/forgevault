@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/theme.dart';
+import '../welcome/welcome_screen.dart';
 
 /// First-Launch Onboarding — 4-page swipeable tutorial.
 ///
@@ -33,7 +34,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       title: 'Welcome to the Vault.',
       subtitle: 'YOUR DATA. YOUR DEVICE. ZERO CLOUD.',
       body:
-          'VitaVault is a 100% offline personal data vault. '
+          'ForgeVault is a 100% offline personal data vault. '
           'Nothing ever leaves your device — no accounts, no servers, no tracking. '
           'Your entire life biography is encrypted and stored solely on hardware you control.',
     ),
@@ -249,51 +250,80 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 0, 40, 40),
               child: isLastPage
-                  ? AnimatedBuilder(
-                      animation: _glowAnimation,
-                      builder: (context, child) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: VaultColors.phosphorGreen.withValues(
-                                  alpha: _glowAnimation.value * 0.15,
-                                ),
-                                blurRadius: 20,
-                                spreadRadius: 2,
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _glowAnimation,
+                          builder: (context, child) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: VaultColors.phosphorGreen.withValues(
+                                      alpha: _glowAnimation.value * 0.15,
+                                    ),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _completeOnboarding,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: VaultColors.primary,
-                                foregroundColor: VaultColors.textPrimary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  side: const BorderSide(
-                                    color: VaultColors.phosphorGreenDim,
-                                    width: 1,
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: ElevatedButton(
+                                  onPressed: _completeOnboarding,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: VaultColors.primary,
+                                    foregroundColor: VaultColors.textPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                      side: const BorderSide(
+                                        color: VaultColors.phosphorGreenDim,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    'INITIALIZE VAULT',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 3,
+                                    ),
                                   ),
                                 ),
-                                elevation: 0,
                               ),
-                              child: Text(
-                                'INITIALIZE VAULT',
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 3,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => WelcomeScreen(
+                                  onInitialize: () {},
+                                  onRestoreComplete: () {},
                                 ),
                               ),
+                              (_) => false,
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.grey,
+                          ),
+                          child: Text(
+                            'Restore from Backup',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      ],
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

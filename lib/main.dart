@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/welcome/welcome_screen.dart';
+import 'core/database/database_service.dart';
 import 'core/services/lifecycle_guard.dart';
 import 'core/services/security_flags_service.dart';
 import 'theme/theme.dart';
@@ -26,41 +28,65 @@ void main() {
   // Enable screenshot prevention (FLAG_SECURE on Android, capture prevention on iOS).
   SecurityFlagsService.enableAll();
 
-  runApp(const ProviderScope(child: VitaVaultRoot()));
+  runApp(const ProviderScope(child: ForgeVaultRoot()));
 }
 
-/// Root widget — manages the three-phase launch sequence:
-/// 1. Onboarding (first launch only)
-/// 2. Authentication (PIN / Biometrics)
-/// 3. Main application (wrapped in LifecycleGuard)
-class VitaVaultRoot extends StatefulWidget {
-  const VitaVaultRoot({super.key});
+/// Root widget — manages the four-phase launch sequence:
+/// 1. Welcome (first launch or fresh install — Initialize or Restore)
+/// 2. Onboarding (swipeable tutorial, first launch only)
+/// 3. Authentication (PIN / Biometrics)
+/// 4. Main application (wrapped in LifecycleGuard)
+class ForgeVaultRoot extends StatefulWidget {
+  const ForgeVaultRoot({super.key});
 
   @override
-  State<VitaVaultRoot> createState() => _VitaVaultRootState();
+  State<ForgeVaultRoot> createState() => _ForgeVaultRootState();
 }
 
-class _VitaVaultRootState extends State<VitaVaultRoot> {
+class _ForgeVaultRootState extends State<ForgeVaultRoot> {
   bool _loading = true;
+  bool _needsWelcome = false;
   bool _needsOnboarding = false;
   bool _authenticated = false;
 
   @override
   void initState() {
     super.initState();
-    _checkOnboarding();
+    _checkInitialState();
   }
 
-  Future<void> _checkOnboarding() async {
+  Future<void> _checkInitialState() async {
     final prefs = await SharedPreferences.getInstance();
-    final completed = prefs.getBool('hasCompletedOnboarding') ?? false;
+    final onboardingDone = prefs.getBool('hasCompletedOnboarding') ?? false;
+    final pinConfigured = await DatabaseService.instance.isPinConfigured();
 
     if (mounted) {
       setState(() {
-        _needsOnboarding = !completed;
+        // Show Welcome if the user has never set up a vault
+        _needsWelcome = !onboardingDone && !pinConfigured;
+        // Show Onboarding if it hasn't been completed but vault IS set up
+        // (e.g., after a restore that bootstraps the PIN)
+        _needsOnboarding = !onboardingDone && pinConfigured;
         _loading = false;
       });
     }
+  }
+
+  void _handleWelcomeInitialize() {
+    // Route to Onboarding (which leads to PIN setup in Auth)
+    setState(() {
+      _needsWelcome = false;
+      _needsOnboarding = true;
+    });
+  }
+
+  void _handleWelcomeRestore() {
+    // Restore completed — PIN/salt already configured by importCapsule.
+    // Skip onboarding, go straight to Auth.
+    setState(() {
+      _needsWelcome = false;
+      _needsOnboarding = false;
+    });
   }
 
   void _handleOnboardingComplete() {
@@ -74,7 +100,7 @@ class _VitaVaultRootState extends State<VitaVaultRoot> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'VitaVault',
+      title: 'ForgeVault',
       debugShowCheckedModeBanner: false,
       theme: VaultTheme.darkTheme,
       home: _loading
@@ -86,10 +112,15 @@ class _VitaVaultRootState extends State<VitaVaultRoot> {
                 ),
               ),
             )
+          : _needsWelcome
+          ? WelcomeScreen(
+              onInitialize: _handleWelcomeInitialize,
+              onRestoreComplete: _handleWelcomeRestore,
+            )
           : _needsOnboarding
           ? OnboardingScreen(onComplete: _handleOnboardingComplete)
           : _authenticated
-          ? LifecycleGuard(child: const VitaVaultApp())
+          ? LifecycleGuard(child: const ForgeVaultApp())
           : AuthScreen(onAuthenticated: _handleAuthenticated),
     );
   }

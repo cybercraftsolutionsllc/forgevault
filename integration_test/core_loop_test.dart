@@ -6,20 +6,20 @@ import 'package:integration_test/integration_test.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:vitavault/core/database/schemas/core_identity.dart';
-import 'package:vitavault/core/database/schemas/timeline_event.dart';
-import 'package:vitavault/core/database/schemas/trouble.dart';
-import 'package:vitavault/core/database/schemas/finance_record.dart';
-import 'package:vitavault/core/database/schemas/relationship_node.dart';
-import 'package:vitavault/core/database/schemas/health_profile.dart';
-import 'package:vitavault/core/database/schemas/goal.dart';
-import 'package:vitavault/core/database/schemas/habit_vice.dart';
-import 'package:vitavault/core/database/schemas/audit_log.dart';
+import 'package:forgevault/core/database/schemas/core_identity.dart';
+import 'package:forgevault/core/database/schemas/timeline_event.dart';
+import 'package:forgevault/core/database/schemas/trouble.dart';
+import 'package:forgevault/core/database/schemas/finance_record.dart';
+import 'package:forgevault/core/database/schemas/relationship_node.dart';
+import 'package:forgevault/core/database/schemas/health_profile.dart';
+import 'package:forgevault/core/database/schemas/goal.dart';
+import 'package:forgevault/core/database/schemas/habit_vice.dart';
+import 'package:forgevault/core/database/schemas/audit_log.dart';
 
-import 'package:vitavault/core/testing/test_data_generator.dart';
-import 'package:vitavault/core/services/purge_service.dart';
-import 'package:vitavault/core/database/database_service.dart';
-import 'package:vitavault/core/crypto/ephemeral_key_service.dart';
+import 'package:forgevault/core/testing/test_data_generator.dart';
+import 'package:forgevault/core/services/purge_service.dart';
+import 'package:forgevault/core/database/database_service.dart';
+import 'package:forgevault/core/crypto/ephemeral_key_service.dart';
 
 /// ──────────────────────────────────────────────────────────────────
 /// CORE LOOP INTEGRATION TEST
@@ -31,7 +31,7 @@ import 'package:vitavault/core/crypto/ephemeral_key_service.dart';
 /// 2. Generates fake_journal.txt via Chaos Generator
 /// 3. Mocks the LLM response (avoids hitting real APIs)
 /// 4. Asserts Isar records the extracted Trouble and Goal
-/// 5. Asserts the file is moved to vitavault_debug_trash/
+/// 5. Asserts the file is moved to ForgeVault_debug_trash/
 ///
 /// Runs with [isSafeMode] = true (kDebugMode) so no real
 /// destructive operations occur.
@@ -59,7 +59,7 @@ void main() {
         AuditLogSchema,
       ],
       directory: dir.path,
-      name: 'vitavault_test_${DateTime.now().millisecondsSinceEpoch}',
+      name: 'ForgeVault_test_${DateTime.now().millisecondsSinceEpoch}',
     );
 
     // ── Generate test data ──
@@ -239,7 +239,7 @@ void main() {
       expect(
         movedFile.isNotEmpty,
         isTrue,
-        reason: 'File should exist in vitavault_debug_trash/',
+        reason: 'File should exist in ForgeVault_debug_trash/',
       );
     });
   });

@@ -1,12 +1,11 @@
 import 'dart:io';
 
-import 'package:read_pdf_text/read_pdf_text.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
 
-/// Local PDF text extraction — no cloud calls.
+/// Local PDF text extraction — no cloud calls, pure Dart.
 ///
-/// Uses the `read_pdf_text` package which leverages platform-native
-/// PDF readers (PDFKit on iOS, PdfRenderer on Android) to extract
-/// raw text from each page.
+/// Uses `syncfusion_flutter_pdf` which works on all platforms
+/// (Windows, macOS, Linux, Android, iOS) without native channels.
 class PdfExtractionService {
   /// Extract all text from a PDF file.
   ///
@@ -18,25 +17,21 @@ class PdfExtractionService {
     }
 
     try {
-      final List<String> pages = await ReadPdfText.getPDFtextPaginated(
-        pdfFile.path,
-      );
-
-      if (pages.isEmpty) {
-        throw PdfExtractionException(
-          'No text extracted from PDF: ${pdfFile.path}',
-        );
-      }
+      final bytes = await pdfFile.readAsBytes();
+      final PdfDocument document = PdfDocument(inputBytes: bytes);
+      final PdfTextExtractor extractor = PdfTextExtractor(document);
 
       final buffer = StringBuffer();
-      for (var i = 0; i < pages.length; i++) {
-        final pageText = pages[i].trim();
+      for (var i = 0; i < document.pages.count; i++) {
+        final pageText = extractor.extractText(startPageIndex: i).trim();
         if (pageText.isNotEmpty) {
           buffer.writeln('--- Page ${i + 1} ---');
           buffer.writeln(pageText);
           buffer.writeln();
         }
       }
+
+      document.dispose();
 
       final result = buffer.toString().trim();
       if (result.isEmpty) {

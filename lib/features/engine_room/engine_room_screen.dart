@@ -81,16 +81,19 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     for (final provider in LlmProvider.values) {
       final key = await _keyService.getKey(provider);
       if (key != null && key.isNotEmpty) {
+        if (!mounted) return;
         setState(() {
           _controllers[provider]!.text = key;
           _keyStates[provider] = _KeyState.saved;
         });
       }
     }
+    // Silently validate all saved keys on boot so green indicators appear
+    _revalidateAllKeys(showSnackBar: false);
   }
 
   /// Force re-read all keys and re-validate via Live Spark HTTP ping.
-  Future<void> _revalidateAllKeys() async {
+  Future<void> _revalidateAllKeys({bool showSnackBar = true}) async {
     for (final provider in LlmProvider.values) {
       final key = await _keyService.getKey(provider);
       if (!mounted) return;
@@ -118,7 +121,7 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
       }
     }
 
-    if (!mounted) return;
+    if (!mounted || !showSnackBar) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -940,7 +943,7 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
                           'Biometric Unlock is a Pro feature.',
                           style: GoogleFonts.inter(color: Colors.white),
                         ),
-                        backgroundColor: Colors.amber.shade700,
+                        backgroundColor: Colors.red.shade900,
                       ),
                     );
                     return;
@@ -958,6 +961,25 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
               ),
             ),
           ),
+        // Export Encrypted Backup (Pro-gated)
+        _buildSettingsTile(
+          icon: Icons.backup_rounded,
+          title: 'Export Encrypted Backup',
+          subtitle: 'Share a portable .forgevault capsule',
+          trailing: isPro
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.ios_share_rounded,
+                    color: VaultColors.textMuted,
+                    size: 20,
+                  ),
+                  onPressed: () => _showExportDisclaimer(),
+                )
+              : _buildProBadge(),
+          isActive: isPro,
+        ),
+
+        const SizedBox(height: 8),
 
         // Vault Sync Tile
         _buildSettingsTile(
@@ -1161,6 +1183,101 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
         ),
       ),
     );
+  }
+
+  // ── Export Disclaimer ──
+
+  Future<void> _showExportDisclaimer() async {
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: VaultColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: VaultColors.border, width: 0.5),
+        ),
+        title: Text(
+          '\u{1F6D1} STOP: Save Your API Keys',
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: VaultColors.textPrimary,
+            letterSpacing: 1,
+          ),
+        ),
+        content: Text(
+          'Your database is encrypted with your PIN and is safe to export.\n\n'
+          'CRITICAL WARNING: Your API Keys are securely bound to this '
+          "device's hardware chip and WILL NOT export. If you are moving "
+          'to a new device or wiping this one, you MUST copy your API keys '
+          'manually to a secure location first!',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: VaultColors.textSecondary,
+            height: 1.6,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: VaultColors.textMuted),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: VaultColors.primary,
+              foregroundColor: VaultColors.textPrimary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'I UNDERSTAND, EXPORT',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (proceed != true || !mounted) return;
+
+    final pin = ref.read(masterPinProvider);
+    if (pin == null) return;
+
+    try {
+      await _syncService.exportCapsule(pin);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Capsule ready for sharing',
+              style: GoogleFonts.inter(fontSize: 13),
+            ),
+            backgroundColor: Colors.green.shade800,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Export failed: $e',
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildProBadge() {

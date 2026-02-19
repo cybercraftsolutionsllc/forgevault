@@ -17,7 +17,7 @@ import 'clipboard_service.dart';
 ///   3. `resumed` after 60+ seconds → push AuthScreen as fullscreen
 ///      modal on top, preserving the current navigation stack
 ///
-/// Wrap this around the authenticated content in [VitaVaultRoot].
+/// Wrap this around the authenticated content in [ForgeVaultRoot].
 class LifecycleGuard extends ConsumerStatefulWidget {
   final Widget child;
 

@@ -20,7 +20,7 @@ class HelpScreen extends StatelessWidget {
           'Navigate to the Engine Room (bottom tab). Each AI provider '
           '(Grok, Claude, Gemini) has a "Get API Key" link that opens the '
           'respective developer portal. Sign up, generate a key, and paste '
-          'it into VitaVault. Keys are stored in your device\'s hardware '
+          'it into ForgeVault. Keys are stored in your device\'s hardware '
           'keychain — they never leave this device.',
     ),
     _FaqItem(
@@ -107,7 +107,7 @@ class HelpScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Everything you need to know about VitaVault',
+                        'Everything you need to know about ForgeVault',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: VaultColors.textMuted,

@@ -56,7 +56,7 @@ class GeminiNanoBridge {
   /// Generate with structured JSON output.
   ///
   /// Wraps the prompt with instructions to output valid JSON
-  /// matching the VitaVault schema format.
+  /// matching the ForgeVault schema format.
   Future<String> generateJson({
     required String prompt,
     String? systemPrompt,

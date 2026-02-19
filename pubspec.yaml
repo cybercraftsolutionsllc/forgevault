@@ -1,5 +1,5 @@
-name: vitavault
-description: "Your Private Life Vacuum & Living Bio Forge. 100% offline."
+name: forgevault
+description: "ForgeVault: Private AI Life Engine. 100% offline."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -39,7 +39,8 @@ dependencies:
 
   # ── Media Extraction ──
   exif: ^3.3.0
-  read_pdf_text: ^0.3.1
+  syncfusion_flutter_pdf: ^27.2.5
+  docx_to_text: ^1.0.1
 
   # ── UI ──
   google_fonts: ^6.2.1

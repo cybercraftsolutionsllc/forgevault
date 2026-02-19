@@ -2,7 +2,7 @@ import '../native/method_channels.dart';
 
 /// Screenshot & Screen Recording Prevention Service.
 ///
-/// Thin orchestration layer over [VitaVaultNativeChannel]:
+/// Thin orchestration layer over [ForgeVaultNativeChannel]:
 ///   - Android: Sets `WindowManager.LayoutParams.FLAG_SECURE`
 ///   - iOS: Implements UIScreen capture prevention
 ///   - Desktop: Graceful no-op (not applicable)
@@ -21,13 +21,13 @@ class SecurityFlagsService {
   /// Sets FLAG_SECURE on Android and screen capture prevention on iOS.
   /// Silently no-ops on desktop platforms.
   static Future<void> enableAll() async {
-    await VitaVaultNativeChannel.disableScreenCapture();
+    await ForgeVaultNativeChannel.disableScreenCapture();
     _enabled = true;
   }
 
   /// Disable all security flags. For debug/settings toggle.
   static Future<void> disableAll() async {
-    await VitaVaultNativeChannel.enableScreenCapture();
+    await ForgeVaultNativeChannel.enableScreenCapture();
     _enabled = false;
   }
 

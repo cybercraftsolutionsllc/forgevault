@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 /// Clipboard Timebomb — secure clipboard wrapper.
 ///
-/// When data is copied from VitaVault, the OS clipboard is
+/// When data is copied from ForgeVault, the OS clipboard is
 /// automatically cleared after [_clearDelaySeconds] seconds
 /// to prevent cross-app clipboard snooping.
 ///

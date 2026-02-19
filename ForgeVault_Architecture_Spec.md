@@ -1,4 +1,4 @@
-🗄️ VitaVault: Master Architecture & Design Specification (v2.0)
+🗄️ ForgeVault: Master Architecture & Design Specification (v2.0)
 Date: February 17, 2026
 Founding Architects: User & Grok 4.20 / Gemini 3 (Antigravity System)
 Target Environment: Google Antigravity IDE (Multi-Agent Workspace)

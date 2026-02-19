@@ -7,7 +7,11 @@ import 'package:encrypt/encrypt.dart' as enc;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:isar/isar.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pointycastle/export.dart';
+import 'package:share_plus/share_plus.dart';
+
+import '../crypto/key_derivation.dart';
 
 import '../database/database_service.dart';
 import '../database/schemas/core_identity.dart';
@@ -23,14 +27,14 @@ import '../database/schemas/habit_vice.dart';
 /// The Encrypted Courier — Zero-Trust Multi-Device Sync (BYOS).
 ///
 /// Bundles the entire Isar database into an AES-256-GCM encrypted file
-/// (`vault_state.vitavault`) that can be placed in any OS-level sync
+/// (`vault_state.forgevault`) that can be placed in any OS-level sync
 /// directory (iCloud Drive, Google Drive, OneDrive, etc.).
 ///
 /// Encryption key is derived from the user's Master PIN via PBKDF2.
 /// No cloud APIs. No OAuth. No Firebase. Pure filesystem sync.
 class VaultSyncService {
-  static const String _syncFileName = 'vault_state.vitavault';
-  static const String _syncDirKey = 'vitavault_sync_directory';
+  static const String _syncFileName = 'vault_state.forgevault';
+  static const String _syncDirKey = 'ForgeVault_sync_directory';
   static const int _keyLength = 32; // AES-256
   static const int _saltLength = 16;
   static const int _pbkdf2Iterations = 100000;
@@ -106,7 +110,7 @@ class VaultSyncService {
 
   // ── Import (Read, Decrypt & Merge) ──
 
-  /// Read `vault_state.vitavault` from the sync directory, verify the
+  /// Read `vault_state.forgevault` from the sync directory, verify the
   /// AES-256-GCM authentication tag, decrypt, and merge into Isar.
   ///
   /// Merge strategy: per-record, newest `lastUpdated` wins.
@@ -162,6 +166,147 @@ class VaultSyncService {
     await _mergeIntoDatabase(DatabaseService.instance.db, payload);
 
     return true;
+  }
+
+  // ── Capsule Export (Share Sheet) ──
+
+  /// Bundle the entire vault + PBKDF2 salt into a portable `.forgevault`
+  /// capsule and open the OS Share Sheet.
+  ///
+  /// The capsule is a JSON file:
+  /// ```json
+  /// {"version": 1, "salt": "<base64>", "bundle": "<base64>"}
+  /// ```
+  /// where `bundle` is the AES-256-GCM encrypted database serialization
+  /// and `salt` is the PBKDF2 salt required to re-derive the key on
+  /// another device.
+  Future<void> exportCapsule(String masterPin) async {
+    final db = DatabaseService.instance.db;
+    final keyService = KeyDerivationService();
+
+    // 1. Serialize all collections
+    final payload = await _serializeDatabase(db);
+    final jsonBytes = Uint8List.fromList(utf8.encode(jsonEncode(payload)));
+
+    // 2. Derive key from PIN (using local salt)
+    final encSalt = _generateSecureRandom(_saltLength);
+    final key = _deriveKey(masterPin, encSalt);
+
+    // 3. Encrypt with AES-256-GCM
+    final iv = enc.IV.fromSecureRandom(12);
+    final encrypter = enc.Encrypter(
+      enc.AES(enc.Key(key), mode: enc.AESMode.gcm),
+    );
+    final encrypted = encrypter.encryptBytes(jsonBytes, iv: iv);
+
+    // 4. Build binary bundle (version + encSalt + iv + ciphertext)
+    final bundle = _buildBundle(encSalt, iv.bytes, encrypted.bytes);
+
+    // 5. Read the PBKDF2 salt from disk (needed for cross-device restore)
+    final pbkdf2Salt = await keyService.getSalt();
+
+    // 6. Build the capsule JSON
+    final capsule = jsonEncode({
+      'version': _syncVersion,
+      'salt': base64Encode(pbkdf2Salt),
+      'bundle': base64Encode(bundle),
+    });
+
+    // 7. Save or share based on platform
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      // Desktop: use native save dialog
+      final String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Encrypted Vault',
+        fileName: 'ForgeVault_Backup.forgevault',
+      );
+      if (outputFile != null) {
+        await File(outputFile).writeAsString(capsule);
+      }
+    } else {
+      // Mobile: write to temp dir and trigger Share Sheet
+      final tempDir = await getTemporaryDirectory();
+      final capsulePath =
+          '${tempDir.path}${Platform.pathSeparator}ForgeVault_Backup.forgevault';
+      final file = File(capsulePath);
+      await file.writeAsString(capsule);
+
+      await Share.shareXFiles([
+        XFile(capsulePath),
+      ], subject: 'ForgeVault Encrypted Backup');
+    }
+
+    // 9. Zero-fill sensitive material
+    _zeroFill(key);
+    _zeroFill(jsonBytes);
+  }
+
+  // ── Capsule Import (Cold-Start Restore) ──
+
+  /// Import a `.forgevault` capsule from [filePath], decrypting with [pin].
+  ///
+  /// This overwrites the local PBKDF2 salt and PIN verification hash
+  /// so the restored device uses the same crypto material.
+  Future<void> importCapsule(String filePath, String pin) async {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw StateError('Capsule file not found.');
+    }
+
+    final raw = await file.readAsString();
+    final Map<String, dynamic> capsule =
+        jsonDecode(raw) as Map<String, dynamic>;
+
+    // 1. Extract PBKDF2 salt and encrypted bundle
+    final pbkdf2Salt = base64Decode(capsule['salt'] as String);
+    final bundle = Uint8List.fromList(
+      base64Decode(capsule['bundle'] as String),
+    );
+
+    // 2. Parse the binary bundle
+    final parsed = _parseBundle(bundle);
+    if (parsed == null) {
+      throw StateError('Invalid capsule bundle format.');
+    }
+
+    // 3. Derive key from entered PIN + the capsule's encryption salt
+    final key = _deriveKey(pin, parsed.salt);
+
+    // 4. Decrypt
+    final encrypter = enc.Encrypter(
+      enc.AES(enc.Key(key), mode: enc.AESMode.gcm),
+    );
+
+    Uint8List plainBytes;
+    try {
+      plainBytes = Uint8List.fromList(
+        encrypter.decryptBytes(
+          enc.Encrypted(parsed.ciphertext),
+          iv: enc.IV(parsed.iv),
+        ),
+      );
+    } catch (e) {
+      _zeroFill(key);
+      throw StateError('Invalid PIN or corrupted vault file.');
+    }
+
+    _zeroFill(key);
+
+    final jsonString = utf8.decode(plainBytes);
+    _zeroFill(plainBytes);
+
+    final Map<String, dynamic> payload =
+        jsonDecode(jsonString) as Map<String, dynamic>;
+
+    // 5. Overwrite local crypto material with the capsule's
+    final keyService = KeyDerivationService();
+    await keyService.overwriteSalt(Uint8List.fromList(pbkdf2Salt));
+    await keyService.storeVerificationHash(pin);
+
+    // 6. Initialize the database with the new crypto material
+    await DatabaseService.instance.initialize(pin);
+
+    // 7. Merge into local Isar
+    await _mergeIntoDatabase(DatabaseService.instance.db, payload);
   }
 
   // ── Serialization ──

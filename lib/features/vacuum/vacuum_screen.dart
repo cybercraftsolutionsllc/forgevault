@@ -52,9 +52,11 @@ class _VacuumScreenState extends State<VacuumScreen>
   String _statusMessage = 'Ready to ingest files...';
   bool _isRealityViolation = false;
   bool _isIngesting = false;
+  bool _manualIsIngesting = false;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   final ImagePicker _imagePicker = ImagePicker();
+  final TextEditingController _manualEntryController = TextEditingController();
 
   @override
   void initState() {
@@ -71,6 +73,7 @@ class _VacuumScreenState extends State<VacuumScreen>
   @override
   void dispose() {
     _pulseController.dispose();
+    _manualEntryController.dispose();
     super.dispose();
   }
 
@@ -213,9 +216,19 @@ class _VacuumScreenState extends State<VacuumScreen>
           geminiNano: GeminiNanoBridge(),
           database: db,
         );
-        final result = await forgeService.synthesizeWithReview(
-          await File(filePath).readAsString().catchError((_) => ''),
-        );
+        final extractedText = await File(
+          filePath,
+        ).readAsString().catchError((_) => '');
+
+        // Pre-flight empty string check — prevent sending blank data to LLM.
+        if (extractedText.trim().isEmpty) {
+          throw Exception(
+            'OCR failed to find any legible text. '
+            'Try a clearer photo or use Manual Entry.',
+          );
+        }
+
+        final result = await forgeService.synthesizeWithReview(extractedText);
 
         _pulseController.stop();
         setState(() {
@@ -231,16 +244,6 @@ class _VacuumScreenState extends State<VacuumScreen>
                 result: result,
                 onApprove: () {
                   forgeService.commitReviewedResult(result);
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Data committed to encrypted vault ✓',
-                        style: GoogleFonts.inter(fontSize: 13),
-                      ),
-                      backgroundColor: VaultColors.phosphorGreen,
-                    ),
-                  );
                 },
                 onReject: () {
                   Navigator.of(context).pop();
@@ -296,6 +299,185 @@ class _VacuumScreenState extends State<VacuumScreen>
       if (mounted) {
         setState(() => _isIngesting = false);
       }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Universal 1-Click File Upload Pipeline
+  // ─────────────────────────────────────────────────────────────
+
+  Future<void> _handleUniversalUpload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'docx', 'txt', 'md', 'csv'],
+      allowMultiple: true,
+      dialogTitle: 'Select Document(s)',
+    );
+    if (result == null || result.files.isEmpty) return;
+
+    // Show persistent loading overlay
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => PopScope(
+        canPop: false,
+        child: AlertDialog(
+          backgroundColor: VaultColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: VaultColors.phosphorGreen),
+              const SizedBox(height: 20),
+              Text(
+                'Extracting document\nand Synthesizing...',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: VaultColors.textSecondary,
+                  height: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    ForgeResult? forgeResult;
+    ForgeService? forgeService;
+
+    try {
+      // 1. Extract text from all selected files
+      String combinedText = '';
+      for (final file in result.files) {
+        if (file.path != null) {
+          final ext = file.extension != null ? '.${file.extension}' : '';
+          final extracted = await VacuumService.extractTextFromFile(
+            file.path!,
+            ext,
+          );
+          combinedText += '\n\n--- Document: ${file.name} ---\n\n$extracted';
+        }
+      }
+
+      if (combinedText.trim().isEmpty) {
+        throw Exception('No readable text found in the selected files.');
+      }
+
+      // 2. Synthesize via Forge
+      final db = DatabaseService.instance;
+      forgeService = ForgeService(geminiNano: GeminiNanoBridge(), database: db);
+      forgeResult = await forgeService.synthesizeWithReview(combinedText);
+    } on NoApiKeyException {
+      if (mounted) {
+        // Dialog will be dismissed in finally, then show the no-key dialog
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _showNoApiKeyDialog();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red.shade900,
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
+    } finally {
+      // ALWAYS destroy the loading dialog — prevents overlay trap
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    // Navigate AFTER dialog is dismissed
+    if (forgeResult != null && forgeService != null && mounted) {
+      final capturedResult = forgeResult;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => SynthesisReviewScreen(
+            result: capturedResult,
+            onApprove: () {
+              forgeService!.commitReviewedResult(capturedResult);
+            },
+            onReject: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Manual Text Ingestion (Brain Dump)
+  // ─────────────────────────────────────────────────────────────
+
+  Future<void> _handleManualExtract() async {
+    final text = _manualEntryController.text.trim();
+    if (text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Enter some text before extracting.',
+            style: GoogleFonts.inter(fontSize: 13),
+          ),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _manualIsIngesting = true);
+
+    try {
+      final db = DatabaseService.instance;
+      final forgeService = ForgeService(
+        geminiNano: GeminiNanoBridge(),
+        database: db,
+      );
+
+      final result = await forgeService.synthesizeWithReview(text);
+
+      if (mounted) {
+        _manualEntryController.clear();
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => SynthesisReviewScreen(
+              result: result,
+              onApprove: () {
+                forgeService.commitReviewedResult(result);
+              },
+              onReject: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        );
+      }
+    } on NoApiKeyException {
+      if (mounted) _showNoApiKeyDialog();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString(), style: GoogleFonts.inter(fontSize: 13)),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 8),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _manualIsIngesting = false);
     }
   }
 
@@ -477,7 +659,7 @@ class _VacuumScreenState extends State<VacuumScreen>
             ),
             const SizedBox(height: 16),
             Text(
-              'VitaVault only accepts verified reality.\n'
+              'ForgeVault only accepts verified reality.\n'
               'No AI-generated, synthetic, or metadata-stripped images.',
               style: GoogleFonts.inter(
                 color: VaultColors.textMuted,
@@ -591,16 +773,17 @@ class _VacuumScreenState extends State<VacuumScreen>
         children: [
           // ── Mobile Action Buttons ──
           if (!_isIngesting && !_isRealityViolation) ...[
+            // ── Universal 1-Click Document Upload (all platforms) ──
             ElevatedButton(
-              onPressed: _scanDocument,
+              onPressed: _handleUniversalUpload,
               style: ElevatedButton.styleFrom(
                 backgroundColor: VaultColors.surface,
-                foregroundColor: VaultColors.textPrimary,
-                padding: const EdgeInsets.all(24),
+                foregroundColor: VaultColors.phosphorGreen,
+                padding: const EdgeInsets.all(28),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                   side: BorderSide(
-                    color: VaultColors.phosphorGreen.withValues(alpha: 0.3),
+                    color: VaultColors.phosphorGreen.withValues(alpha: 0.4),
                     width: 1.5,
                   ),
                 ),
@@ -610,94 +793,153 @@ class _VacuumScreenState extends State<VacuumScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: VaultColors.phosphorGreen.withValues(alpha: 0.15),
                     ),
                     child: Icon(
-                      Icons.camera_alt_rounded,
+                      Icons.upload_file_rounded,
                       size: 28,
                       color: VaultColors.phosphorGreen,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Text(
-                    'SCAN DOCUMENT',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
+                    'Upload File',
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: VaultColors.textPrimary,
-                      letterSpacing: 2,
+                      letterSpacing: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
-                    'Use camera to capture a document',
-                    textAlign: TextAlign.center,
+                    'PDF · DOCX · TXT · CSV · MD',
                     style: GoogleFonts.inter(
-                      fontSize: 11,
+                      fontSize: 12,
                       color: VaultColors.textMuted,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _browseFiles,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: VaultColors.surface,
-                foregroundColor: VaultColors.textPrimary,
-                padding: const EdgeInsets.all(24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: VaultColors.primaryLight.withValues(alpha: 0.3),
-                    width: 1.5,
+            // Mobile platforms: show Camera + File picker buttons
+            if (Platform.isAndroid || Platform.isIOS) ...[
+              ElevatedButton(
+                onPressed: _scanDocument,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: VaultColors.surface,
+                  foregroundColor: VaultColors.textPrimary,
+                  padding: const EdgeInsets.all(24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: VaultColors.phosphorGreen.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
                   ),
+                  elevation: 0,
                 ),
-                elevation: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: VaultColors.phosphorGreen.withValues(
+                          alpha: 0.15,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        size: 28,
+                        color: VaultColors.phosphorGreen,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'SCAN DOCUMENT',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: VaultColors.textPrimary,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Use camera to capture a document',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: VaultColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: VaultColors.primaryLight.withValues(alpha: 0.15),
-                    ),
-                    child: Icon(
-                      Icons.folder_open_rounded,
-                      size: 28,
-                      color: VaultColors.primaryLight,
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _browseFiles,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: VaultColors.surface,
+                  foregroundColor: VaultColors.textPrimary,
+                  padding: const EdgeInsets.all(24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(
+                      color: VaultColors.primaryLight.withValues(alpha: 0.3),
+                      width: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'BROWSE FILES',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: VaultColors.textPrimary,
-                      letterSpacing: 2,
+                  elevation: 0,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: VaultColors.primaryLight.withValues(alpha: 0.15),
+                      ),
+                      child: Icon(
+                        Icons.folder_open_rounded,
+                        size: 28,
+                        color: VaultColors.primaryLight,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'PDF • DOCX • Images • Email • Audio',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: VaultColors.textMuted,
+                    const SizedBox(height: 12),
+                    Text(
+                      'BROWSE FILES',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: VaultColors.textPrimary,
+                        letterSpacing: 2,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      'PDF • DOCX • Images • Email • Audio',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: VaultColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
+            ], // end mobile-only buttons
           ],
 
           // ── Ingesting State ──
@@ -863,6 +1105,94 @@ class _VacuumScreenState extends State<VacuumScreen>
                           : _phase == _PipelinePhase.complete
                           ? VaultColors.phosphorGreen
                           : VaultColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ── Manual Entry / Brain Dump Card ──
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: VaultDecorations.metallicCard(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.edit_note_rounded,
+                      color: VaultColors.phosphorGreen,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'MANUAL ENTRY / BRAIN DUMP',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: VaultColors.textMuted,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                TextField(
+                  controller: _manualEntryController,
+                  minLines: 3,
+                  maxLines: 6,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: VaultColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Paste emails, notes, or thoughts...',
+                    hintStyle: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: VaultColors.textMuted,
+                    ),
+                    filled: true,
+                    fillColor: VaultColors.surfaceVariant,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.all(14),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: (_manualIsIngesting || _isIngesting)
+                        ? null
+                        : _handleManualExtract,
+                    icon: _manualIsIngesting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.black,
+                            ),
+                          )
+                        : const Icon(Icons.bolt_rounded, size: 18),
+                    label: Text(
+                      _manualIsIngesting ? 'EXTRACTING...' : 'EXTRACT TEXT',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: VaultColors.phosphorGreen,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
                 ),

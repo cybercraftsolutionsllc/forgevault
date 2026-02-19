@@ -2,7 +2,6 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/database/database_service.dart';
@@ -143,15 +142,16 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     });
     _scrollToBottom();
 
-    // Build the full prompt with RAG context
-    final fullPrompt = _ragService.wrapWithContext(
-      userMessage: bp.prompt,
-      contextBlob: contextBlob,
-      blueprintInstruction: 'OUTPUT FORMAT: Markdown. Be comprehensive.',
-    );
+    // Build the full prompt with RAG context — the context blob
+    // and blueprint instruction are injected by askOracle.
 
     // Send to LLM
-    await _sendToLlm(fullPrompt, isBlueprint: true, blueprintTitle: bp.label);
+    await _sendToLlm(
+      bp.prompt,
+      isarContext: contextBlob,
+      isBlueprint: true,
+      blueprintTitle: bp.label,
+    );
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -191,36 +191,21 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     });
     _scrollToBottom();
 
-    final fullPrompt = _ragService.wrapWithContext(
-      userMessage: text,
-      contextBlob: contextBlob,
-    );
-
-    await _sendToLlm(fullPrompt);
+    await _sendToLlm(text, isarContext: contextBlob);
   }
 
   Future<void> _sendToLlm(
-    String prompt, {
+    String query, {
+    String isarContext = '',
     bool isBlueprint = false,
     String? blueprintTitle,
   }) async {
     try {
-      // ── Absolute Keystore Bypass ──
-      // Read directly from FlutterSecureStorage to avoid Riverpod caching.
-      const storage = FlutterSecureStorage(
-        aOptions: AndroidOptions(encryptedSharedPreferences: true),
-      );
+      // Dynamic LLM routing via ApiKeyService — single source of truth.
+      final keyService = ApiKeyService();
+      final activeProvider = await keyService.getActiveProvider();
 
-      String? key;
-      key = await storage.read(key: 'vitavault_api_key_gemini');
-      if (key == null || key.trim().isEmpty) {
-        key = await storage.read(key: 'vitavault_api_key_claude');
-      }
-      if (key == null || key.trim().isEmpty) {
-        key = await storage.read(key: 'vitavault_api_key_grok');
-      }
-
-      if (key == null || key.trim().isEmpty) {
+      if (activeProvider == null) {
         setState(() {
           _messages.add(
             _ChatMessage(
@@ -238,9 +223,11 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
 
       if (!mounted) return;
 
-      final keyService = ApiKeyService();
       final client = ForgeApiClient(keyService: keyService);
-      final response = await client.synthesize(prompt);
+      final response = await client.askOracle(
+        query: query,
+        context: isarContext,
+      );
 
       setState(() {
         _messages.add(

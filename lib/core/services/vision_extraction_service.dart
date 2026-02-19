@@ -15,6 +15,12 @@ class VisionExtractionService {
   /// Returns the full concatenated text from all detected blocks.
   /// Throws [VisionExtractionException] if extraction fails.
   Future<String> extractText(File imageFile) async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      throw VisionExtractionException(
+        'Image OCR is not available on desktop platforms.',
+      );
+    }
+
     if (!await imageFile.exists()) {
       throw VisionExtractionException(
         'Image file not found: ${imageFile.path}',
@@ -53,6 +59,12 @@ class VisionExtractionService {
     File imageFile, {
     double minConfidence = 0.5,
   }) async {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      throw VisionExtractionException(
+        'Image OCR is not available on desktop platforms.',
+      );
+    }
+
     if (!await imageFile.exists()) {
       throw VisionExtractionException(
         'Image file not found: ${imageFile.path}',

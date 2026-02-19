@@ -75,6 +75,21 @@ class KeyDerivationService {
     return file.exists();
   }
 
+  /// Read the raw PBKDF2 salt bytes from disk (for capsule export).
+  Future<Uint8List> getSalt() async {
+    final saltFile = await _getSaltFile();
+    if (!await saltFile.exists()) {
+      throw StateError('No salt file found. Vault not initialized.');
+    }
+    return Uint8List.fromList(await saltFile.readAsBytes());
+  }
+
+  /// Overwrite the local PBKDF2 salt with an imported one (for capsule restore).
+  Future<void> overwriteSalt(Uint8List salt) async {
+    final saltFile = await _getSaltFile();
+    await saltFile.writeAsBytes(salt, flush: true);
+  }
+
   // ── Private Helpers ──
 
   String _hashKey(Uint8List key) {

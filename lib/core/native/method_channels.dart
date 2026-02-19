@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 ///   Windows (C++): File deletion with native dialog
 ///   macOS (Swift): File deletion via NSFileManager
 ///   Linux (C++): File deletion via gio
-class VitaVaultNativeChannel {
+class ForgeVaultNativeChannel {
   static const MethodChannel _channel = MethodChannel('com.vitavault/native');
 
   /// Trigger a native OS-level dialog to permanently delete a file.

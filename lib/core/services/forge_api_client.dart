@@ -16,7 +16,7 @@ class ForgeApiClient {
   /// with no conversational output. Provider-specific mechanisms
   /// (`response_format`, `responseMimeType`) provide additional enforcement.
   static const String _forgeSystemPrompt = '''
-You are the VitaVault Forge. You do not converse. You do not explain.
+You are the ForgeVault Forge. You do not converse. You do not explain.
 You extract structured data from raw user text and return ONLY a valid JSON
 object. Any response that is not pure JSON will be rejected by the parser.
 
@@ -63,7 +63,7 @@ Rules:
   /// Synthesize extracted text using the first available cloud provider.
   ///
   /// Priority: Grok → Claude → Gemini (matches user-configurable order).
-  /// Returns raw JSON string matching the VitaVault schema.
+  /// Returns raw JSON string matching the ForgeVault schema.
   Future<String> synthesize(String extractedText) async {
     final prompt = _buildPrompt(extractedText);
 
@@ -72,12 +72,8 @@ Rules:
       final key = await _keyService.getKey(provider);
       if (key == null || key.isEmpty) continue;
 
-      try {
-        return await _callProvider(provider, key, prompt);
-      } catch (e) {
-        // If this provider fails, try the next one
-        continue;
-      }
+      // Key found — call MUST succeed or throw the real error.
+      return await _callProvider(provider, key, prompt);
     }
 
     throw NoApiKeyException();
@@ -97,6 +93,38 @@ Rules:
 
     final prompt = _buildPrompt(extractedText);
     return _callProvider(provider, key, prompt);
+  }
+
+  /// Ask the Oracle — conversational LLM call using Isar context.
+  ///
+  /// Unlike [synthesize], this does NOT enforce JSON output.
+  /// Returns natural language text for the chat UI.
+  Future<String> askOracle({
+    required String query,
+    required String context,
+  }) async {
+    final systemPrompt =
+        'You are the ForgeVault Oracle, an empathetic, highly analytical AI '
+        'assistant. Use the following encrypted user data context to answer '
+        'the user\'s query. Reply in standard conversational text/markdown. '
+        'DO NOT output JSON.\n\nUser Context:\n$context';
+
+    for (final provider in LlmProvider.values) {
+      final key = await _keyService.getKey(provider);
+      if (key == null || key.isEmpty) continue;
+
+      // Key found — call MUST succeed or throw the real error.
+      switch (provider) {
+        case LlmProvider.grok:
+          return _askOracleGrok(key, systemPrompt, query);
+        case LlmProvider.claude:
+          return _askOracleClaude(key, systemPrompt, query);
+        case LlmProvider.gemini:
+          return _askOracleGemini(key, systemPrompt, query);
+      }
+    }
+
+    throw NoApiKeyException();
   }
 
   /// Validate an API key by pinging the provider with a minimal request.
@@ -321,6 +349,120 @@ Rules:
       return ValidationResult.validWithWarning;
     }
     return ValidationResult.invalid;
+  }
+
+  // ── Oracle-Specific Provider Methods ──
+  // These use conversational prompts and do NOT enforce JSON output.
+
+  Future<String> _askOracleGrok(
+    String apiKey,
+    String systemPrompt,
+    String query,
+  ) async {
+    final response = await _httpClient
+        .post(
+          Uri.parse('https://api.x.ai/v1/chat/completions'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $apiKey',
+          },
+          body: jsonEncode({
+            'model': 'grok-3-mini',
+            'messages': [
+              {'role': 'system', 'content': systemPrompt},
+              {'role': 'user', 'content': query},
+            ],
+            'temperature': 0.7,
+          }),
+        )
+        .timeout(_timeout);
+
+    if (response.statusCode != 200) {
+      throw ForgeApiException(
+        'Grok API error ${response.statusCode}: ${response.body}',
+      );
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final choices = json['choices'] as List<dynamic>;
+    if (choices.isEmpty) throw ForgeApiException('Grok returned no choices.');
+    return (choices[0]['message']['content'] as String).trim();
+  }
+
+  Future<String> _askOracleClaude(
+    String apiKey,
+    String systemPrompt,
+    String query,
+  ) async {
+    final response = await _httpClient
+        .post(
+          Uri.parse('https://api.anthropic.com/v1/messages'),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+          },
+          body: jsonEncode({
+            'model': 'claude-sonnet-4-20250514',
+            'max_tokens': 4096,
+            'system': systemPrompt,
+            'messages': [
+              {'role': 'user', 'content': query},
+            ],
+          }),
+        )
+        .timeout(_timeout);
+
+    if (response.statusCode != 200) {
+      throw ForgeApiException(
+        'Claude API error ${response.statusCode}: ${response.body}',
+      );
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final content = json['content'] as List<dynamic>;
+    if (content.isEmpty) throw ForgeApiException('Claude returned no content.');
+    return (content[0]['text'] as String).trim();
+  }
+
+  Future<String> _askOracleGemini(
+    String apiKey,
+    String systemPrompt,
+    String query,
+  ) async {
+    final response = await _httpClient
+        .post(
+          Uri.parse(
+            'https://generativelanguage.googleapis.com/v1beta/models/'
+            'gemini-2.0-flash:generateContent?key=$apiKey',
+          ),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'contents': [
+              {
+                'parts': [
+                  {'text': '$systemPrompt\n\n---\n\n$query'},
+                ],
+              },
+            ],
+            'generationConfig': {'temperature': 0.7},
+          }),
+        )
+        .timeout(_timeout);
+
+    if (response.statusCode != 200) {
+      throw ForgeApiException(
+        'Gemini API error ${response.statusCode}: ${response.body}',
+      );
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final candidates = json['candidates'] as List<dynamic>;
+    if (candidates.isEmpty) {
+      throw ForgeApiException('Gemini returned no candidates.');
+    }
+    final parts = candidates[0]['content']['parts'] as List<dynamic>;
+    return (parts[0]['text'] as String).trim();
   }
 }
 

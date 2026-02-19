@@ -10,13 +10,13 @@ import 'features/engine_room/engine_room_screen.dart';
 import 'theme/theme.dart';
 
 /// Navigation Shell — bottom navigation with 5 destinations.
-class VitaVaultApp extends StatelessWidget {
-  const VitaVaultApp({super.key});
+class ForgeVaultApp extends StatelessWidget {
+  const ForgeVaultApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'VitaVault',
+      title: 'ForgeVault',
       debugShowCheckedModeBanner: false,
       theme: VaultTheme.darkTheme,
       home: const _NavigationShell(),
@@ -164,7 +164,7 @@ class _NavigationShellState extends State<_NavigationShell> {
         content: Text(
           'Safe Mode is active. Files purged in the Vacuum will be moved '
           'to a debug folder instead of permanently destroyed.\n\n'
-          'To arm the physical shredder, compile VitaVault in Release Mode.',
+          'To arm the physical shredder, compile ForgeVault in Release Mode.',
           style: GoogleFonts.inter(
             fontSize: 13,
             color: VaultColors.textSecondary,

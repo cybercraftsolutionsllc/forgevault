@@ -167,7 +167,7 @@ class _ProUpgradeScreenState extends ConsumerState<ProUpgradeScreen>
 
             // ── Title ──
             Text(
-              isPro ? 'PRO UNLOCKED' : 'VITAVAULT PRO',
+              isPro ? 'PRO UNLOCKED' : 'ForgeVault PRO',
               style: GoogleFonts.inter(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -221,7 +221,7 @@ class _ProUpgradeScreenState extends ConsumerState<ProUpgradeScreen>
               onTap: isPro
                   ? () => launchUrl(
                       Uri.parse(
-                        'mailto:cyber.craft@craftedcybersolutions.com?subject=VitaVault%20Pro%20Support',
+                        'mailto:cyber.craft@craftedcybersolutions.com?subject=ForgeVault%20Pro%20Support',
                       ),
                     )
                   : null,

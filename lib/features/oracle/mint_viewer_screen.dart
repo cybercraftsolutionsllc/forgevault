@@ -183,18 +183,18 @@ class MintViewerScreen extends StatelessWidget {
         content: content,
         filename: title,
       );
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Saved: $path',
-              style: GoogleFonts.inter(fontSize: 12),
-            ),
-            backgroundColor: VaultColors.primary,
-            behavior: SnackBarBehavior.floating,
+      if (!context.mounted) return;
+      if (path.isEmpty) return; // User cancelled save dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Markdown saved to $path',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.white),
           ),
-        );
-      }
+          backgroundColor: Colors.green.shade800,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -213,19 +213,19 @@ class MintViewerScreen extends StatelessWidget {
         content: content,
         title: title,
       );
-      if (context.mounted) {
-        HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'PDF minted: $path',
-              style: GoogleFonts.inter(fontSize: 12),
-            ),
-            backgroundColor: VaultColors.phosphorGreen,
-            behavior: SnackBarBehavior.floating,
+      if (!context.mounted) return;
+      if (path.isEmpty) return; // User cancelled save dialog
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'PDF successfully saved!',
+            style: GoogleFonts.inter(fontSize: 12, color: Colors.white),
           ),
-        );
-      }
+          backgroundColor: Colors.green.shade800,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -20,7 +20,7 @@ import '../native/method_channels.dart';
 /// Zero SSD wear — no multi-pass overwrite needed.
 ///
 /// **Blast Shield**: In safe mode ([isSafeMode] == true), all destructive
-/// operations are bypassed. Files are moved to `vitavault_debug_trash/`
+/// operations are bypassed. Files are moved to `ForgeVault_debug_trash/`
 /// instead of being destroyed.
 class PurgeService {
   final DatabaseService _database;
@@ -98,7 +98,7 @@ class PurgeService {
   static Future<Directory> getDebugTrashDir() async {
     final appDir = await getApplicationSupportDirectory();
     final trashDir = Directory(
-      '${appDir.path}${Platform.pathSeparator}vitavault_debug_trash',
+      '${appDir.path}${Platform.pathSeparator}ForgeVault_debug_trash',
     );
     if (!await trashDir.exists()) {
       await trashDir.create(recursive: true);
@@ -134,7 +134,7 @@ class PurgeService {
 
   Future<void> _deleteOriginalWithOsPrompt(String filePath) async {
     try {
-      await VitaVaultNativeChannel.deleteFileWithOsPrompt(filePath);
+      await ForgeVaultNativeChannel.deleteFileWithOsPrompt(filePath);
     } catch (e) {
       // Fallback: attempt direct deletion if native channel fails.
       final file = File(filePath);

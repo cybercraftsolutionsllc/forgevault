@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:isar/isar.dart';
 
 import '../database/database_service.dart';
 import '../database/schemas/core_identity.dart';
@@ -52,34 +52,35 @@ class ForgeService {
   ///
   /// Returns the parsed ForgeResult for user review/editing before commit.
   Future<ForgeResult> synthesizeWithReview(String extractedText) async {
-    final prompt = ForgePrompt.buildPrompt(extractedText);
+    // Fetch current vault state for context-aware synthesis
+    String? currentContext;
+    try {
+      currentContext = await _database.getBioContextString();
+      if (currentContext.trim().isEmpty) currentContext = null;
+    } catch (_) {
+      // DB may not be ready yet — proceed without context
+    }
+
+    final prompt = ForgePrompt.buildPrompt(
+      extractedText,
+      existingContext: currentContext,
+    );
     String rawJson;
 
-    // ── Absolute Keystore Bypass ──
-    // Bypass Riverpod / ApiKeyService entirely. Read keys directly from
-    // FlutterSecureStorage to avoid any caching of empty strings.
-    const storage = FlutterSecureStorage(
-      aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    );
+    // Priority 1: Cloud API — dynamically fetch keys from ApiKeyService.
+    // A fresh instance is created every call to avoid any cached state.
+    final keyService = ApiKeyService();
+    final activeProvider = await keyService.getActiveProvider();
 
-    String? key;
-
-    key = await storage.read(key: 'vitavault_api_key_gemini');
-    if (key == null || key.trim().isEmpty) {
-      key = await storage.read(key: 'vitavault_api_key_claude');
-    }
-    if (key == null || key.trim().isEmpty) {
-      key = await storage.read(key: 'vitavault_api_key_grok');
-    }
-
-    if (key != null && key.trim().isNotEmpty) {
-      try {
-        final keyService = ApiKeyService();
+    if (activeProvider != null) {
+      final key = await keyService.getApiKey(activeProvider);
+      if (key != null && key.trim().isNotEmpty) {
+        // If a key exists, the cloud call MUST succeed or throw the real error.
+        // Do NOT silently catch and fall through — that hides HTTP failures
+        // behind a false "No API Key configured" message.
         final client = ForgeApiClient(keyService: keyService);
         rawJson = await client.synthesize(extractedText);
         return _parseForgeJson(rawJson);
-      } catch (_) {
-        // Cloud API call failed — try local backends
       }
     }
 
@@ -107,14 +108,9 @@ class ForgeService {
 
   /// Check if any LLM backend is available.
   Future<bool> isAvailable() async {
-    // Absolute keystore bypass — read directly from FlutterSecureStorage.
-    const storage = FlutterSecureStorage(
-      aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    );
-    for (final name in ['gemini', 'claude', 'grok']) {
-      final key = await storage.read(key: 'vitavault_api_key_$name');
-      if (key != null && key.trim().isNotEmpty) return true;
-    }
+    final keyService = ApiKeyService();
+    final provider = await keyService.getActiveProvider();
+    if (provider != null) return true;
     if (Platform.isAndroid) {
       return _geminiNano.isAvailable();
     }
@@ -131,6 +127,17 @@ class ForgeService {
     cleaned = cleaned.replaceAll(RegExp(r'```\s*$', multiLine: true), '');
     cleaned = cleaned.trim();
 
+    // Absolute substring extraction — find the actual JSON object
+    // even if Claude/GPT added conversational text before/after.
+    final start = cleaned.indexOf('{');
+    final end = cleaned.lastIndexOf('}');
+    if (start == -1 || end == -1) {
+      throw ForgeException('LLM failed to output JSON. Response: $cleaned');
+    }
+    if (end > start) {
+      cleaned = cleaned.substring(start, end + 1);
+    }
+
     try {
       final json = jsonDecode(cleaned) as Map<String, dynamic>;
       return ForgeResult.fromJson(json);
@@ -144,43 +151,58 @@ class ForgeService {
   Future<void> _mergeIntoDatabase(ForgeResult result) async {
     final db = _database.db;
 
+    // Prefetch existing records BEFORE entering writeTxn
+    // (Isar doesn't support read queries inside write transactions)
+    final existingIdentity = await db.coreIdentitys.where().findFirst();
+    final existingHealth = await db.healthProfiles.where().findFirst();
+    final allTroubles = await db.troubles.where().findAll();
+    final allGoals = await db.goals.where().findAll();
+    final allHV = await db.habitVices.where().findAll();
+
+    // Align IDs before writing
+    if (result.identity != null && existingIdentity != null) {
+      result.identity!.id = existingIdentity.id;
+    }
+    if (result.healthProfile != null && existingHealth != null) {
+      result.healthProfile!.id = existingHealth.id;
+    }
+    for (final trouble in result.troubles) {
+      final match = allTroubles
+          .where((t) => t.title == trouble.title)
+          .firstOrNull;
+      if (match != null) trouble.id = match.id;
+    }
+    for (final goal in result.goals) {
+      final match = allGoals.where((g) => g.title == goal.title).firstOrNull;
+      if (match != null) goal.id = match.id;
+    }
+    for (final hv in result.habitsVices) {
+      final match = allHV.where((h) => h.name == hv.name).firstOrNull;
+      if (match != null) hv.id = match.id;
+    }
+
     await db.writeTxn(() async {
-      // Identity
       if (result.identity != null) {
         await db.coreIdentitys.put(result.identity!);
       }
-
-      // Timeline Events
       for (final event in result.timelineEvents) {
         await db.timelineEvents.put(event);
       }
-
-      // Troubles
       for (final trouble in result.troubles) {
         await db.troubles.put(trouble);
       }
-
-      // Finances
       for (final finance in result.finances) {
         await db.financeRecords.put(finance);
       }
-
-      // Relationships
       for (final rel in result.relationships) {
         await db.relationshipNodes.put(rel);
       }
-
-      // Health
       if (result.healthProfile != null) {
         await db.healthProfiles.put(result.healthProfile!);
       }
-
-      // Goals
       for (final goal in result.goals) {
         await db.goals.put(goal);
       }
-
-      // Habits/Vices
       for (final hv in result.habitsVices) {
         await db.habitVices.put(hv);
       }

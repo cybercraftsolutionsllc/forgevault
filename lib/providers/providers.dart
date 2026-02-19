@@ -1,6 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/database/database_service.dart';
+import '../core/database/schemas/core_identity.dart';
+import '../core/database/schemas/timeline_event.dart';
+import '../core/database/schemas/trouble.dart';
+import '../core/database/schemas/goal.dart';
+import '../core/database/schemas/health_profile.dart';
+import '../core/database/schemas/finance_record.dart';
+import '../core/database/schemas/relationship_node.dart';
+import '../core/database/schemas/habit_vice.dart';
 import '../core/crypto/ephemeral_key_service.dart';
 
 /// Global provider for the database singleton.
@@ -39,3 +47,56 @@ enum VacuumState {
 final vacuumStateProvider = StateProvider<VacuumState>(
   (ref) => VacuumState.idle,
 );
+
+// ── Reactive Isar Stream Providers ──
+// These fire immediately and update whenever the database is mutated.
+
+/// Watches the user's CoreIdentity (single record or null).
+final identityStreamProvider = StreamProvider<CoreIdentity?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchCoreIdentity();
+});
+
+/// Watches all TimelineEvent records, sorted newest first.
+final timelineStreamProvider = StreamProvider<List<TimelineEvent>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchTimelineEvents();
+});
+
+/// Watches all Trouble records, sorted by severity.
+final troublesStreamProvider = StreamProvider<List<Trouble>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchTroubles();
+});
+
+/// Watches all Goal records.
+final goalsStreamProvider = StreamProvider<List<Goal>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchGoals();
+});
+
+/// Watches the user's HealthProfile (single record or null).
+final healthStreamProvider = StreamProvider<HealthProfile?>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchHealthProfile();
+});
+
+/// Watches all FinanceRecord records.
+final financesStreamProvider = StreamProvider<List<FinanceRecord>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchFinanceRecords();
+});
+
+/// Watches all RelationshipNode records.
+final relationshipsStreamProvider = StreamProvider<List<RelationshipNode>>((
+  ref,
+) {
+  final db = ref.watch(databaseProvider);
+  return db.watchRelationships();
+});
+
+/// Watches all HabitVice records.
+final habitsStreamProvider = StreamProvider<List<HabitVice>>((ref) {
+  final db = ref.watch(databaseProvider);
+  return db.watchHabitsVices();
+});
