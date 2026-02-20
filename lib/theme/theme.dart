@@ -239,6 +239,8 @@ class VaultTheme {
         contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         behavior: SnackBarBehavior.floating,
+        width: 400,
+        actionTextColor: VaultColors.phosphorGreen,
       ),
     );
   }

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'health_profile.dart';
+part of 'psyche_profile.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,77 +9,82 @@ part of 'health_profile.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetHealthProfileCollection on Isar {
-  IsarCollection<HealthProfile> get healthProfiles => this.collection();
+extension GetPsycheProfileCollection on Isar {
+  IsarCollection<PsycheProfile> get psycheProfiles => this.collection();
 }
 
-const HealthProfileSchema = CollectionSchema(
-  name: r'HealthProfile',
-  id: 240444479585874694,
+const PsycheProfileSchema = CollectionSchema(
+  name: r'PsycheProfile',
+  id: -6728961493590466213,
   properties: {
-    r'allergies': PropertySchema(
+    r'beliefs': PropertySchema(
       id: 0,
-      name: r'allergies',
+      name: r'beliefs',
       type: IsarType.stringList,
     ),
-    r'bloodType': PropertySchema(
+    r'enneagram': PropertySchema(
       id: 1,
-      name: r'bloodType',
+      name: r'enneagram',
       type: IsarType.string,
     ),
-    r'conditions': PropertySchema(
+    r'fears': PropertySchema(
       id: 2,
-      name: r'conditions',
-      type: IsarType.stringList,
-    ),
-    r'insuranceInfo': PropertySchema(
-      id: 3,
-      name: r'insuranceInfo',
-      type: IsarType.string,
-    ),
-    r'labResults': PropertySchema(
-      id: 4,
-      name: r'labResults',
+      name: r'fears',
       type: IsarType.stringList,
     ),
     r'lastUpdated': PropertySchema(
-      id: 5,
+      id: 3,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
-    r'medications': PropertySchema(
-      id: 6,
-      name: r'medications',
+    r'mbti': PropertySchema(
+      id: 4,
+      name: r'mbti',
+      type: IsarType.string,
+    ),
+    r'motivations': PropertySchema(
+      id: 5,
+      name: r'motivations',
       type: IsarType.stringList,
     ),
-    r'primaryPhysician': PropertySchema(
+    r'personality': PropertySchema(
+      id: 6,
+      name: r'personality',
+      type: IsarType.stringList,
+    ),
+    r'strengths': PropertySchema(
       id: 7,
-      name: r'primaryPhysician',
-      type: IsarType.string,
+      name: r'strengths',
+      type: IsarType.stringList,
+    ),
+    r'weaknesses': PropertySchema(
+      id: 8,
+      name: r'weaknesses',
+      type: IsarType.stringList,
     )
   },
-  estimateSize: _healthProfileEstimateSize,
-  serialize: _healthProfileSerialize,
-  deserialize: _healthProfileDeserialize,
-  deserializeProp: _healthProfileDeserializeProp,
+  estimateSize: _psycheProfileEstimateSize,
+  serialize: _psycheProfileSerialize,
+  deserialize: _psycheProfileDeserialize,
+  deserializeProp: _psycheProfileDeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
-  getId: _healthProfileGetId,
-  getLinks: _healthProfileGetLinks,
-  attach: _healthProfileAttach,
+  getId: _psycheProfileGetId,
+  getLinks: _psycheProfileGetLinks,
+  attach: _psycheProfileAttach,
   version: '3.1.0+1',
 );
 
-int _healthProfileEstimateSize(
-  HealthProfile object,
+int _psycheProfileEstimateSize(
+  PsycheProfile object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
   {
-    final list = object.allergies;
+    final list = object.beliefs;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -91,13 +96,13 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.bloodType;
+    final value = object.enneagram;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
   {
-    final list = object.conditions;
+    final list = object.fears;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -109,13 +114,13 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.insuranceInfo;
+    final value = object.mbti;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
   {
-    final list = object.labResults;
+    final list = object.motivations;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -127,7 +132,7 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final list = object.medications;
+    final list = object.personality;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -139,50 +144,70 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.primaryPhysician;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    final list = object.strengths;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.weaknesses;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
     }
   }
   return bytesCount;
 }
 
-void _healthProfileSerialize(
-  HealthProfile object,
+void _psycheProfileSerialize(
+  PsycheProfile object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeStringList(offsets[0], object.allergies);
-  writer.writeString(offsets[1], object.bloodType);
-  writer.writeStringList(offsets[2], object.conditions);
-  writer.writeString(offsets[3], object.insuranceInfo);
-  writer.writeStringList(offsets[4], object.labResults);
-  writer.writeDateTime(offsets[5], object.lastUpdated);
-  writer.writeStringList(offsets[6], object.medications);
-  writer.writeString(offsets[7], object.primaryPhysician);
+  writer.writeStringList(offsets[0], object.beliefs);
+  writer.writeString(offsets[1], object.enneagram);
+  writer.writeStringList(offsets[2], object.fears);
+  writer.writeDateTime(offsets[3], object.lastUpdated);
+  writer.writeString(offsets[4], object.mbti);
+  writer.writeStringList(offsets[5], object.motivations);
+  writer.writeStringList(offsets[6], object.personality);
+  writer.writeStringList(offsets[7], object.strengths);
+  writer.writeStringList(offsets[8], object.weaknesses);
 }
 
-HealthProfile _healthProfileDeserialize(
+PsycheProfile _psycheProfileDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = HealthProfile();
-  object.allergies = reader.readStringList(offsets[0]);
-  object.bloodType = reader.readStringOrNull(offsets[1]);
-  object.conditions = reader.readStringList(offsets[2]);
+  final object = PsycheProfile();
+  object.beliefs = reader.readStringList(offsets[0]);
+  object.enneagram = reader.readStringOrNull(offsets[1]);
+  object.fears = reader.readStringList(offsets[2]);
   object.id = id;
-  object.insuranceInfo = reader.readStringOrNull(offsets[3]);
-  object.labResults = reader.readStringList(offsets[4]);
-  object.lastUpdated = reader.readDateTime(offsets[5]);
-  object.medications = reader.readStringList(offsets[6]);
-  object.primaryPhysician = reader.readStringOrNull(offsets[7]);
+  object.lastUpdated = reader.readDateTime(offsets[3]);
+  object.mbti = reader.readStringOrNull(offsets[4]);
+  object.motivations = reader.readStringList(offsets[5]);
+  object.personality = reader.readStringList(offsets[6]);
+  object.strengths = reader.readStringList(offsets[7]);
+  object.weaknesses = reader.readStringList(offsets[8]);
   return object;
 }
 
-P _healthProfileDeserializeProp<P>(
+P _psycheProfileDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -196,45 +221,47 @@ P _healthProfileDeserializeProp<P>(
     case 2:
       return (reader.readStringList(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
-      return (reader.readStringList(offset)) as P;
-    case 5:
       return (reader.readDateTime(offset)) as P;
+    case 4:
+      return (reader.readStringOrNull(offset)) as P;
+    case 5:
+      return (reader.readStringList(offset)) as P;
     case 6:
       return (reader.readStringList(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
+    case 8:
+      return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-Id _healthProfileGetId(HealthProfile object) {
+Id _psycheProfileGetId(PsycheProfile object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _healthProfileGetLinks(HealthProfile object) {
+List<IsarLinkBase<dynamic>> _psycheProfileGetLinks(PsycheProfile object) {
   return [];
 }
 
-void _healthProfileAttach(
-    IsarCollection<dynamic> col, Id id, HealthProfile object) {
+void _psycheProfileAttach(
+    IsarCollection<dynamic> col, Id id, PsycheProfile object) {
   object.id = id;
 }
 
-extension HealthProfileQueryWhereSort
-    on QueryBuilder<HealthProfile, HealthProfile, QWhere> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhere> anyId() {
+extension PsycheProfileQueryWhereSort
+    on QueryBuilder<PsycheProfile, PsycheProfile, QWhere> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension HealthProfileQueryWhere
-    on QueryBuilder<HealthProfile, HealthProfile, QWhereClause> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idEqualTo(
+extension PsycheProfileQueryWhere
+    on QueryBuilder<PsycheProfile, PsycheProfile, QWhereClause> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhereClause> idEqualTo(
       Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
@@ -244,7 +271,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idNotEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhereClause> idNotEqualTo(
       Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -267,7 +294,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhereClause> idGreaterThan(
       Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
@@ -277,7 +304,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhereClause> idLessThan(
       Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
@@ -287,7 +314,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -304,42 +331,42 @@ extension HealthProfileQueryWhere
   }
 }
 
-extension HealthProfileQueryFilter
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNull() {
+extension PsycheProfileQueryFilter
+    on QueryBuilder<PsycheProfile, PsycheProfile, QFilterCondition> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'allergies',
+        property: r'beliefs',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNotNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'allergies',
+        property: r'beliefs',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -347,15 +374,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -363,15 +390,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -380,7 +407,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'allergies',
+        property: r'beliefs',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -390,81 +417,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementStartsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementEndsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'allergies',
+        property: r'beliefs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'allergies',
+        property: r'beliefs',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'allergies',
+        property: r'beliefs',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'allergies',
+        property: r'beliefs',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthEqualTo(int length) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         length,
         true,
         length,
@@ -473,11 +500,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         0,
         true,
         0,
@@ -486,11 +513,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         0,
         false,
         999999,
@@ -499,14 +526,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         0,
         true,
         length,
@@ -515,14 +542,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         length,
         include,
         999999,
@@ -531,8 +558,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      beliefsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -540,7 +567,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'beliefs',
         lower,
         includeLower,
         upper,
@@ -549,40 +576,40 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'bloodType',
+        property: r'enneagram',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNotNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'bloodType',
+        property: r'enneagram',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -590,15 +617,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -606,15 +633,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -623,7 +650,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'bloodType',
+        property: r'enneagram',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -633,110 +660,110 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeStartsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeEndsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'bloodType',
+        property: r'enneagram',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'bloodType',
+        property: r'enneagram',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bloodType',
+        property: r'enneagram',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      enneagramIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'bloodType',
+        property: r'enneagram',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'conditions',
+        property: r'fears',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNotNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'conditions',
+        property: r'fears',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -744,15 +771,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -760,15 +787,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -777,7 +804,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'conditions',
+        property: r'fears',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -787,81 +814,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementStartsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementEndsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'conditions',
+        property: r'fears',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'conditions',
+        property: r'fears',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'conditions',
+        property: r'fears',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'conditions',
+        property: r'fears',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthEqualTo(int length) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         length,
         true,
         length,
@@ -870,11 +897,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         0,
         true,
         0,
@@ -883,11 +910,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         0,
         false,
         999999,
@@ -896,14 +923,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         0,
         true,
         length,
@@ -912,14 +939,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         length,
         include,
         999999,
@@ -928,8 +955,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      fearsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -937,7 +964,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'fears',
         lower,
         includeLower,
         upper,
@@ -946,7 +973,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -956,7 +983,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
       idGreaterThan(
     Id value, {
     bool include = false,
@@ -970,7 +997,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -983,7 +1010,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -1000,404 +1027,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'insuranceInfo',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'insuranceInfo',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'insuranceInfo',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'insuranceInfo',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'insuranceInfo',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'insuranceInfo',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'labResults',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'labResults',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'labResults',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'labResults',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'labResults',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'labResults',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'labResults',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'labResults',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
       lastUpdatedEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1407,7 +1037,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
       lastUpdatedGreaterThan(
     DateTime value, {
     bool include = false,
@@ -1421,7 +1051,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
       lastUpdatedLessThan(
     DateTime value, {
     bool include = false,
@@ -1435,7 +1065,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
       lastUpdatedBetween(
     DateTime lower,
     DateTime upper, {
@@ -1453,283 +1083,39 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'medications',
+        property: r'mbti',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNotNull() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'medications',
+        property: r'mbti',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'medications',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'medications',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'medications',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medications',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'medications',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'medications',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'primaryPhysician',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'primaryPhysician',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianEqualTo(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> mbtiEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianGreaterThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1737,15 +1123,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianLessThan(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiLessThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1753,15 +1139,14 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianBetween(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> mbtiBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -1770,7 +1155,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'primaryPhysician',
+        property: r'mbti',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1780,327 +1165,1277 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianStartsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianEndsWith(
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition> mbtiMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'primaryPhysician',
+        property: r'mbti',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNotEmpty() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      mbtiIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'primaryPhysician',
+        property: r'mbti',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'motivations',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'motivations',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'motivations',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'motivations',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'motivations',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'motivations',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'motivations',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      motivationsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'motivations',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'personality',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'personality',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'personality',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'personality',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'personality',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'personality',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'personality',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      personalityLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'personality',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'strengths',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'strengths',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'strengths',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'strengths',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'strengths',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'strengths',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'strengths',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      strengthsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'strengths',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'weaknesses',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'weaknesses',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'weaknesses',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'weaknesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'weaknesses',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'weaknesses',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'weaknesses',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterFilterCondition>
+      weaknessesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'weaknesses',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 }
 
-extension HealthProfileQueryObject
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {}
+extension PsycheProfileQueryObject
+    on QueryBuilder<PsycheProfile, PsycheProfile, QFilterCondition> {}
 
-extension HealthProfileQueryLinks
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {}
+extension PsycheProfileQueryLinks
+    on QueryBuilder<PsycheProfile, PsycheProfile, QFilterCondition> {}
 
-extension HealthProfileQuerySortBy
-    on QueryBuilder<HealthProfile, HealthProfile, QSortBy> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> sortByBloodType() {
+extension PsycheProfileQuerySortBy
+    on QueryBuilder<PsycheProfile, PsycheProfile, QSortBy> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> sortByEnneagram() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.asc);
+      return query.addSortBy(r'enneagram', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByBloodTypeDesc() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy>
+      sortByEnneagramDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.desc);
+      return query.addSortBy(r'enneagram', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByInsuranceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByInsuranceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> sortByLastUpdated() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy>
       sortByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByPrimaryPhysician() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> sortByMbti() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.asc);
+      return query.addSortBy(r'mbti', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByPrimaryPhysicianDesc() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> sortByMbtiDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.desc);
+      return query.addSortBy(r'mbti', Sort.desc);
     });
   }
 }
 
-extension HealthProfileQuerySortThenBy
-    on QueryBuilder<HealthProfile, HealthProfile, QSortThenBy> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByBloodType() {
+extension PsycheProfileQuerySortThenBy
+    on QueryBuilder<PsycheProfile, PsycheProfile, QSortThenBy> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenByEnneagram() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.asc);
+      return query.addSortBy(r'enneagram', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByBloodTypeDesc() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy>
+      thenByEnneagramDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.desc);
+      return query.addSortBy(r'enneagram', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenById() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByInsuranceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByInsuranceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByLastUpdated() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy>
       thenByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByPrimaryPhysician() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenByMbti() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.asc);
+      return query.addSortBy(r'mbti', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByPrimaryPhysicianDesc() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QAfterSortBy> thenByMbtiDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.desc);
+      return query.addSortBy(r'mbti', Sort.desc);
     });
   }
 }
 
-extension HealthProfileQueryWhereDistinct
-    on QueryBuilder<HealthProfile, HealthProfile, QDistinct> {
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByAllergies() {
+extension PsycheProfileQueryWhereDistinct
+    on QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> {
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByBeliefs() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'allergies');
+      return query.addDistinctBy(r'beliefs');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByBloodType(
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByEnneagram(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'bloodType', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'enneagram', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByConditions() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByFears() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'conditions');
+      return query.addDistinctBy(r'fears');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByInsuranceInfo(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'insuranceInfo',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByLabResults() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'labResults');
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct>
       distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastUpdated');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
-      distinctByMedications() {
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByMbti(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'medications');
+      return query.addDistinctBy(r'mbti', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
-      distinctByPrimaryPhysician({bool caseSensitive = true}) {
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct>
+      distinctByMotivations() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'primaryPhysician',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'motivations');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct>
+      distinctByPersonality() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'personality');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByStrengths() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'strengths');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, PsycheProfile, QDistinct> distinctByWeaknesses() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'weaknesses');
     });
   }
 }
 
-extension HealthProfileQueryProperty
-    on QueryBuilder<HealthProfile, HealthProfile, QQueryProperty> {
-  QueryBuilder<HealthProfile, int, QQueryOperations> idProperty() {
+extension PsycheProfileQueryProperty
+    on QueryBuilder<PsycheProfile, PsycheProfile, QQueryProperty> {
+  QueryBuilder<PsycheProfile, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      allergiesProperty() {
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations>
+      beliefsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'allergies');
+      return query.addPropertyName(r'beliefs');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations> bloodTypeProperty() {
+  QueryBuilder<PsycheProfile, String?, QQueryOperations> enneagramProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'bloodType');
+      return query.addPropertyName(r'enneagram');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      conditionsProperty() {
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations> fearsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'conditions');
+      return query.addPropertyName(r'fears');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations>
-      insuranceInfoProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'insuranceInfo');
-    });
-  }
-
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      labResultsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'labResults');
-    });
-  }
-
-  QueryBuilder<HealthProfile, DateTime, QQueryOperations>
+  QueryBuilder<PsycheProfile, DateTime, QQueryOperations>
       lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdated');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      medicationsProperty() {
+  QueryBuilder<PsycheProfile, String?, QQueryOperations> mbtiProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'medications');
+      return query.addPropertyName(r'mbti');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations>
-      primaryPhysicianProperty() {
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations>
+      motivationsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'primaryPhysician');
+      return query.addPropertyName(r'motivations');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations>
+      personalityProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'personality');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations>
+      strengthsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'strengths');
+    });
+  }
+
+  QueryBuilder<PsycheProfile, List<String>?, QQueryOperations>
+      weaknessesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'weaknesses');
     });
   }
 }

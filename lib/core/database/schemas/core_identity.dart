@@ -16,5 +16,15 @@ class CoreIdentity {
 
   late DateTime lastUpdated;
 
+  List<String>? digitalFootprint;
+
+  List<String>? jobHistory;
+
+  List<String>? locationHistory;
+
+  List<String>? educationHistory;
+
+  List<String>? familyLineage;
+
   int completenessScore = 0;
 }

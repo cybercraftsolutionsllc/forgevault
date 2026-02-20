@@ -25,7 +25,8 @@ import '../review/synthesis_review_screen.dart';
 /// - Reality Guard error modal for AI-generated image rejection
 /// - Visual distinction between Local OCR / PDF Extraction / Cloud API phases
 class VacuumScreen extends StatefulWidget {
-  const VacuumScreen({super.key});
+  final void Function(int)? onSwitchTab;
+  const VacuumScreen({super.key, this.onSwitchTab});
 
   @override
   State<VacuumScreen> createState() => _VacuumScreenState();
@@ -533,12 +534,7 @@ class _VacuumScreenState extends State<VacuumScreen>
             onPressed: () {
               Navigator.of(ctx).pop();
               // Navigate to Engine Room (tab index 4)
-              // Walk up to _NavigationShellState and switch tab.
-              final scaffoldState = context
-                  .findAncestorStateOfType<ScaffoldState>();
-              if (scaffoldState != null) {
-                // Fallback: just close and let user navigate manually.
-              }
+              widget.onSwitchTab?.call(4);
             },
             child: Text(
               'Go to Engine Room',
@@ -1194,6 +1190,26 @@ class _VacuumScreenState extends State<VacuumScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── Privacy Disclaimer ──
+          const SizedBox(height: 24),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.shield_outlined, size: 14, color: Colors.grey),
+                SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Data is securely processed via your configured API provider. ForgeVault has no servers.',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],

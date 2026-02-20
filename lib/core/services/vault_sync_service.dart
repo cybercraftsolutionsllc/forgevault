@@ -23,6 +23,11 @@ import '../database/schemas/audit_log.dart';
 import '../database/schemas/health_profile.dart';
 import '../database/schemas/goal.dart';
 import '../database/schemas/habit_vice.dart';
+import '../database/schemas/medical_ledger.dart';
+import '../database/schemas/career_ledger.dart';
+import '../database/schemas/asset_ledger.dart';
+import '../database/schemas/relational_web.dart';
+import '../database/schemas/psyche_profile.dart';
 
 /// The Encrypted Courier — Zero-Trust Multi-Device Sync (BYOS).
 ///
@@ -302,6 +307,22 @@ class VaultSyncService {
     await keyService.overwriteSalt(Uint8List.fromList(pbkdf2Salt));
     await keyService.storeVerificationHash(pin);
 
+    // 5. Close existing Isar to release Windows file lock before re-init
+    final existingIsar = Isar.getInstance();
+    if (existingIsar != null && existingIsar.isOpen) {
+      await existingIsar.close();
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    // 5b. Delete stale sealed vault (.aes) so initialize() starts fresh
+    try {
+      final dir = await getApplicationSupportDirectory();
+      final aesFile = File(
+        '${dir.path}${Platform.pathSeparator}vitavault.isar.aes',
+      );
+      if (aesFile.existsSync()) aesFile.deleteSync();
+    } catch (_) {}
+
     // 6. Initialize the database with the new crypto material
     await DatabaseService.instance.initialize(pin);
 
@@ -341,6 +362,21 @@ class VaultSyncService {
       ),
       'habitVices': await db.habitVices.where().findAll().then(
         (list) => list.map(_habitViceToJson).toList(),
+      ),
+      'medicalLedgers': await db.medicalLedgers.where().findAll().then(
+        (list) => list.map(_medicalLedgerToJson).toList(),
+      ),
+      'careerLedgers': await db.careerLedgers.where().findAll().then(
+        (list) => list.map(_careerLedgerToJson).toList(),
+      ),
+      'assetLedgers': await db.assetLedgers.where().findAll().then(
+        (list) => list.map(_assetLedgerToJson).toList(),
+      ),
+      'relationalWebs': await db.relationalWebs.where().findAll().then(
+        (list) => list.map(_relationalWebToJson).toList(),
+      ),
+      'psycheProfiles': await db.psycheProfiles.where().findAll().then(
+        (list) => list.map(_psycheProfileToJson).toList(),
       ),
     };
   }
@@ -451,6 +487,64 @@ class VaultSyncService {
           await db.habitVices.put(incoming);
         }
       }
+
+      // Medical Ledgers — merge by id, newest lastUpdated wins
+      final incomingMedical =
+          (payload['medicalLedgers'] as List<dynamic>?) ?? [];
+      for (final json in incomingMedical) {
+        final incoming = _medicalLedgerFromJson(json as Map<String, dynamic>);
+        final existing = await db.medicalLedgers.get(incoming.id);
+        if (existing == null ||
+            incoming.lastUpdated.isAfter(existing.lastUpdated)) {
+          await db.medicalLedgers.put(incoming);
+        }
+      }
+
+      // Career Ledgers — merge by id, newest lastUpdated wins
+      final incomingCareer = (payload['careerLedgers'] as List<dynamic>?) ?? [];
+      for (final json in incomingCareer) {
+        final incoming = _careerLedgerFromJson(json as Map<String, dynamic>);
+        final existing = await db.careerLedgers.get(incoming.id);
+        if (existing == null ||
+            incoming.lastUpdated.isAfter(existing.lastUpdated)) {
+          await db.careerLedgers.put(incoming);
+        }
+      }
+
+      // Asset Ledgers — merge by id, newest lastUpdated wins
+      final incomingAssets = (payload['assetLedgers'] as List<dynamic>?) ?? [];
+      for (final json in incomingAssets) {
+        final incoming = _assetLedgerFromJson(json as Map<String, dynamic>);
+        final existing = await db.assetLedgers.get(incoming.id);
+        if (existing == null ||
+            incoming.lastUpdated.isAfter(existing.lastUpdated)) {
+          await db.assetLedgers.put(incoming);
+        }
+      }
+
+      // Relational Webs — merge by id, newest lastUpdated wins
+      final incomingRelWebs =
+          (payload['relationalWebs'] as List<dynamic>?) ?? [];
+      for (final json in incomingRelWebs) {
+        final incoming = _relationalWebFromJson(json as Map<String, dynamic>);
+        final existing = await db.relationalWebs.get(incoming.id);
+        if (existing == null ||
+            incoming.lastUpdated.isAfter(existing.lastUpdated)) {
+          await db.relationalWebs.put(incoming);
+        }
+      }
+
+      // Psyche Profiles — merge by id, newest lastUpdated wins
+      final incomingPsyche =
+          (payload['psycheProfiles'] as List<dynamic>?) ?? [];
+      for (final json in incomingPsyche) {
+        final incoming = _psycheProfileFromJson(json as Map<String, dynamic>);
+        final existing = await db.psycheProfiles.get(incoming.id);
+        if (existing == null ||
+            incoming.lastUpdated.isAfter(existing.lastUpdated)) {
+          await db.psycheProfiles.put(incoming);
+        }
+      }
     });
   }
 
@@ -518,6 +612,11 @@ class VaultSyncService {
     'dateOfBirth': ci.dateOfBirth?.toIso8601String(),
     'location': ci.location,
     'immutableTraits': ci.immutableTraits,
+    'digitalFootprint': ci.digitalFootprint,
+    'jobHistory': ci.jobHistory,
+    'locationHistory': ci.locationHistory,
+    'educationHistory': ci.educationHistory,
+    'familyLineage': ci.familyLineage,
     'lastUpdated': ci.lastUpdated.toIso8601String(),
     'completenessScore': ci.completenessScore,
   };
@@ -531,7 +630,22 @@ class VaultSyncService {
           : null
       ..location = j['location'] as String
       ..immutableTraits = (j['immutableTraits'] as List<dynamic>?)
-          ?.map((e) => e as String)
+          ?.map((e) => e.toString())
+          .toList()
+      ..digitalFootprint = (j['digitalFootprint'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList()
+      ..jobHistory = (j['jobHistory'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList()
+      ..locationHistory = (j['locationHistory'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList()
+      ..educationHistory = (j['educationHistory'] as List<dynamic>?)
+          ?.map((e) => e.toString())
+          .toList()
+      ..familyLineage = (j['familyLineage'] as List<dynamic>?)
+          ?.map((e) => e.toString())
           .toList()
       ..lastUpdated = DateTime.parse(j['lastUpdated'] as String)
       ..completenessScore = j['completenessScore'] as int;
@@ -707,6 +821,134 @@ class VaultSyncService {
       ..severity = j['severity'] as int
       ..notes = j['notes'] as String?
       ..dateIdentified = DateTime.parse(j['dateIdentified'] as String);
+  }
+
+  // ── New Ledger Serialization Helpers ──
+
+  static List<String> _parseStringListSync(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data.map((e) => e.toString()).toList();
+  }
+
+  Map<String, dynamic> _medicalLedgerToJson(MedicalLedger m) => {
+    'id': m.id,
+    'surgeries': m.surgeries,
+    'genetics': m.genetics,
+    'vitalBaselines': m.vitalBaselines,
+    'visionRx': m.visionRx,
+    'familyMedicalHistory': m.familyMedicalHistory,
+    'bloodwork': m.bloodwork,
+    'immunizations': m.immunizations,
+    'dentalHistory': m.dentalHistory,
+    'lastUpdated': m.lastUpdated.toIso8601String(),
+  };
+
+  MedicalLedger _medicalLedgerFromJson(Map<String, dynamic> j) {
+    return MedicalLedger()
+      ..id = j['id'] as int
+      ..surgeries = _parseStringListSync(j['surgeries'])
+      ..genetics = _parseStringListSync(j['genetics'])
+      ..vitalBaselines = _parseStringListSync(j['vitalBaselines'])
+      ..visionRx = _parseStringListSync(j['visionRx'])
+      ..familyMedicalHistory = _parseStringListSync(j['familyMedicalHistory'])
+      ..bloodwork = _parseStringListSync(j['bloodwork'])
+      ..immunizations = _parseStringListSync(j['immunizations'])
+      ..dentalHistory = _parseStringListSync(j['dentalHistory'])
+      ..lastUpdated = DateTime.parse(j['lastUpdated'] as String);
+  }
+
+  Map<String, dynamic> _careerLedgerToJson(CareerLedger c) => {
+    'id': c.id,
+    'jobs': c.jobs,
+    'degrees': c.degrees,
+    'certifications': c.certifications,
+    'clearances': c.clearances,
+    'skills': c.skills,
+    'projects': c.projects,
+    'lastUpdated': c.lastUpdated.toIso8601String(),
+  };
+
+  CareerLedger _careerLedgerFromJson(Map<String, dynamic> j) {
+    return CareerLedger()
+      ..id = j['id'] as int
+      ..jobs = _parseStringListSync(j['jobs'])
+      ..degrees = _parseStringListSync(j['degrees'])
+      ..certifications = _parseStringListSync(j['certifications'])
+      ..clearances = _parseStringListSync(j['clearances'])
+      ..skills = _parseStringListSync(j['skills'])
+      ..projects = _parseStringListSync(j['projects'])
+      ..lastUpdated = DateTime.parse(j['lastUpdated'] as String);
+  }
+
+  Map<String, dynamic> _assetLedgerToJson(AssetLedger a) => {
+    'id': a.id,
+    'realEstate': a.realEstate,
+    'vehicles': a.vehicles,
+    'digitalAssets': a.digitalAssets,
+    'insurance': a.insurance,
+    'investments': a.investments,
+    'valuables': a.valuables,
+    'lastUpdated': a.lastUpdated.toIso8601String(),
+  };
+
+  AssetLedger _assetLedgerFromJson(Map<String, dynamic> j) {
+    return AssetLedger()
+      ..id = j['id'] as int
+      ..realEstate = _parseStringListSync(j['realEstate'])
+      ..vehicles = _parseStringListSync(j['vehicles'])
+      ..digitalAssets = _parseStringListSync(j['digitalAssets'])
+      ..insurance = _parseStringListSync(j['insurance'])
+      ..investments = _parseStringListSync(j['investments'])
+      ..valuables = _parseStringListSync(j['valuables'])
+      ..lastUpdated = DateTime.parse(j['lastUpdated'] as String);
+  }
+
+  Map<String, dynamic> _relationalWebToJson(RelationalWeb rw) => {
+    'id': rw.id,
+    'family': rw.family,
+    'mentors': rw.mentors,
+    'adversaries': rw.adversaries,
+    'colleagues': rw.colleagues,
+    'friends': rw.friends,
+    'lastUpdated': rw.lastUpdated.toIso8601String(),
+  };
+
+  RelationalWeb _relationalWebFromJson(Map<String, dynamic> j) {
+    return RelationalWeb()
+      ..id = j['id'] as int
+      ..family = _parseStringListSync(j['family'])
+      ..mentors = _parseStringListSync(j['mentors'])
+      ..adversaries = _parseStringListSync(j['adversaries'])
+      ..colleagues = _parseStringListSync(j['colleagues'])
+      ..friends = _parseStringListSync(j['friends'])
+      ..lastUpdated = DateTime.parse(j['lastUpdated'] as String);
+  }
+
+  Map<String, dynamic> _psycheProfileToJson(PsycheProfile p) => {
+    'id': p.id,
+    'beliefs': p.beliefs,
+    'personality': p.personality,
+    'fears': p.fears,
+    'motivations': p.motivations,
+    'enneagram': p.enneagram,
+    'mbti': p.mbti,
+    'strengths': p.strengths,
+    'weaknesses': p.weaknesses,
+    'lastUpdated': p.lastUpdated.toIso8601String(),
+  };
+
+  PsycheProfile _psycheProfileFromJson(Map<String, dynamic> j) {
+    return PsycheProfile()
+      ..id = j['id'] as int
+      ..beliefs = _parseStringListSync(j['beliefs'])
+      ..personality = _parseStringListSync(j['personality'])
+      ..fears = _parseStringListSync(j['fears'])
+      ..motivations = _parseStringListSync(j['motivations'])
+      ..enneagram = j['enneagram'] as String?
+      ..mbti = j['mbti'] as String?
+      ..strengths = _parseStringListSync(j['strengths'])
+      ..weaknesses = _parseStringListSync(j['weaknesses'])
+      ..lastUpdated = DateTime.parse(j['lastUpdated'] as String);
   }
 }
 

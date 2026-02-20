@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../theme/theme.dart';
+import '../auth/auth_screen.dart';
 import '../welcome/welcome_screen.dart';
 
 /// First-Launch Onboarding — 4-page swipeable tutorial.
@@ -88,10 +89,21 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.dispose();
   }
 
+  /// Unconditional navigation — sets pref then routes to PIN setup.
+  ///
+  /// Uses this widget's own [context] so it works even when pushed
+  /// from the Nuke flow (where the parent WelcomeScreen is disposed).
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasCompletedOnboarding', true);
-    widget.onComplete();
+
+    if (!mounted) return;
+
+    // Self-navigate to AuthScreen for PIN creation — unconditional.
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => AuthScreen(onAuthenticated: () {})),
+      (_) => false,
+    );
   }
 
   @override
@@ -287,7 +299,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     elevation: 0,
                                   ),
                                   child: Text(
-                                    'INITIALIZE VAULT',
+                                    'SET MASTER PIN',
                                     style: GoogleFonts.inter(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w700,

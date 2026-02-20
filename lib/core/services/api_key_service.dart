@@ -19,6 +19,30 @@ enum LlmProvider {
     description: 'Google\'s Gemini — multimodal synthesis',
     keyUrl: 'https://aistudio.google.com/app/apikey',
     iconCodePoint: 0xe838, // auto_awesome
+  ),
+  openRouter(
+    displayName: 'OpenRouter',
+    description: 'Unified gateway — access 100+ models',
+    keyUrl: 'https://openrouter.ai/keys',
+    iconCodePoint: 0xe8f4, // router
+  ),
+  groq(
+    displayName: 'Groq',
+    description: 'Groq — ultra-fast LPU inference',
+    keyUrl: 'https://console.groq.com/keys',
+    iconCodePoint: 0xe8e8, // speed
+  ),
+  deepSeek(
+    displayName: 'DeepSeek',
+    description: 'DeepSeek — efficient reasoning model',
+    keyUrl: 'https://platform.deepseek.com/',
+    iconCodePoint: 0xef3e, // explore
+  ),
+  mistral(
+    displayName: 'Mistral',
+    description: 'Mistral AI — European frontier model',
+    keyUrl: 'https://console.mistral.ai/api-keys/',
+    iconCodePoint: 0xe3a5, // air
   );
 
   final String displayName;

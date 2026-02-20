@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'core/config/environment_config.dart';
+import 'features/auth/auth_screen.dart';
+import 'features/help/help_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/vacuum/vacuum_screen.dart';
 import 'features/bio/bio_viewer_screen.dart';
-import 'features/oracle/oracle_chat_screen.dart';
+import 'features/nexus/nexus_chat_screen.dart';
 import 'features/engine_room/engine_room_screen.dart';
 import 'theme/theme.dart';
 
@@ -42,15 +44,47 @@ class _NavigationShellState extends State<_NavigationShell> {
 
   late final List<Widget> _screens = [
     HomeScreen(onSwitchTab: _switchTab),
-    const VacuumScreen(),
+    VacuumScreen(onSwitchTab: _switchTab),
     const BioViewerScreen(),
-    const OracleChatScreen(),
+    const NexusChatScreen(),
     const EngineRoomScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'ForgeVault',
+          style: GoogleFonts.inter(
+            letterSpacing: 4,
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.lock_outline, color: Colors.red, size: 20),
+            tooltip: 'Lock Vault',
+            onPressed: () => Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => AuthScreen(onAuthenticated: () {}),
+              ),
+              (_) => false,
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.help_outline, size: 20),
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const HelpScreen()));
+            },
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           IndexedStack(index: _currentIndex, children: _screens),
@@ -123,7 +157,7 @@ class _NavigationShellState extends State<_NavigationShell> {
           NavigationDestination(
             icon: Icon(Icons.chat_outlined),
             selectedIcon: Icon(Icons.chat_rounded),
-            label: 'Oracle',
+            label: 'Nexus',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_suggest_outlined),

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'core_identity.dart';
+part of 'medical_ledger.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,92 +9,82 @@ part of 'core_identity.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetCoreIdentityCollection on Isar {
-  IsarCollection<CoreIdentity> get coreIdentitys => this.collection();
+extension GetMedicalLedgerCollection on Isar {
+  IsarCollection<MedicalLedger> get medicalLedgers => this.collection();
 }
 
-const CoreIdentitySchema = CollectionSchema(
-  name: r'CoreIdentity',
-  id: 3842660777730653453,
+const MedicalLedgerSchema = CollectionSchema(
+  name: r'MedicalLedger',
+  id: 4117099871379284233,
   properties: {
-    r'completenessScore': PropertySchema(
+    r'bloodwork': PropertySchema(
       id: 0,
-      name: r'completenessScore',
-      type: IsarType.long,
+      name: r'bloodwork',
+      type: IsarType.stringList,
     ),
-    r'dateOfBirth': PropertySchema(
+    r'dentalHistory': PropertySchema(
       id: 1,
-      name: r'dateOfBirth',
-      type: IsarType.dateTime,
+      name: r'dentalHistory',
+      type: IsarType.stringList,
     ),
-    r'digitalFootprint': PropertySchema(
+    r'familyMedicalHistory': PropertySchema(
       id: 2,
-      name: r'digitalFootprint',
+      name: r'familyMedicalHistory',
       type: IsarType.stringList,
     ),
-    r'educationHistory': PropertySchema(
+    r'genetics': PropertySchema(
       id: 3,
-      name: r'educationHistory',
+      name: r'genetics',
       type: IsarType.stringList,
     ),
-    r'familyLineage': PropertySchema(
+    r'immunizations': PropertySchema(
       id: 4,
-      name: r'familyLineage',
-      type: IsarType.stringList,
-    ),
-    r'fullName': PropertySchema(
-      id: 5,
-      name: r'fullName',
-      type: IsarType.string,
-    ),
-    r'immutableTraits': PropertySchema(
-      id: 6,
-      name: r'immutableTraits',
-      type: IsarType.stringList,
-    ),
-    r'jobHistory': PropertySchema(
-      id: 7,
-      name: r'jobHistory',
+      name: r'immunizations',
       type: IsarType.stringList,
     ),
     r'lastUpdated': PropertySchema(
-      id: 8,
+      id: 5,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
-    r'location': PropertySchema(
-      id: 9,
-      name: r'location',
-      type: IsarType.string,
+    r'surgeries': PropertySchema(
+      id: 6,
+      name: r'surgeries',
+      type: IsarType.stringList,
     ),
-    r'locationHistory': PropertySchema(
-      id: 10,
-      name: r'locationHistory',
+    r'visionRx': PropertySchema(
+      id: 7,
+      name: r'visionRx',
+      type: IsarType.stringList,
+    ),
+    r'vitalBaselines': PropertySchema(
+      id: 8,
+      name: r'vitalBaselines',
       type: IsarType.stringList,
     )
   },
-  estimateSize: _coreIdentityEstimateSize,
-  serialize: _coreIdentitySerialize,
-  deserialize: _coreIdentityDeserialize,
-  deserializeProp: _coreIdentityDeserializeProp,
+  estimateSize: _medicalLedgerEstimateSize,
+  serialize: _medicalLedgerSerialize,
+  deserialize: _medicalLedgerDeserialize,
+  deserializeProp: _medicalLedgerDeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
-  getId: _coreIdentityGetId,
-  getLinks: _coreIdentityGetLinks,
-  attach: _coreIdentityAttach,
+  getId: _medicalLedgerGetId,
+  getLinks: _medicalLedgerGetLinks,
+  attach: _medicalLedgerAttach,
   version: '3.1.0+1',
 );
 
-int _coreIdentityEstimateSize(
-  CoreIdentity object,
+int _medicalLedgerEstimateSize(
+  MedicalLedger object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
   {
-    final list = object.digitalFootprint;
+    final list = object.bloodwork;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -106,7 +96,7 @@ int _coreIdentityEstimateSize(
     }
   }
   {
-    final list = object.educationHistory;
+    final list = object.dentalHistory;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -118,20 +108,7 @@ int _coreIdentityEstimateSize(
     }
   }
   {
-    final list = object.familyLineage;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount += value.length * 3;
-        }
-      }
-    }
-  }
-  bytesCount += 3 + object.fullName.length * 3;
-  {
-    final list = object.immutableTraits;
+    final list = object.familyMedicalHistory;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -143,7 +120,7 @@ int _coreIdentityEstimateSize(
     }
   }
   {
-    final list = object.jobHistory;
+    final list = object.genetics;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -154,9 +131,44 @@ int _coreIdentityEstimateSize(
       }
     }
   }
-  bytesCount += 3 + object.location.length * 3;
   {
-    final list = object.locationHistory;
+    final list = object.immunizations;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.surgeries;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.visionRx;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.vitalBaselines;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -170,48 +182,44 @@ int _coreIdentityEstimateSize(
   return bytesCount;
 }
 
-void _coreIdentitySerialize(
-  CoreIdentity object,
+void _medicalLedgerSerialize(
+  MedicalLedger object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.completenessScore);
-  writer.writeDateTime(offsets[1], object.dateOfBirth);
-  writer.writeStringList(offsets[2], object.digitalFootprint);
-  writer.writeStringList(offsets[3], object.educationHistory);
-  writer.writeStringList(offsets[4], object.familyLineage);
-  writer.writeString(offsets[5], object.fullName);
-  writer.writeStringList(offsets[6], object.immutableTraits);
-  writer.writeStringList(offsets[7], object.jobHistory);
-  writer.writeDateTime(offsets[8], object.lastUpdated);
-  writer.writeString(offsets[9], object.location);
-  writer.writeStringList(offsets[10], object.locationHistory);
+  writer.writeStringList(offsets[0], object.bloodwork);
+  writer.writeStringList(offsets[1], object.dentalHistory);
+  writer.writeStringList(offsets[2], object.familyMedicalHistory);
+  writer.writeStringList(offsets[3], object.genetics);
+  writer.writeStringList(offsets[4], object.immunizations);
+  writer.writeDateTime(offsets[5], object.lastUpdated);
+  writer.writeStringList(offsets[6], object.surgeries);
+  writer.writeStringList(offsets[7], object.visionRx);
+  writer.writeStringList(offsets[8], object.vitalBaselines);
 }
 
-CoreIdentity _coreIdentityDeserialize(
+MedicalLedger _medicalLedgerDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = CoreIdentity();
-  object.completenessScore = reader.readLong(offsets[0]);
-  object.dateOfBirth = reader.readDateTimeOrNull(offsets[1]);
-  object.digitalFootprint = reader.readStringList(offsets[2]);
-  object.educationHistory = reader.readStringList(offsets[3]);
-  object.familyLineage = reader.readStringList(offsets[4]);
-  object.fullName = reader.readString(offsets[5]);
+  final object = MedicalLedger();
+  object.bloodwork = reader.readStringList(offsets[0]);
+  object.dentalHistory = reader.readStringList(offsets[1]);
+  object.familyMedicalHistory = reader.readStringList(offsets[2]);
+  object.genetics = reader.readStringList(offsets[3]);
   object.id = id;
-  object.immutableTraits = reader.readStringList(offsets[6]);
-  object.jobHistory = reader.readStringList(offsets[7]);
-  object.lastUpdated = reader.readDateTime(offsets[8]);
-  object.location = reader.readString(offsets[9]);
-  object.locationHistory = reader.readStringList(offsets[10]);
+  object.immunizations = reader.readStringList(offsets[4]);
+  object.lastUpdated = reader.readDateTime(offsets[5]);
+  object.surgeries = reader.readStringList(offsets[6]);
+  object.visionRx = reader.readStringList(offsets[7]);
+  object.vitalBaselines = reader.readStringList(offsets[8]);
   return object;
 }
 
-P _coreIdentityDeserializeProp<P>(
+P _medicalLedgerDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -219,9 +227,9 @@ P _coreIdentityDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 2:
       return (reader.readStringList(offset)) as P;
     case 3:
@@ -229,47 +237,44 @@ P _coreIdentityDeserializeProp<P>(
     case 4:
       return (reader.readStringList(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 6:
       return (reader.readStringList(offset)) as P;
     case 7:
       return (reader.readStringList(offset)) as P;
     case 8:
-      return (reader.readDateTime(offset)) as P;
-    case 9:
-      return (reader.readString(offset)) as P;
-    case 10:
       return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-Id _coreIdentityGetId(CoreIdentity object) {
+Id _medicalLedgerGetId(MedicalLedger object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _coreIdentityGetLinks(CoreIdentity object) {
+List<IsarLinkBase<dynamic>> _medicalLedgerGetLinks(MedicalLedger object) {
   return [];
 }
 
-void _coreIdentityAttach(
-    IsarCollection<dynamic> col, Id id, CoreIdentity object) {
+void _medicalLedgerAttach(
+    IsarCollection<dynamic> col, Id id, MedicalLedger object) {
   object.id = id;
 }
 
-extension CoreIdentityQueryWhereSort
-    on QueryBuilder<CoreIdentity, CoreIdentity, QWhere> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhere> anyId() {
+extension MedicalLedgerQueryWhereSort
+    on QueryBuilder<MedicalLedger, MedicalLedger, QWhere> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension CoreIdentityQueryWhere
-    on QueryBuilder<CoreIdentity, CoreIdentity, QWhereClause> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhereClause> idEqualTo(Id id) {
+extension MedicalLedgerQueryWhere
+    on QueryBuilder<MedicalLedger, MedicalLedger, QWhereClause> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhereClause> idEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -278,7 +283,7 @@ extension CoreIdentityQueryWhere
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhereClause> idNotEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhereClause> idNotEqualTo(
       Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -301,7 +306,7 @@ extension CoreIdentityQueryWhere
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhereClause> idGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhereClause> idGreaterThan(
       Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
@@ -311,7 +316,8 @@ extension CoreIdentityQueryWhere
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhereClause> idLessThan(Id id,
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhereClause> idLessThan(
+      Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -320,7 +326,7 @@ extension CoreIdentityQueryWhere
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterWhereClause> idBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -337,172 +343,42 @@ extension CoreIdentityQueryWhere
   }
 }
 
-extension CoreIdentityQueryFilter
-    on QueryBuilder<CoreIdentity, CoreIdentity, QFilterCondition> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      completenessScoreEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'completenessScore',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      completenessScoreGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'completenessScore',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      completenessScoreLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'completenessScore',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      completenessScoreBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'completenessScore',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthIsNull() {
+extension MedicalLedgerQueryFilter
+    on QueryBuilder<MedicalLedger, MedicalLedger, QFilterCondition> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'dateOfBirth',
+        property: r'bloodwork',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthIsNotNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'dateOfBirth',
+        property: r'bloodwork',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthEqualTo(DateTime? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'dateOfBirth',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'dateOfBirth',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'dateOfBirth',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      dateOfBirthBetween(
-    DateTime? lower,
-    DateTime? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'dateOfBirth',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'digitalFootprint',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'digitalFootprint',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -510,15 +386,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -526,15 +402,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -543,7 +419,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -553,83 +429,81 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementContains(String value,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementMatches(String pattern,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'digitalFootprint',
+        property: r'bloodwork',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthEqualTo(int length) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         length,
         true,
         length,
@@ -638,11 +512,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         0,
         true,
         0,
@@ -651,11 +525,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         0,
         false,
         999999,
@@ -664,14 +538,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         0,
         true,
         length,
@@ -680,14 +554,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         length,
         include,
         999999,
@@ -696,8 +570,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      bloodworkLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -705,7 +579,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'digitalFootprint',
+        r'bloodwork',
         lower,
         includeLower,
         upper,
@@ -714,40 +588,40 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'educationHistory',
+        property: r'dentalHistory',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNotNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'educationHistory',
+        property: r'dentalHistory',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -755,15 +629,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -771,15 +645,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -788,7 +662,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -798,83 +672,81 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementContains(String value,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementMatches(String pattern,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'educationHistory',
+        property: r'dentalHistory',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthEqualTo(int length) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         length,
         true,
         length,
@@ -883,11 +755,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         0,
         true,
         0,
@@ -896,11 +768,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         0,
         false,
         999999,
@@ -909,14 +781,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         0,
         true,
         length,
@@ -925,14 +797,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         length,
         include,
         999999,
@@ -941,8 +813,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      dentalHistoryLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -950,7 +822,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'educationHistory',
+        r'dentalHistory',
         lower,
         includeLower,
         upper,
@@ -959,40 +831,40 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageIsNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageIsNotNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1000,15 +872,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1016,15 +888,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1033,7 +905,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1043,81 +915,83 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementContains(String value,
+          {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementMatches(String pattern,
+          {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageElementIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'familyLineage',
+        property: r'familyMedicalHistory',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageLengthEqualTo(int length) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         length,
         true,
         length,
@@ -1126,11 +1000,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         0,
         true,
         0,
@@ -1139,11 +1013,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         0,
         false,
         999999,
@@ -1152,14 +1026,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageLengthLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         0,
         true,
         length,
@@ -1168,14 +1042,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageLengthGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         length,
         include,
         999999,
@@ -1184,8 +1058,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      familyLineageLengthBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      familyMedicalHistoryLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1193,7 +1067,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'familyLineage',
+        r'familyMedicalHistory',
         lower,
         includeLower,
         upper,
@@ -1202,22 +1076,40 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'genetics',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'genetics',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1225,15 +1117,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1241,15 +1133,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1258,7 +1150,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'fullName',
+        property: r'genetics',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1268,77 +1160,166 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'fullName',
+        property: r'genetics',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'fullName',
+        property: r'genetics',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fullName',
+        property: r'genetics',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      fullNameIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'fullName',
+        property: r'genetics',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      geneticsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'genetics',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1348,7 +1329,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -1361,7 +1343,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition> idLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -1374,7 +1356,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition> idBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -1391,40 +1373,40 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsIsNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'immutableTraits',
+        property: r'immunizations',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsIsNotNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'immutableTraits',
+        property: r'immunizations',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1432,15 +1414,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1448,15 +1430,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1465,7 +1447,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'immutableTraits',
+        property: r'immunizations',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1475,83 +1457,81 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementContains(String value,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementMatches(String pattern,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'immutableTraits',
+        property: r'immunizations',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsElementIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'immutableTraits',
+        property: r'immunizations',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsLengthEqualTo(int length) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         length,
         true,
         length,
@@ -1560,11 +1540,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         0,
         true,
         0,
@@ -1573,11 +1553,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         0,
         false,
         999999,
@@ -1586,14 +1566,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsLengthLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         0,
         true,
         length,
@@ -1602,14 +1582,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsLengthGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         length,
         include,
         999999,
@@ -1618,8 +1598,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      immutableTraitsLengthBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      immunizationsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1627,7 +1607,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'immutableTraits',
+        r'immunizations',
         lower,
         includeLower,
         upper,
@@ -1636,250 +1616,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'jobHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'jobHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'jobHistory',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'jobHistory',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'jobHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'jobHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
       lastUpdatedEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1889,7 +1626,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
       lastUpdatedGreaterThan(
     DateTime value, {
     bool include = false,
@@ -1903,7 +1640,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
       lastUpdatedLessThan(
     DateTime value, {
     bool include = false,
@@ -1917,7 +1654,7 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
       lastUpdatedBetween(
     DateTime lower,
     DateTime upper, {
@@ -1935,176 +1672,40 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'location',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'location',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'location',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'location',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'location',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryIsNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'locationHistory',
+        property: r'surgeries',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryIsNotNull() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'locationHistory',
+        property: r'surgeries',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementEqualTo(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2112,15 +1713,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -2128,15 +1729,15 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -2145,7 +1746,7 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'locationHistory',
+        property: r'surgeries',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -2155,83 +1756,81 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementStartsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementEndsWith(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementContains(String value,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementMatches(String pattern,
-          {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'locationHistory',
+        property: r'surgeries',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryElementIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'locationHistory',
+        property: r'surgeries',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryLengthEqualTo(int length) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
         length,
         true,
         length,
@@ -2240,11 +1839,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryIsEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
         0,
         true,
         0,
@@ -2253,11 +1852,11 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryIsNotEmpty() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
         0,
         false,
         999999,
@@ -2266,14 +1865,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryLengthLessThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
         0,
         true,
         length,
@@ -2282,14 +1881,14 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryLengthGreaterThan(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
         length,
         include,
         999999,
@@ -2298,8 +1897,8 @@ extension CoreIdentityQueryFilter
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      locationHistoryLengthBetween(
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      surgeriesLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -2307,7 +1906,494 @@ extension CoreIdentityQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'locationHistory',
+        r'surgeries',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'visionRx',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'visionRx',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'visionRx',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'visionRx',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'visionRx',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'visionRx',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'visionRx',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      visionRxLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'visionRx',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'vitalBaselines',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'vitalBaselines',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'vitalBaselines',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'vitalBaselines',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'vitalBaselines',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'vitalBaselines',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'vitalBaselines',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterFilterCondition>
+      vitalBaselinesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'vitalBaselines',
         lower,
         includeLower,
         upper,
@@ -2317,314 +2403,186 @@ extension CoreIdentityQueryFilter
   }
 }
 
-extension CoreIdentityQueryObject
-    on QueryBuilder<CoreIdentity, CoreIdentity, QFilterCondition> {}
+extension MedicalLedgerQueryObject
+    on QueryBuilder<MedicalLedger, MedicalLedger, QFilterCondition> {}
 
-extension CoreIdentityQueryLinks
-    on QueryBuilder<CoreIdentity, CoreIdentity, QFilterCondition> {}
+extension MedicalLedgerQueryLinks
+    on QueryBuilder<MedicalLedger, MedicalLedger, QFilterCondition> {}
 
-extension CoreIdentityQuerySortBy
-    on QueryBuilder<CoreIdentity, CoreIdentity, QSortBy> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      sortByCompletenessScore() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'completenessScore', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      sortByCompletenessScoreDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'completenessScore', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByDateOfBirth() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dateOfBirth', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      sortByDateOfBirthDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dateOfBirth', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByFullName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByFullNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByLastUpdated() {
+extension MedicalLedgerQuerySortBy
+    on QueryBuilder<MedicalLedger, MedicalLedger, QSortBy> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy> sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy>
       sortByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByLocation() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'location', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> sortByLocationDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'location', Sort.desc);
-    });
-  }
 }
 
-extension CoreIdentityQuerySortThenBy
-    on QueryBuilder<CoreIdentity, CoreIdentity, QSortThenBy> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      thenByCompletenessScore() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'completenessScore', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      thenByCompletenessScoreDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'completenessScore', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByDateOfBirth() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dateOfBirth', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
-      thenByDateOfBirthDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'dateOfBirth', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByFullName() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByFullNameDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fullName', Sort.desc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenById() {
+extension MedicalLedgerQuerySortThenBy
+    on QueryBuilder<MedicalLedger, MedicalLedger, QSortThenBy> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByLastUpdated() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy> thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy>
+  QueryBuilder<MedicalLedger, MedicalLedger, QAfterSortBy>
       thenByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByLocation() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'location', Sort.asc);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterSortBy> thenByLocationDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'location', Sort.desc);
-    });
-  }
 }
 
-extension CoreIdentityQueryWhereDistinct
-    on QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> {
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByCompletenessScore() {
+extension MedicalLedgerQueryWhereDistinct
+    on QueryBuilder<MedicalLedger, MedicalLedger, QDistinct> {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct> distinctByBloodwork() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'completenessScore');
+      return query.addDistinctBy(r'bloodwork');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByDateOfBirth() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct>
+      distinctByDentalHistory() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'dateOfBirth');
+      return query.addDistinctBy(r'dentalHistory');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByDigitalFootprint() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct>
+      distinctByFamilyMedicalHistory() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'digitalFootprint');
+      return query.addDistinctBy(r'familyMedicalHistory');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByEducationHistory() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct> distinctByGenetics() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'educationHistory');
+      return query.addDistinctBy(r'genetics');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByFamilyLineage() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct>
+      distinctByImmunizations() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'familyLineage');
+      return query.addDistinctBy(r'immunizations');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByFullName(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'fullName', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByImmutableTraits() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'immutableTraits');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByJobHistory() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'jobHistory');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByLastUpdated() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct>
+      distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastUpdated');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByLocation(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct> distinctBySurgeries() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'location', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'surgeries');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByLocationHistory() {
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct> distinctByVisionRx() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'locationHistory');
+      return query.addDistinctBy(r'visionRx');
+    });
+  }
+
+  QueryBuilder<MedicalLedger, MedicalLedger, QDistinct>
+      distinctByVitalBaselines() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'vitalBaselines');
     });
   }
 }
 
-extension CoreIdentityQueryProperty
-    on QueryBuilder<CoreIdentity, CoreIdentity, QQueryProperty> {
-  QueryBuilder<CoreIdentity, int, QQueryOperations> idProperty() {
+extension MedicalLedgerQueryProperty
+    on QueryBuilder<MedicalLedger, MedicalLedger, QQueryProperty> {
+  QueryBuilder<MedicalLedger, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<CoreIdentity, int, QQueryOperations>
-      completenessScoreProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      bloodworkProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'completenessScore');
+      return query.addPropertyName(r'bloodwork');
     });
   }
 
-  QueryBuilder<CoreIdentity, DateTime?, QQueryOperations>
-      dateOfBirthProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      dentalHistoryProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'dateOfBirth');
+      return query.addPropertyName(r'dentalHistory');
     });
   }
 
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      digitalFootprintProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      familyMedicalHistoryProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'digitalFootprint');
+      return query.addPropertyName(r'familyMedicalHistory');
     });
   }
 
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      educationHistoryProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      geneticsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'educationHistory');
+      return query.addPropertyName(r'genetics');
     });
   }
 
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      familyLineageProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      immunizationsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'familyLineage');
+      return query.addPropertyName(r'immunizations');
     });
   }
 
-  QueryBuilder<CoreIdentity, String, QQueryOperations> fullNameProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'fullName');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      immutableTraitsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'immutableTraits');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      jobHistoryProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'jobHistory');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, DateTime, QQueryOperations> lastUpdatedProperty() {
+  QueryBuilder<MedicalLedger, DateTime, QQueryOperations>
+      lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdated');
     });
   }
 
-  QueryBuilder<CoreIdentity, String, QQueryOperations> locationProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      surgeriesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'location');
+      return query.addPropertyName(r'surgeries');
     });
   }
 
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      locationHistoryProperty() {
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      visionRxProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'locationHistory');
+      return query.addPropertyName(r'visionRx');
+    });
+  }
+
+  QueryBuilder<MedicalLedger, List<String>?, QQueryOperations>
+      vitalBaselinesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'vitalBaselines');
     });
   }
 }

@@ -118,8 +118,17 @@ class VacuumService {
           // PDF text extraction
           onPhaseChanged?.call(phasePdfExtract);
           extractedText = await _pdfService.extractText(file);
+        } else if (extension == '.docx' || extension == '.doc') {
+          // DOCX — native text extraction via docx_to_text
+          onPhaseChanged?.call(phaseExtracting);
+          try {
+            final bytes = await file.readAsBytes();
+            final rawDocx = docxToText(bytes);
+            extractedText = rawDocx.replaceAll(RegExp(r'<[^>]*>'), ' ');
+          } catch (e) {
+            throw Exception('DOCX extraction failed: $e');
+          }
         } else {
-          // DOCX/DOC — read as text (placeholder for full DOCX parsing)
           onPhaseChanged?.call(phaseExtracting);
           extractedText = await file.readAsString();
         }
@@ -225,7 +234,8 @@ class VacuumService {
       case '.docx':
         try {
           final bytes = await File(path).readAsBytes();
-          text = docxToText(bytes);
+          final rawDocx = docxToText(bytes);
+          text = rawDocx.replaceAll(RegExp(r'<[^>]*>'), ' ');
         } catch (e) {
           throw Exception(
             'DOCX extraction failed for ${path.split(Platform.pathSeparator).last}: $e',
@@ -240,7 +250,33 @@ class VacuumService {
       throw Exception('Could not extract readable text from this document.');
     }
 
-    return text;
+    return _sanitizeExtractedText(text);
+  }
+
+  /// Strip residual XML/HTML tags, control chars, and collapse whitespace.
+  ///
+  /// Applied after ALL text extraction to ensure the LLM receives
+  /// clean, dense, human-readable text — never raw XML or garbage.
+  static String _sanitizeExtractedText(String raw) {
+    var text = raw;
+
+    // Strip XML / HTML tags (e.g. residual <w:t>, <span>, etc.)
+    text = text.replaceAll(RegExp(r'<[^>]+>'), ' ');
+
+    // Strip XML declarations and processing instructions
+    text = text.replaceAll(RegExp(r'<\?[^?]*\?>'), ' ');
+
+    // Strip common XML namespaces that survive tag removal
+    text = text.replaceAll(RegExp(r'xmlns[:=][^\s>]+'), '');
+
+    // Strip non-printable control characters (keep newlines and tabs)
+    text = text.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]'), '');
+
+    // Collapse multiple whitespace / blank lines into single space/newline
+    text = text.replaceAll(RegExp(r'[ \t]+'), ' ');
+    text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
+
+    return text.trim();
   }
 
   // ── Private Helpers ──

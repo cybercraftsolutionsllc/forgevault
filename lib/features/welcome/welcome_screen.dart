@@ -1,10 +1,16 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../app.dart';
 import '../../core/services/vault_sync_service.dart';
+import '../../core/services/lifecycle_guard.dart';
+import '../../providers/providers.dart';
 import '../../theme/theme.dart';
+import '../auth/auth_screen.dart';
+import '../onboarding/onboarding_screen.dart';
 
 /// Welcome Screen — shown when no Master PIN / salt is configured.
 ///
@@ -12,7 +18,7 @@ import '../../theme/theme.dart';
 /// 1. **Initialize New Vault** — routes to the Onboarding flow.
 /// 2. **Restore from Backup** — picks a `.forgevault` capsule, prompts
 ///    for the original vault PIN, decrypts, and bootstraps the database.
-class WelcomeScreen extends StatefulWidget {
+class WelcomeScreen extends ConsumerStatefulWidget {
   final VoidCallback onInitialize;
   final VoidCallback onRestoreComplete;
 
@@ -23,10 +29,10 @@ class WelcomeScreen extends StatefulWidget {
   });
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
+  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen>
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
@@ -49,6 +55,36 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   void dispose() {
     _glowController.dispose();
     super.dispose();
+  }
+
+  /// Handle Initialize tap — self-navigating to avoid dead callbacks.
+  ///
+  /// When pushed from the Nuke flow, `widget.onInitialize` is `() {}`.
+  /// In that case, we self-navigate to the OnboardingScreen via Navigator.
+  void _handleInitialize() {
+    // Try the parent callback first (works from main.dart routing)
+    widget.onInitialize();
+
+    // Self-navigate as fallback — push OnboardingScreen directly.
+    // OnboardingScreen will navigate to AuthScreen on completion.
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => OnboardingScreen(
+            onComplete: () {
+              // After onboarding, navigate to AuthScreen for PIN creation
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => AuthScreen(onAuthenticated: () {}),
+                ),
+                (_) => false,
+              );
+            },
+          ),
+        ),
+        (_) => false,
+      );
+    }
   }
 
   Future<void> _startRestore() async {
@@ -92,6 +128,32 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', true);
 
+      // Flush Riverpod RAM cache — invalidate EVERY stream provider
+      // so ghost data from the previous session is purged from RAM.
+      ref.invalidate(databaseProvider);
+      ref.invalidate(bioProgressProvider);
+      ref.invalidate(identityStreamProvider);
+      ref.invalidate(timelineStreamProvider);
+      ref.invalidate(troublesStreamProvider);
+      ref.invalidate(goalsStreamProvider);
+      ref.invalidate(healthStreamProvider);
+      ref.invalidate(financesStreamProvider);
+      ref.invalidate(relationshipsStreamProvider);
+      ref.invalidate(habitsStreamProvider);
+      ref.invalidate(medicalLedgerStreamProvider);
+      ref.invalidate(careerLedgerStreamProvider);
+      ref.invalidate(assetLedgerStreamProvider);
+      ref.invalidate(relationalWebStreamProvider);
+      ref.invalidate(psycheProfileStreamProvider);
+      // Bump generation counter so ALL stream providers resubscribe
+      // to the freshly opened Isar instance from importCapsule.
+      ref.read(dbGenerationProvider.notifier).state++;
+
+      // Pop the PIN dialog if still on the navigator stack
+      if (mounted && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -106,7 +168,24 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             backgroundColor: Colors.green.shade800,
           ),
         );
-        widget.onRestoreComplete();
+
+        // Navigate directly to AuthScreen, clearing entire nav stack
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (ctx) => AuthScreen(
+              onAuthenticated: () {
+                Navigator.of(ctx).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const LifecycleGuard(child: ForgeVaultApp()),
+                  ),
+                  (route) => false,
+                );
+              },
+            ),
+          ),
+          (route) => false,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -163,6 +242,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               obscureText: true,
               autofocus: true,
               keyboardType: TextInputType.number,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => Navigator.of(context).pop(controller.text),
               style: GoogleFonts.jetBrainsMono(
                 fontSize: 18,
                 color: VaultColors.textPrimary,
@@ -326,7 +407,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: widget.onInitialize,
+                  onPressed: _handleInitialize,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: VaultColors.primary,
                     foregroundColor: VaultColors.textPrimary,

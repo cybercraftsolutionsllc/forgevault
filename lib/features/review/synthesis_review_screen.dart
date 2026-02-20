@@ -69,8 +69,8 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
       ),
       body: Column(
         children: [
-          // Contradictions warning
-          if (_result.contradictions.isNotEmpty) _buildContradictions(),
+          // Changelog (AI Modification Log)
+          if (_result.changelog.isNotEmpty) _buildChangelog(),
 
           // Scrollable content
           Expanded(
@@ -86,6 +86,11 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
                 if (_result.healthProfile != null) _buildHealthSection(),
                 if (_result.goals.isNotEmpty) _buildGoalsSection(),
                 if (_result.habitsVices.isNotEmpty) _buildHabitsSection(),
+                if (_result.medicalLedger != null) _buildMedicalSection(),
+                if (_result.careerLedger != null) _buildCareerSection(),
+                if (_result.assetLedger != null) _buildAssetsSection(),
+                if (_result.relationalWeb != null) _buildRelationalWebSection(),
+                if (_result.psycheProfile != null) _buildPsycheSection(),
                 const SizedBox(height: 100),
               ],
             ),
@@ -100,17 +105,14 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
 
   // ── Contradictions Warning ──
 
-  Widget _buildContradictions() {
+  Widget _buildChangelog() {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 8, 20, 4),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: VaultColors.warning.withValues(alpha: 0.1),
-        border: Border.all(
-          color: VaultColors.warning.withValues(alpha: 0.3),
-          width: 0.5,
-        ),
+        color: const Color(0xFF1A2332),
+        border: Border.all(color: const Color(0xFF2A3A4A), width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,33 +120,33 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
           Row(
             children: [
               const Icon(
-                Icons.warning_amber_rounded,
-                color: VaultColors.warning,
+                Icons.auto_fix_high_rounded,
+                color: Color(0xFF64B5F6),
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
-                'CONTRADICTIONS DETECTED',
+                'AI MODIFICATION LOG',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: VaultColors.warning,
+                  color: const Color(0xFF90CAF9),
                   letterSpacing: 1.0,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          for (final c in _result.contradictions)
+          for (final entry in _result.changelog)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('• ', style: TextStyle(color: VaultColors.warning)),
+                  const Text('• ', style: TextStyle(color: Color(0xFF64B5F6))),
                   Expanded(
                     child: Text(
-                      c,
+                      entry,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: VaultColors.textSecondary,
@@ -297,6 +299,36 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
                 id.dateOfBirth?.toIso8601String().split('T').first ?? '',
                 (_) {},
               ),
+              if ((id.digitalFootprint ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Digital Footprint',
+                  id.digitalFootprint!.join(', '),
+                  (_) {},
+                ),
+              if ((id.jobHistory ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Job History',
+                  id.jobHistory!.join(', '),
+                  (_) {},
+                ),
+              if ((id.locationHistory ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Location History',
+                  id.locationHistory!.join(', '),
+                  (_) {},
+                ),
+              if ((id.educationHistory ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Education History',
+                  id.educationHistory!.join(', '),
+                  (_) {},
+                ),
+              if ((id.familyLineage ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Family Lineage',
+                  id.familyLineage!.join(', '),
+                  (_) {},
+                ),
             ],
           ),
         ),
@@ -505,6 +537,12 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
                 (_) {},
               ),
               _buildEditableField('Blood Type', hp.bloodType ?? '—', (_) {}),
+              if ((hp.labResults ?? []).isNotEmpty)
+                _buildEditableField(
+                  'Lab Results',
+                  hp.labResults!.join(', '),
+                  (_) {},
+                ),
             ],
           ),
         ),
@@ -577,6 +615,203 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
               ],
             ),
           ),
+      ],
+    );
+  }
+
+  // ── Medical Ledger Section ──
+
+  Widget _buildMedicalSection() {
+    final m = _result.medicalLedger!;
+    final entries = <MapEntry<String, List<String>?>>[
+      MapEntry('Surgeries', m.surgeries),
+      MapEntry('Genetics', m.genetics),
+      MapEntry('Vital Baselines', m.vitalBaselines),
+      MapEntry('Vision Rx', m.visionRx),
+      MapEntry('Family Medical Hx', m.familyMedicalHistory),
+      MapEntry('Bloodwork', m.bloodwork),
+      MapEntry('Immunizations', m.immunizations),
+      MapEntry('Dental History', m.dentalHistory),
+    ];
+    final populated = entries
+        .where((e) => e.value != null && e.value!.isNotEmpty)
+        .toList();
+    if (populated.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Medical Ledger',
+          Icons.medical_services_rounded,
+          populated.length,
+        ),
+        _buildDataCard(
+          Column(
+            children: populated
+                .map(
+                  (e) =>
+                      _buildEditableField(e.key, e.value!.join(', '), (_) {}),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Career Ledger Section ──
+
+  Widget _buildCareerSection() {
+    final c = _result.careerLedger!;
+    final entries = <MapEntry<String, List<String>?>>[
+      MapEntry('Jobs', c.jobs),
+      MapEntry('Degrees', c.degrees),
+      MapEntry('Certifications', c.certifications),
+      MapEntry('Clearances', c.clearances),
+      MapEntry('Skills', c.skills),
+      MapEntry('Projects', c.projects),
+    ];
+    final populated = entries
+        .where((e) => e.value != null && e.value!.isNotEmpty)
+        .toList();
+    if (populated.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Career Ledger',
+          Icons.work_rounded,
+          populated.length,
+        ),
+        _buildDataCard(
+          Column(
+            children: populated
+                .map(
+                  (e) =>
+                      _buildEditableField(e.key, e.value!.join(', '), (_) {}),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Assets Ledger Section ──
+
+  Widget _buildAssetsSection() {
+    final a = _result.assetLedger!;
+    final entries = <MapEntry<String, List<String>?>>[
+      MapEntry('Real Estate', a.realEstate),
+      MapEntry('Vehicles', a.vehicles),
+      MapEntry('Digital Assets', a.digitalAssets),
+      MapEntry('Insurance', a.insurance),
+      MapEntry('Investments', a.investments),
+      MapEntry('Valuables', a.valuables),
+    ];
+    final populated = entries
+        .where((e) => e.value != null && e.value!.isNotEmpty)
+        .toList();
+    if (populated.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Asset Ledger',
+          Icons.account_balance_rounded,
+          populated.length,
+        ),
+        _buildDataCard(
+          Column(
+            children: populated
+                .map(
+                  (e) =>
+                      _buildEditableField(e.key, e.value!.join(', '), (_) {}),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Relational Web Section ──
+
+  Widget _buildRelationalWebSection() {
+    final r = _result.relationalWeb!;
+    final entries = <MapEntry<String, List<String>?>>[
+      MapEntry('Family', r.family),
+      MapEntry('Mentors', r.mentors),
+      MapEntry('Adversaries', r.adversaries),
+      MapEntry('Colleagues', r.colleagues),
+      MapEntry('Friends', r.friends),
+    ];
+    final populated = entries
+        .where((e) => e.value != null && e.value!.isNotEmpty)
+        .toList();
+    if (populated.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Relational Web',
+          Icons.hub_rounded,
+          populated.length,
+        ),
+        _buildDataCard(
+          Column(
+            children: populated
+                .map(
+                  (e) =>
+                      _buildEditableField(e.key, e.value!.join(', '), (_) {}),
+                )
+                .toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Psyche Profile Section ──
+
+  Widget _buildPsycheSection() {
+    final p = _result.psycheProfile!;
+    final listEntries = <MapEntry<String, List<String>?>>[
+      MapEntry('Beliefs', p.beliefs),
+      MapEntry('Personality', p.personality),
+      MapEntry('Fears', p.fears),
+      MapEntry('Motivations', p.motivations),
+      MapEntry('Strengths', p.strengths),
+      MapEntry('Weaknesses', p.weaknesses),
+    ];
+    final populated = listEntries
+        .where((e) => e.value != null && e.value!.isNotEmpty)
+        .toList();
+    final hasScalars =
+        (p.enneagram != null && p.enneagram!.isNotEmpty) ||
+        (p.mbti != null && p.mbti!.isNotEmpty);
+    if (populated.isEmpty && !hasScalars) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'Psyche Profile',
+          Icons.psychology_rounded,
+          populated.length + (hasScalars ? 1 : 0),
+        ),
+        _buildDataCard(
+          Column(
+            children: [
+              if (p.enneagram != null && p.enneagram!.isNotEmpty)
+                _buildEditableField('Enneagram', p.enneagram!, (_) {}),
+              if (p.mbti != null && p.mbti!.isNotEmpty)
+                _buildEditableField('MBTI', p.mbti!, (_) {}),
+              ...populated.map(
+                (e) => _buildEditableField(e.key, e.value!.join(', '), (_) {}),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }

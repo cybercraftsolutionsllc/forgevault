@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/database/database_service.dart';
+import '../../core/database/schemas/core_identity.dart';
 import '../../core/database/schemas/finance_record.dart';
 import '../../core/database/schemas/goal.dart';
 import '../../core/database/schemas/habit_vice.dart';
 import '../../core/database/schemas/relationship_node.dart';
 import '../../core/database/schemas/timeline_event.dart';
 import '../../core/database/schemas/trouble.dart';
+import '../../core/database/schemas/medical_ledger.dart';
+import '../../core/database/schemas/career_ledger.dart';
+import '../../core/database/schemas/asset_ledger.dart';
+import '../../core/database/schemas/relational_web.dart';
+import '../../core/database/schemas/psyche_profile.dart';
 import '../../providers/providers.dart';
 import '../../theme/theme.dart';
 
@@ -59,6 +66,51 @@ class BioViewerScreen extends ConsumerWidget {
           // ── Identity ──
           _IdentitySection(ref: ref),
 
+          // ── Career & Education ──
+          _IdentityListSection(
+            ref: ref,
+            icon: Icons.work_outline,
+            title: 'Career & Education',
+            subtitle: 'Jobs, roles, degrees, and certifications',
+            listExtractors: [
+              _ListDescriptor('Job History', (id) => id.jobHistory),
+              _ListDescriptor('Education', (id) => id.educationHistory),
+            ],
+          ),
+
+          // ── Location History ──
+          _IdentityListSection(
+            ref: ref,
+            icon: Icons.map_outlined,
+            title: 'Location History',
+            subtitle: 'Past and current cities and addresses',
+            listExtractors: [
+              _ListDescriptor('Locations', (id) => id.locationHistory),
+            ],
+          ),
+
+          // ── Family & Lineage ──
+          _IdentityListSection(
+            ref: ref,
+            icon: Icons.account_tree_outlined,
+            title: 'Family & Lineage',
+            subtitle: 'Ancestry, parents, children, heritage',
+            listExtractors: [
+              _ListDescriptor('Lineage', (id) => id.familyLineage),
+            ],
+          ),
+
+          // ── Digital Footprint ──
+          _IdentityListSection(
+            ref: ref,
+            icon: Icons.alternate_email,
+            title: 'Digital Footprint',
+            subtitle: 'Social media, URLs, and online profiles',
+            listExtractors: [
+              _ListDescriptor('Profiles', (id) => id.digitalFootprint),
+            ],
+          ),
+
           // ── Timeline ──
           _ListStreamSection<TimelineEvent>(
             icon: Icons.timeline_outlined,
@@ -66,8 +118,17 @@ class BioViewerScreen extends ConsumerWidget {
             subtitle: 'Life events in chronological order',
             provider: timelineStreamProvider,
             ref: ref,
-            itemBuilder: (e) =>
-                '${e.eventDate.toIso8601String().split('T').first}  ${e.title}',
+            itemBuilder: (e) {
+              try {
+                final dateStr = e.eventDate.toIso8601String().split('T').first;
+                return '$dateStr  ${e.title}';
+              } catch (_) {
+                return '???  ${e.title}';
+              }
+            },
+            idExtractor: (e) => e.id,
+            onDismissed: (id) =>
+                DatabaseService.instance.deleteTimelineEvent(id),
           ),
 
           // ── Troubles ──
@@ -79,6 +140,8 @@ class BioViewerScreen extends ConsumerWidget {
             ref: ref,
             itemBuilder: (t) =>
                 '${t.title} — Severity ${t.severity}/10${t.isResolved ? ' ✓' : ''}',
+            idExtractor: (t) => t.id,
+            onDismissed: (id) => DatabaseService.instance.deleteTrouble(id),
           ),
 
           // ── Finances ──
@@ -115,6 +178,8 @@ class BioViewerScreen extends ConsumerWidget {
             ref: ref,
             itemBuilder: (g) =>
                 '${g.title} — ${g.progress}%${g.isCompleted ? ' ✓' : ''}',
+            idExtractor: (g) => g.id,
+            onDismissed: (id) => DatabaseService.instance.deleteGoal(id),
           ),
 
           // ── Habits & Vices ──
@@ -126,6 +191,104 @@ class BioViewerScreen extends ConsumerWidget {
             ref: ref,
             itemBuilder: (h) =>
                 '${h.name} (${h.isVice ? "Vice" : "Habit"}) — ${h.frequency}',
+            idExtractor: (h) => h.id,
+            onDismissed: (id) => DatabaseService.instance.deleteHabitVice(id),
+          ),
+
+          // ── Medical Ledger ──
+          _LedgerSection<MedicalLedger>(
+            ref: ref,
+            icon: Icons.medical_services_outlined,
+            title: 'Medical Ledger',
+            subtitle: 'Surgeries, genetics, immunizations, dental',
+            provider: medicalLedgerStreamProvider,
+            fieldExtractors: [
+              _LedgerField('Surgeries', (m) => m.surgeries),
+              _LedgerField('Genetics', (m) => m.genetics),
+              _LedgerField('Vital Baselines', (m) => m.vitalBaselines),
+              _LedgerField('Vision Rx', (m) => m.visionRx),
+              _LedgerField('Family Medical Hx', (m) => m.familyMedicalHistory),
+              _LedgerField('Bloodwork', (m) => m.bloodwork),
+              _LedgerField('Immunizations', (m) => m.immunizations),
+              _LedgerField('Dental History', (m) => m.dentalHistory),
+            ],
+          ),
+
+          // ── Career Ledger ──
+          _LedgerSection<CareerLedger>(
+            ref: ref,
+            icon: Icons.work_outline,
+            title: 'Career Ledger',
+            subtitle: 'Jobs, degrees, certs, skills, projects',
+            provider: careerLedgerStreamProvider,
+            fieldExtractors: [
+              _LedgerField('Jobs', (c) => c.jobs),
+              _LedgerField('Degrees', (c) => c.degrees),
+              _LedgerField('Certifications', (c) => c.certifications),
+              _LedgerField('Clearances', (c) => c.clearances),
+              _LedgerField('Skills', (c) => c.skills),
+              _LedgerField('Projects', (c) => c.projects),
+            ],
+          ),
+
+          // ── Asset Ledger ──
+          _LedgerSection<AssetLedger>(
+            ref: ref,
+            icon: Icons.account_balance_outlined,
+            title: 'Asset Ledger',
+            subtitle: 'Property, vehicles, investments, insurance',
+            provider: assetLedgerStreamProvider,
+            fieldExtractors: [
+              _LedgerField('Real Estate', (a) => a.realEstate),
+              _LedgerField('Vehicles', (a) => a.vehicles),
+              _LedgerField('Digital Assets', (a) => a.digitalAssets),
+              _LedgerField('Insurance', (a) => a.insurance),
+              _LedgerField('Investments', (a) => a.investments),
+              _LedgerField('Valuables', (a) => a.valuables),
+            ],
+          ),
+
+          // ── Relational Web ──
+          _LedgerSection<RelationalWeb>(
+            ref: ref,
+            icon: Icons.hub_outlined,
+            title: 'Relational Web',
+            subtitle: 'Family, mentors, colleagues, friends',
+            provider: relationalWebStreamProvider,
+            fieldExtractors: [
+              _LedgerField('Family', (r) => r.family),
+              _LedgerField('Mentors', (r) => r.mentors),
+              _LedgerField('Adversaries', (r) => r.adversaries),
+              _LedgerField('Colleagues', (r) => r.colleagues),
+              _LedgerField('Friends', (r) => r.friends),
+            ],
+          ),
+
+          // ── Psyche Profile ──
+          _LedgerSection<PsycheProfile>(
+            ref: ref,
+            icon: Icons.psychology_outlined,
+            title: 'Psyche Profile',
+            subtitle: 'Beliefs, personality, fears, motivations',
+            provider: psycheProfileStreamProvider,
+            fieldExtractors: [
+              _LedgerField('Beliefs', (p) => p.beliefs),
+              _LedgerField('Personality', (p) => p.personality),
+              _LedgerField('Fears', (p) => p.fears),
+              _LedgerField('Motivations', (p) => p.motivations),
+              _LedgerField('Strengths', (p) => p.strengths),
+              _LedgerField('Weaknesses', (p) => p.weaknesses),
+            ],
+            scalarExtractor: (p) {
+              final parts = <String>[];
+              if (p.enneagram != null && p.enneagram!.isNotEmpty) {
+                parts.add('Enneagram: ${p.enneagram}');
+              }
+              if (p.mbti != null && p.mbti!.isNotEmpty) {
+                parts.add('MBTI: ${p.mbti}');
+              }
+              return parts.isEmpty ? null : parts.join('  •  ');
+            },
           ),
         ],
       ),
@@ -160,6 +323,22 @@ class _IdentitySection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Edit button row
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        size: 20,
+                        color: VaultColors.primaryLight,
+                      ),
+                      onPressed: () =>
+                          _showEditIdentityDialog(context, identity),
+                      tooltip: 'Edit Identity',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ),
                   _dataRow('Name', identity.fullName),
                   _dataRow('Location', identity.location),
                   _dataRow(
@@ -176,6 +355,125 @@ class _IdentitySection extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  void _showEditIdentityDialog(BuildContext context, CoreIdentity identity) {
+    final nameCtrl = TextEditingController(text: identity.fullName);
+    final locationCtrl = TextEditingController(text: identity.location);
+    final bornCtrl = TextEditingController(
+      text: identity.dateOfBirth?.toIso8601String().split('T').first ?? '',
+    );
+    final traitsCtrl = TextEditingController(
+      text: identity.immutableTraits?.join('\n') ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: VaultColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: VaultColors.border),
+        ),
+        title: Text(
+          'Edit Identity',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: VaultColors.textPrimary,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _editField('Name', nameCtrl),
+              const SizedBox(height: 12),
+              _editField('Location', locationCtrl),
+              const SizedBox(height: 12),
+              _editField('Born (YYYY-MM-DD)', bornCtrl),
+              const SizedBox(height: 12),
+              _editField('Traits (one per line)', traitsCtrl, maxLines: 4),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: VaultColors.textMuted),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              identity.fullName = nameCtrl.text.trim();
+              identity.location = locationCtrl.text.trim();
+              if (bornCtrl.text.trim().isNotEmpty) {
+                try {
+                  identity.dateOfBirth = DateTime.parse(bornCtrl.text.trim());
+                } catch (_) {}
+              }
+              final lines = traitsCtrl.text
+                  .split('\n')
+                  .map((e) => e.trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList();
+              identity.immutableTraits = lines.isEmpty ? null : lines;
+              identity.lastUpdated = DateTime.now();
+
+              final db = DatabaseService.instance.db;
+              await db.writeTxn(() async => db.coreIdentitys.put(identity));
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: VaultColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              'Save',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _editField(
+    String label,
+    TextEditingController controller, {
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      style: GoogleFonts.inter(fontSize: 13, color: VaultColors.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.inter(
+          fontSize: 12,
+          color: VaultColors.textMuted,
+        ),
+        filled: true,
+        fillColor: VaultColors.surfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: VaultColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: VaultColors.border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: VaultColors.primary),
+        ),
+      ),
     );
   }
 }
@@ -216,8 +514,207 @@ class _HealthSection extends StatelessWidget {
                   _dataRow('Blood Type', hp.bloodType ?? '—'),
                   if (hp.primaryPhysician != null)
                     _dataRow('Physician', hp.primaryPhysician!),
+                  if (hp.labResults?.isNotEmpty == true)
+                    _dataRow('Lab Results', hp.labResults!.join('\n•  ')),
                 ],
               ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Generic Ledger Section (single-record stream with List<String> fields)
+// ─────────────────────────────────────────────────────────────
+
+class _LedgerField<T> {
+  final String label;
+  final List<String>? Function(T) extractor;
+  const _LedgerField(this.label, this.extractor);
+}
+
+class _LedgerSection<T> extends StatelessWidget {
+  final WidgetRef ref;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final StreamProvider<T?> provider;
+  final List<_LedgerField<T>> fieldExtractors;
+  final String? Function(T)? scalarExtractor;
+
+  const _LedgerSection({
+    required this.ref,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.provider,
+    required this.fieldExtractors,
+    this.scalarExtractor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final asyncData = ref.watch(provider);
+
+    return _BioAccordion(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      children: [
+        asyncData.when(
+          loading: () => _loadingTile(),
+          error: (e, _) => _errorTile(e),
+          data: (record) {
+            if (record == null) return _emptyTile();
+
+            final rows = <Widget>[];
+
+            // Scalar row (e.g. MBTI / Enneagram for Psyche)
+            if (scalarExtractor != null) {
+              final scalar = scalarExtractor!(record);
+              if (scalar != null) {
+                rows.add(_dataRow('Type', scalar));
+              }
+            }
+
+            // List<String> field rows
+            for (final field in fieldExtractors) {
+              final list = field.extractor(record);
+              if (list != null && list.isNotEmpty) {
+                rows.add(_dataRow(field.label, list.join('\n•  ')));
+              }
+            }
+
+            if (rows.isEmpty) return _emptyTile();
+
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: rows,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Identity Derived List Sections (Career, Location, Lineage, Digital)
+// ─────────────────────────────────────────────────────────────
+
+class _ListDescriptor {
+  final String label;
+  final List<String>? Function(CoreIdentity) extractor;
+  const _ListDescriptor(this.label, this.extractor);
+}
+
+class _IdentityListSection extends StatelessWidget {
+  final WidgetRef ref;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<_ListDescriptor> listExtractors;
+
+  const _IdentityListSection({
+    required this.ref,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.listExtractors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final identityAsync = ref.watch(identityStreamProvider);
+
+    return _BioAccordion(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      children: [
+        identityAsync.when(
+          loading: () => _loadingTile(),
+          error: (e, _) => _errorTile(e),
+          data: (identity) {
+            if (identity == null) return _emptyTile();
+            final widgets = <Widget>[];
+            for (final desc in listExtractors) {
+              final items = desc.extractor(identity);
+              if (items != null && items.isNotEmpty) {
+                widgets.add(
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: 12,
+                      left: 16,
+                      right: 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          desc.label.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: VaultColors.textMuted,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        for (final item in items)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '•  ',
+                                  style: TextStyle(
+                                    color: VaultColors.primaryLight,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    item,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: VaultColors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+            }
+            if (widgets.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'No data extracted yet.',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Column(children: widgets),
             );
           },
         ),
@@ -237,6 +734,8 @@ class _ListStreamSection<T> extends StatelessWidget {
   final StreamProvider<List<T>> provider;
   final WidgetRef ref;
   final String Function(T) itemBuilder;
+  final int Function(T)? idExtractor;
+  final Future<void> Function(int id)? onDismissed;
 
   const _ListStreamSection({
     required this.icon,
@@ -245,6 +744,8 @@ class _ListStreamSection<T> extends StatelessWidget {
     required this.provider,
     required this.ref,
     required this.itemBuilder,
+    this.idExtractor,
+    this.onDismissed,
   });
 
   @override
@@ -262,38 +763,53 @@ class _ListStreamSection<T> extends StatelessWidget {
           data: (list) {
             if (list.isEmpty) return _emptyTile();
             return Column(
-              children: list
-                  .map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 6,
+              children: list.map((item) {
+                final tile = Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '•  ',
+                        style: TextStyle(
+                          color: VaultColors.primaryLight,
+                          fontSize: 13,
+                        ),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '•  ',
-                            style: TextStyle(
-                              color: VaultColors.primaryLight,
-                              fontSize: 13,
-                            ),
+                      Expanded(
+                        child: Text(
+                          itemBuilder(item),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            color: VaultColors.textSecondary,
+                            height: 1.4,
                           ),
-                          Expanded(
-                            child: Text(
-                              itemBuilder(item),
-                              style: GoogleFonts.inter(
-                                fontSize: 13,
-                                color: VaultColors.textSecondary,
-                                height: 1.4,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                    ],
+                  ),
+                );
+
+                if (idExtractor != null && onDismissed != null) {
+                  final id = idExtractor!(item);
+                  return Dismissible(
+                    key: ValueKey(id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      color: Colors.red.shade900,
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
                     ),
-                  )
-                  .toList(),
+                    onDismissed: (_) => onDismissed!(id),
+                    child: tile,
+                  );
+                }
+                return tile;
+              }).toList(),
             );
           },
         ),

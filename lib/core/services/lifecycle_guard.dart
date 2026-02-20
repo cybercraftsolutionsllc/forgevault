@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/auth_screen.dart';
 import '../../providers/providers.dart';
+import '../database/database_service.dart';
 import 'clipboard_service.dart';
 
 /// App-Level Panic Blur — covers the entire MaterialApp with a
@@ -73,9 +74,10 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
               : Duration.zero;
 
           if (elapsed > _reauthThreshold) {
-            // Exceeded 60s — push lock screen as fullscreen modal.
-            // The underlying navigation stack is preserved.
+            // Exceeded 60s — seal vault and push lock screen.
+            _sealVaultIfOpen();
             ref.invalidate(vacuumStateProvider);
+            ref.invalidate(databaseProvider);
             _backgroundedAt = null;
             setState(() => _isBlurred = false);
             _pushLockScreen();
@@ -88,9 +90,19 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
         break;
 
       case AppLifecycleState.detached:
-        // Final cleanup — scrub everything before process death.
+        // Final cleanup — seal vault and scrub memory before process death.
+        _sealVaultIfOpen();
         _scrubSensitiveMemory();
         break;
+    }
+  }
+
+  /// Best-effort seal: encrypt the Isar DB at rest (fire-and-forget).
+  void _sealVaultIfOpen() {
+    final pin = ref.read(masterPinProvider);
+    if (pin != null && DatabaseService.instance.isOpen) {
+      // Fire-and-forget — lifecycle callbacks are synchronous
+      DatabaseService.instance.sealAndClose(pin).catchError((_) {});
     }
   }
 

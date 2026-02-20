@@ -9,7 +9,9 @@ import 'package:local_auth/local_auth.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../app.dart';
 import '../../core/services/api_key_service.dart';
+import '../../core/services/lifecycle_guard.dart';
 import '../../theme/theme.dart';
 import '../../core/database/database_service.dart';
 import '../../providers/providers.dart';
@@ -170,8 +172,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         }
 
         // PINs match — set up and initialize
+        debugPrint('PIN setup: calling setupPin...');
         await DatabaseService.instance.setupPin(pin);
+        debugPrint('PIN setup: calling initialize...');
         await DatabaseService.instance.initialize(pin);
+
+        // Bump generation so stream providers resubscribe to fresh Isar
+        ref.read(dbGenerationProvider.notifier).state++;
 
         // Store PIN in memory for biometric re-auth.
         ref.read(masterPinProvider.notifier).state = pin;
@@ -179,11 +186,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         // Fire-and-forget: warm the API key cache.
         ApiKeyService().getActiveProvider();
         widget.onAuthenticated();
+
+        // Fallback self-navigation for post-nuke flow where
+        // onAuthenticated is () {}. Navigate to main app.
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (_) => const LifecycleGuard(child: ForgeVaultApp()),
+            ),
+            (_) => false,
+          );
+        }
       } else {
         // Returning user — verify PIN
         final valid = await DatabaseService.instance.verifyPin(pin);
         if (valid) {
           await DatabaseService.instance.initialize(pin);
+
+          // Bump generation so stream providers resubscribe to fresh Isar
+          ref.read(dbGenerationProvider.notifier).state++;
 
           // Store PIN in memory for biometric re-auth.
           ref.read(masterPinProvider.notifier).state = pin;
@@ -191,6 +212,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           // Fire-and-forget: warm the API key cache.
           ApiKeyService().getActiveProvider();
           widget.onAuthenticated();
+
+          // Fallback self-navigation
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (_) => const LifecycleGuard(child: ForgeVaultApp()),
+              ),
+              (_) => false,
+            );
+          }
         } else {
           setState(() {
             _pinError = true;
@@ -199,16 +230,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           HapticFeedback.heavyImpact();
         }
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('PIN submit error: $e\n$stackTrace');
       setState(() => _pinError = true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              e.toString(),
+              'Setup error: $e',
               style: const TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
             ),
             backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            width: 400,
             duration: const Duration(seconds: 5),
           ),
         );
@@ -428,6 +463,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             focusNode: _pinFocus,
                             obscureText: true,
                             keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.done,
                             textAlign: TextAlign.center,
                             maxLength: 8,
                             style: GoogleFonts.jetBrainsMono(
@@ -546,32 +582,29 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   // ── Factory Reset ──
 
-  /// Permanently wipe ALL app state: secure storage, preferences, and Isar DB.
+  /// Permanently wipe ALL app state: Isar DB, secure storage, preferences.
   Future<void> _factoryReset() async {
-    // 1. Wipe FlutterSecureStorage (salt, PIN hash, API keys)
+    // 1. Scorched-earth Isar destruction (releases Windows file lock)
+    try {
+      await DatabaseService.instance.nukeDatabase();
+    } catch (_) {}
+
+    // Flush bio progress cache so Dashboard reads 0%
+    ref.invalidate(bioProgressProvider);
+    // Bump generation counter so ALL stream providers resubscribe
+    ref.read(dbGenerationProvider.notifier).state++;
+
+    // 2. Wipe FlutterSecureStorage (salt, PIN hash, API keys)
     const storage = FlutterSecureStorage(
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
     );
     await storage.deleteAll();
 
-    // 2. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
+    // 3. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    // 3. Physically delete the Isar database files
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      final dbFile = File('${dir.path}${Platform.pathSeparator}default.isar');
-      final lockFile = File(
-        '${dir.path}${Platform.pathSeparator}default.isar.lock',
-      );
-      if (dbFile.existsSync()) dbFile.deleteSync();
-      if (lockFile.existsSync()) lockFile.deleteSync();
-    } catch (_) {
-      // Best-effort — the database may already be gone.
-    }
-
-    // 4. Also wipe the salt and PIN verification files from app support dir
+    // 4. Wipe the salt and PIN verification files from app support dir
     try {
       final supportDir = await getApplicationSupportDirectory();
       final saltFile = File(
@@ -582,9 +615,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       );
       if (saltFile.existsSync()) saltFile.deleteSync();
       if (verifyFile.existsSync()) verifyFile.deleteSync();
-    } catch (_) {
-      // Best-effort.
-    }
+    } catch (_) {}
   }
 
   /// Show the NUKE confirmation dialog requiring the user to type 'NUKE'.
@@ -700,7 +731,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
     if (confirmed != true || !mounted) return;
 
-    await _factoryReset();
+    try {
+      await _factoryReset();
+    } finally {
+      // Flush ALL Riverpod state — forces re-read from fresh DB on next boot
+      ref.invalidate(databaseProvider);
+    }
 
     if (!mounted) return;
 

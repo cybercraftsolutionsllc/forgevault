@@ -19,5 +19,7 @@ class HealthProfile {
 
   String? insuranceInfo;
 
+  List<String>? labResults;
+
   late DateTime lastUpdated;
 }

@@ -1,4 +1,4 @@
-import 'dart:developer' as developer;
+﻿import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +11,7 @@ import '../../core/services/local_rag_service.dart';
 import '../../theme/theme.dart';
 import 'mint_viewer_screen.dart';
 
-/// Oracle Chat Console — private conversational UI with BYOK LLM.
+/// Nexus Chat Console â€” private conversational UI with BYOK LLM.
 ///
 /// Features:
 /// - Dark Forest themed chat interface
@@ -19,18 +19,18 @@ import 'mint_viewer_screen.dart';
 /// - Airlock Interceptor dialog before any data egress
 /// - Automatic RAG context injection from Isar vault
 /// - Long-form responses open in MintViewerScreen
-class OracleChatScreen extends StatefulWidget {
+class NexusChatScreen extends StatefulWidget {
   final ForgeApiClient? forgeClient;
 
-  const OracleChatScreen({super.key, this.forgeClient});
+  const NexusChatScreen({super.key, this.forgeClient});
 
   @override
-  State<OracleChatScreen> createState() => _OracleChatScreenState();
+  State<NexusChatScreen> createState() => _NexusChatScreenState();
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Blueprint Definitions
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _Blueprint {
   final String name;
@@ -85,9 +85,9 @@ const _blueprints = [
   ),
 ];
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-class _OracleChatScreenState extends State<OracleChatScreen> {
+class _NexusChatScreenState extends State<NexusChatScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<_ChatMessage> _messages = [];
@@ -107,9 +107,9 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Blueprint Activation
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _activateBlueprint(_Blueprint bp) async {
     // Build the appropriate context blob
@@ -136,14 +136,14 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     // Add user message
     setState(() {
       _messages.add(
-        _ChatMessage(text: '🎫 ${bp.label}', isUser: true, isBlueprint: true),
+        _ChatMessage(text: 'ðŸŽ« ${bp.label}', isUser: true, isBlueprint: true),
       );
       _isProcessing = true;
     });
     _scrollToBottom();
 
-    // Build the full prompt with RAG context — the context blob
-    // and blueprint instruction are injected by askOracle.
+    // Build the full prompt with RAG context â€” the context blob
+    // and blueprint instruction are injected by askNexus.
 
     // Send to LLM
     await _sendToLlm(
@@ -154,9 +154,9 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Free-Form Chat
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _sendMessage() async {
     final text = _inputController.text.trim();
@@ -201,7 +201,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     String? blueprintTitle,
   }) async {
     try {
-      // Dynamic LLM routing via ApiKeyService — single source of truth.
+      // Dynamic LLM routing via ApiKeyService â€” single source of truth.
       final keyService = ApiKeyService();
       final activeProvider = await keyService.getActiveProvider();
 
@@ -210,8 +210,8 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
           _messages.add(
             _ChatMessage(
               text:
-                  'Oracle requires a configured LLM provider.\n\n'
-                  'Go to Engine Room → API Keys to connect Grok, Claude, or Gemini.',
+                  'Nexus requires a configured LLM provider.\n\n'
+                  'Go to Engine Room â†’ API Keys to connect Grok, Claude, or Gemini.',
               isUser: false,
               isError: true,
             ),
@@ -224,7 +224,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
       if (!mounted) return;
 
       final client = ForgeApiClient(keyService: keyService);
-      final response = await client.askOracle(
+      final response = await client.askNexus(
         query: query,
         context: isarContext,
       );
@@ -243,12 +243,12 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
       _scrollToBottom();
     } catch (e) {
       developer.log(
-        '\x1B[31m[ORACLE] LLM Error: $e\x1B[0m',
-        name: 'OracleChat',
+        '\x1B[31m[NEXUS] LLM Error: $e\x1B[0m',
+        name: 'NexusChat',
       );
       setState(() {
         _messages.add(
-          _ChatMessage(text: 'Oracle Error: $e', isUser: false, isError: true),
+          _ChatMessage(text: 'Nexus Error: $e', isUser: false, isError: true),
         );
         _isProcessing = false;
       });
@@ -277,9 +277,9 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     });
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Airlock Interceptor Dialog
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<bool?> _showAirlockInterceptor({
     required String contextBlob,
@@ -361,7 +361,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
                   ),
                 ),
                 child: Text(
-                  '🎫 Blueprint: $blueprintName',
+                  'ðŸŽ« Blueprint: $blueprintName',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -435,7 +435,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
                         ),
                       ),
                       Text(
-                        '$totalItems records · ~$tokenEstimate tokens',
+                        '$totalItems records Â· ~$tokenEstimate tokens',
                         style: GoogleFonts.jetBrainsMono(
                           fontSize: 10,
                           color: const Color(0xFFFF6B00),
@@ -547,9 +547,9 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Build
-  // ─────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -583,7 +583,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'ORACLE',
+              'NEXUS',
               style: GoogleFonts.jetBrainsMono(
                 letterSpacing: 4,
                 fontWeight: FontWeight.w700,
@@ -596,10 +596,10 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
       ),
       body: Column(
         children: [
-          // ── Blueprint Chips ──
+          // â”€â”€ Blueprint Chips â”€â”€
           _buildBlueprintBar(),
 
-          // ── Chat Messages ──
+          // â”€â”€ Chat Messages â”€â”€
           Expanded(
             child: _messages.isEmpty
                 ? _buildEmptyState()
@@ -622,7 +622,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
                   ),
           ),
 
-          // ── Input Bar ──
+          // â”€â”€ Input Bar â”€â”€
           _buildInputBar(),
         ],
       ),
@@ -701,7 +701,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Your Private Oracle',
+            'Your Private Nexus',
             style: GoogleFonts.playfairDisplay(
               fontSize: 22,
               fontWeight: FontWeight.w600,
@@ -776,7 +776,7 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
             ),
             const SizedBox(width: 10),
             Text(
-              'Oracle is thinking...',
+              'Nexus is thinking...',
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: VaultColors.textMuted,
@@ -871,16 +871,16 @@ class _OracleChatScreenState extends State<OracleChatScreen> {
       MaterialPageRoute(
         builder: (_) => MintViewerScreen(
           content: msg.text,
-          title: msg.blueprintTitle ?? 'Oracle Response',
+          title: msg.blueprintTitle ?? 'Nexus Response',
         ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Chat Models
-// ─────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ChatMessage {
   final String text;
@@ -988,7 +988,7 @@ class _ChatBubble extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'View Full · Export',
+                          'View Full Â· Export',
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -1006,3 +1006,4 @@ class _ChatBubble extends StatelessWidget {
     );
   }
 }
+

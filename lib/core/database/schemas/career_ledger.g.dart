@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'health_profile.dart';
+part of 'career_ledger.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,77 +9,72 @@ part of 'health_profile.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetHealthProfileCollection on Isar {
-  IsarCollection<HealthProfile> get healthProfiles => this.collection();
+extension GetCareerLedgerCollection on Isar {
+  IsarCollection<CareerLedger> get careerLedgers => this.collection();
 }
 
-const HealthProfileSchema = CollectionSchema(
-  name: r'HealthProfile',
-  id: 240444479585874694,
+const CareerLedgerSchema = CollectionSchema(
+  name: r'CareerLedger',
+  id: -1725444937252569597,
   properties: {
-    r'allergies': PropertySchema(
+    r'certifications': PropertySchema(
       id: 0,
-      name: r'allergies',
+      name: r'certifications',
       type: IsarType.stringList,
     ),
-    r'bloodType': PropertySchema(
+    r'clearances': PropertySchema(
       id: 1,
-      name: r'bloodType',
-      type: IsarType.string,
-    ),
-    r'conditions': PropertySchema(
-      id: 2,
-      name: r'conditions',
+      name: r'clearances',
       type: IsarType.stringList,
     ),
-    r'insuranceInfo': PropertySchema(
-      id: 3,
-      name: r'insuranceInfo',
-      type: IsarType.string,
+    r'degrees': PropertySchema(
+      id: 2,
+      name: r'degrees',
+      type: IsarType.stringList,
     ),
-    r'labResults': PropertySchema(
-      id: 4,
-      name: r'labResults',
+    r'jobs': PropertySchema(
+      id: 3,
+      name: r'jobs',
       type: IsarType.stringList,
     ),
     r'lastUpdated': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
-    r'medications': PropertySchema(
-      id: 6,
-      name: r'medications',
+    r'projects': PropertySchema(
+      id: 5,
+      name: r'projects',
       type: IsarType.stringList,
     ),
-    r'primaryPhysician': PropertySchema(
-      id: 7,
-      name: r'primaryPhysician',
-      type: IsarType.string,
+    r'skills': PropertySchema(
+      id: 6,
+      name: r'skills',
+      type: IsarType.stringList,
     )
   },
-  estimateSize: _healthProfileEstimateSize,
-  serialize: _healthProfileSerialize,
-  deserialize: _healthProfileDeserialize,
-  deserializeProp: _healthProfileDeserializeProp,
+  estimateSize: _careerLedgerEstimateSize,
+  serialize: _careerLedgerSerialize,
+  deserialize: _careerLedgerDeserialize,
+  deserializeProp: _careerLedgerDeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
-  getId: _healthProfileGetId,
-  getLinks: _healthProfileGetLinks,
-  attach: _healthProfileAttach,
+  getId: _careerLedgerGetId,
+  getLinks: _careerLedgerGetLinks,
+  attach: _careerLedgerAttach,
   version: '3.1.0+1',
 );
 
-int _healthProfileEstimateSize(
-  HealthProfile object,
+int _careerLedgerEstimateSize(
+  CareerLedger object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
   {
-    final list = object.allergies;
+    final list = object.certifications;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -91,13 +86,7 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.bloodType;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
-    final list = object.conditions;
+    final list = object.clearances;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -109,13 +98,7 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.insuranceInfo;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  {
-    final list = object.labResults;
+    final list = object.degrees;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -127,7 +110,7 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final list = object.medications;
+    final list = object.jobs;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -139,50 +122,66 @@ int _healthProfileEstimateSize(
     }
   }
   {
-    final value = object.primaryPhysician;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    final list = object.projects;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.skills;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
     }
   }
   return bytesCount;
 }
 
-void _healthProfileSerialize(
-  HealthProfile object,
+void _careerLedgerSerialize(
+  CareerLedger object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeStringList(offsets[0], object.allergies);
-  writer.writeString(offsets[1], object.bloodType);
-  writer.writeStringList(offsets[2], object.conditions);
-  writer.writeString(offsets[3], object.insuranceInfo);
-  writer.writeStringList(offsets[4], object.labResults);
-  writer.writeDateTime(offsets[5], object.lastUpdated);
-  writer.writeStringList(offsets[6], object.medications);
-  writer.writeString(offsets[7], object.primaryPhysician);
+  writer.writeStringList(offsets[0], object.certifications);
+  writer.writeStringList(offsets[1], object.clearances);
+  writer.writeStringList(offsets[2], object.degrees);
+  writer.writeStringList(offsets[3], object.jobs);
+  writer.writeDateTime(offsets[4], object.lastUpdated);
+  writer.writeStringList(offsets[5], object.projects);
+  writer.writeStringList(offsets[6], object.skills);
 }
 
-HealthProfile _healthProfileDeserialize(
+CareerLedger _careerLedgerDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = HealthProfile();
-  object.allergies = reader.readStringList(offsets[0]);
-  object.bloodType = reader.readStringOrNull(offsets[1]);
-  object.conditions = reader.readStringList(offsets[2]);
+  final object = CareerLedger();
+  object.certifications = reader.readStringList(offsets[0]);
+  object.clearances = reader.readStringList(offsets[1]);
+  object.degrees = reader.readStringList(offsets[2]);
   object.id = id;
-  object.insuranceInfo = reader.readStringOrNull(offsets[3]);
-  object.labResults = reader.readStringList(offsets[4]);
-  object.lastUpdated = reader.readDateTime(offsets[5]);
-  object.medications = reader.readStringList(offsets[6]);
-  object.primaryPhysician = reader.readStringOrNull(offsets[7]);
+  object.jobs = reader.readStringList(offsets[3]);
+  object.lastUpdated = reader.readDateTime(offsets[4]);
+  object.projects = reader.readStringList(offsets[5]);
+  object.skills = reader.readStringList(offsets[6]);
   return object;
 }
 
-P _healthProfileDeserializeProp<P>(
+P _careerLedgerDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -192,50 +191,47 @@ P _healthProfileDeserializeProp<P>(
     case 0:
       return (reader.readStringList(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 2:
       return (reader.readStringList(offset)) as P;
     case 3:
-      return (reader.readStringOrNull(offset)) as P;
-    case 4:
       return (reader.readStringList(offset)) as P;
-    case 5:
+    case 4:
       return (reader.readDateTime(offset)) as P;
+    case 5:
+      return (reader.readStringList(offset)) as P;
     case 6:
       return (reader.readStringList(offset)) as P;
-    case 7:
-      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
-Id _healthProfileGetId(HealthProfile object) {
+Id _careerLedgerGetId(CareerLedger object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _healthProfileGetLinks(HealthProfile object) {
+List<IsarLinkBase<dynamic>> _careerLedgerGetLinks(CareerLedger object) {
   return [];
 }
 
-void _healthProfileAttach(
-    IsarCollection<dynamic> col, Id id, HealthProfile object) {
+void _careerLedgerAttach(
+    IsarCollection<dynamic> col, Id id, CareerLedger object) {
   object.id = id;
 }
 
-extension HealthProfileQueryWhereSort
-    on QueryBuilder<HealthProfile, HealthProfile, QWhere> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhere> anyId() {
+extension CareerLedgerQueryWhereSort
+    on QueryBuilder<CareerLedger, CareerLedger, QWhere> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension HealthProfileQueryWhere
-    on QueryBuilder<HealthProfile, HealthProfile, QWhereClause> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idEqualTo(
-      Id id) {
+extension CareerLedgerQueryWhere
+    on QueryBuilder<CareerLedger, CareerLedger, QWhereClause> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -244,7 +240,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idNotEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhereClause> idNotEqualTo(
       Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
@@ -267,7 +263,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhereClause> idGreaterThan(
       Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
@@ -277,8 +273,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idLessThan(
-      Id id,
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhereClause> idLessThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -287,7 +282,7 @@ extension HealthProfileQueryWhere
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterWhereClause> idBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -304,42 +299,42 @@ extension HealthProfileQueryWhere
   }
 }
 
-extension HealthProfileQueryFilter
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNull() {
+extension CareerLedgerQueryFilter
+    on QueryBuilder<CareerLedger, CareerLedger, QFilterCondition> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'allergies',
+        property: r'certifications',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNotNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'allergies',
+        property: r'certifications',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -347,15 +342,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -363,15 +358,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -380,7 +375,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'allergies',
+        property: r'certifications',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -390,81 +385,82 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementStartsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementEndsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'allergies',
+        property: r'certifications',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementMatches(String pattern,
+          {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'allergies',
+        property: r'certifications',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'allergies',
+        property: r'certifications',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesElementIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'allergies',
+        property: r'certifications',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthEqualTo(int length) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         length,
         true,
         length,
@@ -473,11 +469,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         0,
         true,
         0,
@@ -486,11 +482,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         0,
         false,
         999999,
@@ -499,14 +495,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         0,
         true,
         length,
@@ -515,14 +511,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         length,
         include,
         999999,
@@ -531,8 +527,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      allergiesLengthBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      certificationsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -540,7 +536,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'allergies',
+        r'certifications',
         lower,
         includeLower,
         upper,
@@ -549,194 +545,40 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'bloodType',
+        property: r'clearances',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNotNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'bloodType',
+        property: r'clearances',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'bloodType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'bloodType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'bloodType',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bloodType',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      bloodTypeIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'bloodType',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'conditions',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'conditions',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -744,15 +586,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -760,15 +602,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -777,7 +619,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'conditions',
+        property: r'clearances',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -787,81 +629,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementStartsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementEndsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'conditions',
+        property: r'clearances',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'conditions',
+        property: r'clearances',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'conditions',
+        property: r'clearances',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsElementIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'conditions',
+        property: r'clearances',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthEqualTo(int length) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         length,
         true,
         length,
@@ -870,11 +712,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         0,
         true,
         0,
@@ -883,11 +725,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         0,
         false,
         999999,
@@ -896,14 +738,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         0,
         true,
         length,
@@ -912,14 +754,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         length,
         include,
         999999,
@@ -928,8 +770,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      conditionsLengthBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      clearancesLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -937,7 +779,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'conditions',
+        r'clearances',
         lower,
         includeLower,
         upper,
@@ -946,7 +788,250 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'degrees',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'degrees',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'degrees',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'degrees',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'degrees',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'degrees',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'degrees',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      degreesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'degrees',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -956,8 +1041,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      idGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -970,7 +1054,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -983,7 +1067,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition> idBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -1000,194 +1084,39 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition> jobsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'insuranceInfo',
+        property: r'jobs',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNotNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'insuranceInfo',
+        property: r'jobs',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'insuranceInfo',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'insuranceInfo',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'insuranceInfo',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'insuranceInfo',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      insuranceInfoIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'insuranceInfo',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'labResults',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'labResults',
-      ));
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1195,15 +1124,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1211,15 +1140,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1228,7 +1157,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'labResults',
+        property: r'jobs',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1238,81 +1167,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementStartsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementEndsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'labResults',
+        property: r'jobs',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'labResults',
+        property: r'jobs',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'labResults',
+        property: r'jobs',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsElementIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'labResults',
+        property: r'jobs',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthEqualTo(int length) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         length,
         true,
         length,
@@ -1321,11 +1250,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         0,
         true,
         0,
@@ -1334,11 +1263,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         0,
         false,
         999999,
@@ -1347,14 +1276,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         0,
         true,
         length,
@@ -1363,14 +1292,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         length,
         include,
         999999,
@@ -1379,8 +1308,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      labResultsLengthBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      jobsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1388,7 +1317,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'labResults',
+        r'jobs',
         lower,
         includeLower,
         upper,
@@ -1397,7 +1326,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
       lastUpdatedEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1407,7 +1336,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
       lastUpdatedGreaterThan(
     DateTime value, {
     bool include = false,
@@ -1421,7 +1350,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
       lastUpdatedLessThan(
     DateTime value, {
     bool include = false,
@@ -1435,7 +1364,7 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
       lastUpdatedBetween(
     DateTime lower,
     DateTime upper, {
@@ -1453,40 +1382,40 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'medications',
+        property: r'projects',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNotNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'medications',
+        property: r'projects',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementEqualTo(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1494,15 +1423,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1510,15 +1439,15 @@ extension HealthProfileQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1527,7 +1456,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'medications',
+        property: r'projects',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1537,81 +1466,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementStartsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementEndsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'medications',
+        property: r'projects',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'medications',
+        property: r'projects',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'medications',
+        property: r'projects',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsElementIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'medications',
+        property: r'projects',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthEqualTo(int length) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         length,
         true,
         length,
@@ -1620,11 +1549,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         0,
         true,
         0,
@@ -1633,11 +1562,11 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         0,
         false,
         999999,
@@ -1646,14 +1575,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthLessThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         0,
         true,
         length,
@@ -1662,14 +1591,14 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthGreaterThan(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         length,
         include,
         999999,
@@ -1678,8 +1607,8 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      medicationsLengthBetween(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      projectsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1687,7 +1616,7 @@ extension HealthProfileQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
-        r'medications',
+        r'projects',
         lower,
         includeLower,
         upper,
@@ -1696,81 +1625,81 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'primaryPhysician',
+        property: r'skills',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNotNull() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'primaryPhysician',
+        property: r'skills',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianEqualTo(
-    String? value, {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianGreaterThan(
-    String? value, {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianLessThan(
-    String? value, {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'primaryPhysician',
+        property: r'skills',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1780,327 +1709,313 @@ extension HealthProfileQueryFilter
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianStartsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianEndsWith(
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'primaryPhysician',
+        property: r'skills',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterFilterCondition>
-      primaryPhysicianIsNotEmpty() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsElementIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'primaryPhysician',
+        property: r'skills',
         value: '',
       ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      skillsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'skills',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
     });
   }
 }
 
-extension HealthProfileQueryObject
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {}
+extension CareerLedgerQueryObject
+    on QueryBuilder<CareerLedger, CareerLedger, QFilterCondition> {}
 
-extension HealthProfileQueryLinks
-    on QueryBuilder<HealthProfile, HealthProfile, QFilterCondition> {}
+extension CareerLedgerQueryLinks
+    on QueryBuilder<CareerLedger, CareerLedger, QFilterCondition> {}
 
-extension HealthProfileQuerySortBy
-    on QueryBuilder<HealthProfile, HealthProfile, QSortBy> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> sortByBloodType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByBloodTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByInsuranceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByInsuranceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> sortByLastUpdated() {
+extension CareerLedgerQuerySortBy
+    on QueryBuilder<CareerLedger, CareerLedger, QSortBy> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy> sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy>
       sortByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByPrimaryPhysician() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      sortByPrimaryPhysicianDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.desc);
-    });
-  }
 }
 
-extension HealthProfileQuerySortThenBy
-    on QueryBuilder<HealthProfile, HealthProfile, QSortThenBy> {
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByBloodType() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByBloodTypeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bloodType', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenById() {
+extension CareerLedgerQuerySortThenBy
+    on QueryBuilder<CareerLedger, CareerLedger, QSortThenBy> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByInsuranceInfo() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByInsuranceInfoDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'insuranceInfo', Sort.desc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy> thenByLastUpdated() {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy> thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
+  QueryBuilder<CareerLedger, CareerLedger, QAfterSortBy>
       thenByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByPrimaryPhysician() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.asc);
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QAfterSortBy>
-      thenByPrimaryPhysicianDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'primaryPhysician', Sort.desc);
-    });
-  }
 }
 
-extension HealthProfileQueryWhereDistinct
-    on QueryBuilder<HealthProfile, HealthProfile, QDistinct> {
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByAllergies() {
+extension CareerLedgerQueryWhereDistinct
+    on QueryBuilder<CareerLedger, CareerLedger, QDistinct> {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct>
+      distinctByCertifications() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'allergies');
+      return query.addDistinctBy(r'certifications');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByBloodType(
-      {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByClearances() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'bloodType', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'clearances');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByConditions() {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByDegrees() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'conditions');
+      return query.addDistinctBy(r'degrees');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByInsuranceInfo(
-      {bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByJobs() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'insuranceInfo',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'jobs');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct> distinctByLabResults() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'labResults');
-    });
-  }
-
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
-      distinctByLastUpdated() {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastUpdated');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
-      distinctByMedications() {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByProjects() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'medications');
+      return query.addDistinctBy(r'projects');
     });
   }
 
-  QueryBuilder<HealthProfile, HealthProfile, QDistinct>
-      distinctByPrimaryPhysician({bool caseSensitive = true}) {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctBySkills() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'primaryPhysician',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'skills');
     });
   }
 }
 
-extension HealthProfileQueryProperty
-    on QueryBuilder<HealthProfile, HealthProfile, QQueryProperty> {
-  QueryBuilder<HealthProfile, int, QQueryOperations> idProperty() {
+extension CareerLedgerQueryProperty
+    on QueryBuilder<CareerLedger, CareerLedger, QQueryProperty> {
+  QueryBuilder<CareerLedger, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      allergiesProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations>
+      certificationsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'allergies');
+      return query.addPropertyName(r'certifications');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations> bloodTypeProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations>
+      clearancesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'bloodType');
+      return query.addPropertyName(r'clearances');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      conditionsProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations>
+      degreesProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'conditions');
+      return query.addPropertyName(r'degrees');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations>
-      insuranceInfoProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations> jobsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'insuranceInfo');
+      return query.addPropertyName(r'jobs');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      labResultsProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'labResults');
-    });
-  }
-
-  QueryBuilder<HealthProfile, DateTime, QQueryOperations>
-      lastUpdatedProperty() {
+  QueryBuilder<CareerLedger, DateTime, QQueryOperations> lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdated');
     });
   }
 
-  QueryBuilder<HealthProfile, List<String>?, QQueryOperations>
-      medicationsProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations>
+      projectsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'medications');
+      return query.addPropertyName(r'projects');
     });
   }
 
-  QueryBuilder<HealthProfile, String?, QQueryOperations>
-      primaryPhysicianProperty() {
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations> skillsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'primaryPhysician');
+      return query.addPropertyName(r'skills');
     });
   }
 }

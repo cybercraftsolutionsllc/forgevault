@@ -8,39 +8,129 @@ import '../../theme/theme.dart';
 
 /// Help Center — FAQ and debug tools.
 ///
-/// Explains API key setup, Safe Mode, RAG Oracle, and Sync.
+/// Explains API key setup, Safe Mode, RAG Nexus, and Sync.
 /// Includes a Factory Reset button (debug builds only).
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
 
   static const _faqs = <_FaqItem>[
     _FaqItem(
+      question: 'What is ForgeVault?',
+      answer:
+          'ForgeVault is a zero-trust, local-first personal data vault. It '
+          'extracts, categorizes, and securely stores your life data — identity, '
+          'career, medical history, finances, relationships, and more — entirely '
+          'on your device. No cloud account required, no telemetry, no ads.',
+    ),
+    _FaqItem(
+      question: 'What does "Bring Your Own Key" (BYOK) mean?',
+      answer:
+          'BYOK means you supply your own API key for cloud AI services. '
+          'ForgeVault never provides or proxies API keys. You generate a key '
+          'from your chosen provider (Grok, Claude, Gemini, OpenRouter, Groq, '
+          'DeepSeek, or Mistral), paste it into the Engine Room, and it\'s '
+          'stored in your device\'s hardware keychain. Your key, your cost, '
+          'your control — we never see it.',
+    ),
+    _FaqItem(
       question: 'How do I get API keys for the Forge?',
       answer:
-          'Navigate to the Engine Room (bottom tab). Each AI provider '
-          '(Grok, Claude, Gemini) has a "Get API Key" link that opens the '
-          'respective developer portal. Sign up, generate a key, and paste '
-          'it into ForgeVault. Keys are stored in your device\'s hardware '
-          'keychain — they never leave this device.',
+          'Navigate to the Engine Room (bottom tab). Each AI provider card has '
+          'a "Get API Key" link that opens the provider\'s developer dashboard. '
+          'Sign up, generate a key, and paste it into ForgeVault. Keys are '
+          'stored in your device\'s hardware keychain (Android Keystore, iOS '
+          'Keychain, Windows Credential Locker) — they never leave this device.',
     ),
     _FaqItem(
-      question: 'What is Safe Mode?',
+      question: 'How does local-first architecture work?',
       answer:
-          'Safe Mode is automatically active in debug builds. When enabled, '
-          'the Purge system moves files to a debug recovery folder instead '
-          'of permanently destroying them. This protects you during development. '
-          'In Release Mode, Safe Mode is disabled and the full cryptographic '
-          'shredder is armed — file destruction is irreversible.',
+          'All your data lives in an encrypted Isar database on your device. '
+          'Documents are parsed locally using on-device text extraction — '
+          'the raw file never leaves your phone or computer. Only the extracted '
+          'text is sent to your chosen AI provider (via your BYOK key) for '
+          'categorization. The AI response is parsed, you review it, and only '
+          'then is it saved to your local database.',
     ),
     _FaqItem(
-      question: 'How does the RAG Oracle work?',
+      question: 'What encryption does ForgeVault use?',
       answer:
-          'The Oracle is a Retrieval-Augmented Generation (RAG) chat interface. '
+          'ForgeVault uses AES-256-GCM encryption for all backup/export files. '
+          'Your Master PIN is derived via PBKDF2 with a per-device salt, '
+          'producing a 256-bit encryption key. The database itself is stored '
+          'locally and protected by your OS\'s native storage security. Backup '
+          'bundles are encrypted at rest — without your Master PIN, the file '
+          'is cryptographically useless.',
+    ),
+    _FaqItem(
+      question: 'Can my Master PIN be recovered if I forget it?',
+      answer:
+          'No. By design, Master PIN recovery is impossible. ForgeVault uses '
+          'a zero-knowledge architecture: we never store, transmit, or escrow '
+          'your PIN. It exists only on your device as a derived key. If you '
+          'forget your PIN, all encrypted backups become permanently '
+          'inaccessible. This is a feature, not a bug — it guarantees that '
+          'no one (including us) can access your data.',
+    ),
+    _FaqItem(
+      question: 'What is the Nuke Protocol?',
+      answer:
+          'The Nuke Protocol is an emergency data destruction system. When '
+          'triggered, it cryptographically shreds all locally stored data '
+          'including the Isar database, encryption keys, shared preferences, '
+          'and cached files. In Release Mode, this destruction is irreversible '
+          '— the data cannot be recovered by any means. In Debug Mode, files '
+          'are moved to a recovery folder instead (see Safe Mode).',
+    ),
+    _FaqItem(
+      question: 'How does Backup & Restore work?',
+      answer:
+          'Export creates an AES-256-GCM encrypted bundle (.forgevault file) '
+          'containing all your Isar data. You choose where to save it — local '
+          'folder, USB drive, or cloud-synced directory (OneDrive, Dropbox, '
+          'etc.). Restore decrypts the bundle with your Master PIN and merges '
+          'data using a newest-wins strategy. The sync file is useless without '
+          'your exact Master PIN.',
+    ),
+    _FaqItem(
+      question:
+          'How does document parsing work without sending files to the cloud?',
+      answer:
+          'When you upload a document (PDF, image, text file), ForgeVault uses '
+          'on-device extraction to convert it to plain text. The raw file never '
+          'leaves your device. Only the extracted text is sent to your AI '
+          'provider for categorization into structured data fields (career, '
+          'medical, financial, etc.). You review all AI-extracted data before '
+          'it saves to your database.',
+    ),
+    _FaqItem(
+      question: 'Which AI providers are supported?',
+      answer:
+          'ForgeVault supports 7 providers: Grok (xAI), Claude (Anthropic), '
+          'Gemini (Google), OpenRouter (multi-model gateway), Groq (ultra-fast '
+          'LPU inference), DeepSeek (efficient reasoning), and Mistral AI. '
+          'All providers use your own API key. The Engine Room shows each '
+          'provider\'s status and has direct links to their key generation '
+          'dashboards.',
+    ),
+    _FaqItem(
+      question: 'How does the AI categorize my data?',
+      answer:
+          'ForgeVault sends your extracted text with a strict system prompt that '
+          'enforces structured JSON output into 13+ categories: Identity, '
+          'Timeline, Troubles, Finances, Relationships, Health, Goals, '
+          'Habits/Vices, Medical, Career, Assets, Relational Web, and Psyche '
+          'Profile. The prompt includes 19 rules that prevent misrouting '
+          '(e.g., jobs can\'t end up in personality traits).',
+    ),
+    _FaqItem(
+      question: 'How does the RAG Nexus work?',
+      answer:
+          'The Nexus is a Retrieval-Augmented Generation (RAG) chat interface. '
           'It queries your local Isar database to build a context window, '
           'then sends that context along with your question to your configured '
           'cloud AI (via your BYOK key). The AI synthesizes an answer grounded '
-          'in YOUR data. An offline Ollama fallback is available if you run '
-          'a local LLM server.',
+          'in YOUR data — like having a personal analyst who knows everything '
+          'you\'ve told ForgeVault.',
     ),
     _FaqItem(
       question: 'How do I set up Vault Sync?',
@@ -51,6 +141,16 @@ class HelpScreen extends StatelessWidget {
           'an AES-256-GCM encrypted bundle. Import decrypts and merges data '
           'using a newest-wins strategy. Zero-trust, zero-knowledge — the sync '
           'file is useless without your Master PIN.',
+    ),
+    _FaqItem(
+      question: 'Can ForgeVault access my data without my permission?',
+      answer:
+          'No. ForgeVault operates on a zero-trust, zero-knowledge architecture. '
+          'There are no accounts, no servers, no telemetry, and no way for anyone '
+          '(including the developers) to access your data. Your database lives '
+          'exclusively on your device, encrypted with keys derived from your '
+          'Master PIN. Even backup files are AES-256 encrypted and useless '
+          'without your PIN.',
     ),
   ];
 

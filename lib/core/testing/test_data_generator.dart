@@ -170,7 +170,7 @@ for payment plan options. Financial assistance applications available upon reque
     }
   ],
   "habitsVices": [],
-  "contradictions": []
+  "changelog": []
 }
 ''';
 

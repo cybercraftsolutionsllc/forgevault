@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../providers/providers.dart';
 import '../../theme/theme.dart';
-import '../help/help_screen.dart';
 
 /// Home Dashboard — the primary screen after authentication.
 ///
@@ -11,34 +12,17 @@ import '../help/help_screen.dart';
 ///   Top: Progress ring showing "Life Bio Completeness"
 ///   Middle: "Quick AI Query" text input
 ///   Bottom: Horizontal scrolling cards (Recent Vacuums, Money, Troubles)
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final ValueChanged<int>? onSwitchTab;
   const HomeScreen({super.key, this.onSwitchTab});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bioAsync = ref.watch(bioProgressProvider);
+    final progress = bioAsync.valueOrNull ?? 0.0;
+
     return Scaffold(
       backgroundColor: VaultColors.background,
-      appBar: AppBar(
-        title: Text(
-          'ForgeVault',
-          style: GoogleFonts.inter(
-            letterSpacing: 4,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline, size: 20),
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const HelpScreen()));
-            },
-          ),
-        ],
-      ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -48,13 +32,17 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // ── Bio Completeness Ring ──
-            Center(child: _BioCOmpletenessRing(completeness: 0)),
+            Center(
+              child: _BioCOmpletenessRing(
+                completeness: (progress * 100).toInt(),
+              ),
+            ),
 
             const SizedBox(height: 32),
 
             // ── Quick AI Query ──
             GestureDetector(
-              onTap: () => onSwitchTab?.call(3), // Switch to Oracle tab
+              onTap: () => onSwitchTab?.call(3), // Switch to Nexus tab
               child: AbsorbPointer(child: _QuickQueryInput()),
             ),
 
@@ -72,34 +60,66 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            SizedBox(
-              height: 160,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 16.0,
+                runSpacing: 16.0,
                 children: [
                   _DashboardCard(
                     icon: Icons.download_rounded,
                     title: 'Recent Vacuums',
-                    subtitle: 'No files ingested yet',
+                    subtitle: ref
+                        .watch(timelineStreamProvider)
+                        .when(
+                          data: (events) => events.isEmpty
+                              ? 'No files ingested yet'
+                              : '${events.length} timeline events',
+                          loading: () => 'Loading...',
+                          error: (_, _) => 'Error loading',
+                        ),
                     accentColor: VaultColors.primaryLight,
                   ),
                   _DashboardCard(
                     icon: Icons.account_balance_wallet_outlined,
                     title: 'Money Snapshot',
-                    subtitle: '\$0.00 net worth',
+                    subtitle: ref
+                        .watch(financesStreamProvider)
+                        .when(
+                          data: (records) => records.isEmpty
+                              ? '\$0.00 net worth'
+                              : '${records.length} finance records',
+                          loading: () => 'Loading...',
+                          error: (_, _) => 'Error loading',
+                        ),
                     accentColor: VaultColors.phosphorGreen,
                   ),
                   _DashboardCard(
                     icon: Icons.warning_amber_rounded,
                     title: 'Trouble Alerts',
-                    subtitle: 'No active troubles',
+                    subtitle: ref
+                        .watch(troublesStreamProvider)
+                        .when(
+                          data: (troubles) => troubles.isEmpty
+                              ? 'No active troubles'
+                              : '${troubles.length} active troubles',
+                          loading: () => 'Loading...',
+                          error: (_, _) => 'Error loading',
+                        ),
                     accentColor: VaultColors.destructive,
                   ),
                   _DashboardCard(
                     icon: Icons.favorite_outline,
                     title: 'Health Status',
-                    subtitle: 'No health data yet',
+                    subtitle: ref
+                        .watch(healthStreamProvider)
+                        .when(
+                          data: (health) => health == null
+                              ? 'No health data yet'
+                              : 'Health profile active',
+                          loading: () => 'Loading...',
+                          error: (_, _) => 'Error loading',
+                        ),
                     accentColor: VaultColors.primaryLight,
                   ),
                 ],
@@ -141,8 +161,8 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   child: _QuickActionButton(
                     icon: Icons.chat_outlined,
-                    label: 'ORACLE',
-                    onTap: () => onSwitchTab?.call(3), // Oracle tab
+                    label: 'NEXUS',
+                    onTap: () => onSwitchTab?.call(3), // Nexus tab
                   ),
                 ),
               ],
@@ -332,8 +352,8 @@ class _DashboardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 180,
-      margin: const EdgeInsets.only(right: 12),
+      width: 220,
+      height: 140,
       padding: const EdgeInsets.all(16),
       decoration: VaultDecorations.metallicCard(),
       child: Column(
