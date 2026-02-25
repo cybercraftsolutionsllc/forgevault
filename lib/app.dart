@@ -9,6 +9,7 @@ import 'features/bio/bio_viewer_screen.dart';
 import 'features/nexus/nexus_chat_screen.dart';
 import 'features/engine_room/engine_room_screen.dart';
 import 'features/backup/backup_screen.dart';
+import 'core/services/revenuecat_service.dart';
 import 'theme/theme.dart';
 
 /// Navigation Shell — bottom navigation with 5 destinations.
@@ -66,6 +67,42 @@ class _NavigationShellState extends State<_NavigationShell> {
           ),
         ),
         actions: [
+          // ── PRO Badge ──
+          ValueListenableBuilder<bool>(
+            valueListenable: RevenueCatService().isProNotifier,
+            builder: (context, isPro, child) => isPro
+                ? Container(
+                    margin: const EdgeInsets.only(right: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1A0E),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.amber.withValues(alpha: 0.5),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.amber.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'PRO',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFFFFD700),
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
           IconButton(
             icon: const Icon(Icons.lock_outline, color: Colors.red, size: 20),
             tooltip: 'Lock Vault',

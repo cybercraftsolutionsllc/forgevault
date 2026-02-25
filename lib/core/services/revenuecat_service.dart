@@ -37,6 +37,16 @@ class RevenueCatService {
     // Always load cached Pro status from SharedPreferences (supports
     // manual bypass and cross-platform .forge sync on Windows/Web).
     final prefs = await SharedPreferences.getInstance();
+
+    // Offline License Guard: if PRO was restored from a .forge backup,
+    // lock it in and never let RevenueCat downgrade it.
+    final offlineLicense = prefs.getBool('offline_license_active') ?? false;
+    if (offlineLicense) {
+      isProNotifier.value = true;
+      await prefs.setBool('isPro', true);
+      return; // Do NOT consult RevenueCat — offline license takes precedence.
+    }
+
     isProNotifier.value = prefs.getBool('isPro') ?? false;
 
     if (!isSupported) return;
@@ -57,10 +67,21 @@ class RevenueCatService {
   }
 
   /// Sync RevenueCat entitlement → SharedPreferences + ValueNotifier.
+  ///
+  /// IMPORTANT: Offline license takes absolute precedence over RC entitlements.
+  /// This prevents restored PRO statuses from being overwritten by an
+  /// anonymous RC account that has no active subscription.
   Future<void> _syncProStatus(CustomerInfo info) async {
     try {
-      final isPro = info.entitlements.all[_entitlementId]?.isActive == true;
       final prefs = await SharedPreferences.getInstance();
+
+      // Offline License Guard — never downgrade.
+      if (prefs.getBool('offline_license_active') ?? false) {
+        isProNotifier.value = true;
+        return;
+      }
+
+      final isPro = info.entitlements.all[_entitlementId]?.isActive == true;
       await prefs.setBool('isPro', isPro);
       isProNotifier.value = isPro;
     } catch (_) {

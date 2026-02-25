@@ -13,6 +13,25 @@ import 'core/services/revenuecat_service.dart';
 import 'core/services/security_flags_service.dart';
 import 'theme/theme.dart';
 
+/// Global key for the root ScaffoldMessenger.
+/// Used by backup_screen (and any other screen) to show SnackBars
+/// without relying on BuildContext, preventing async crashes.
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+/// Safely show a SnackBar using the global key.
+///
+/// Wraps the call in try-catch so the `_scaffolds.isNotEmpty` assertion
+/// in [ScaffoldMessengerState.showSnackBar] never crashes the app.
+/// Falls back to [debugPrint] if the ScaffoldMessenger is unavailable.
+void showSafeSnackBar(SnackBar snackBar) {
+  try {
+    scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+  } catch (e) {
+    debugPrint('[SnackBar fallback] Could not show SnackBar: $e');
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -104,6 +123,7 @@ class _ForgeVaultRootState extends State<ForgeVaultRoot> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'ForgeVault',
       debugShowCheckedModeBanner: false,
       theme: VaultTheme.darkTheme,

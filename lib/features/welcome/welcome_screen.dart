@@ -238,6 +238,9 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', true);
       await prefs.setBool('forgevault_pro_unlocked', extractedIsPro);
+      if (extractedIsPro) {
+        await prefs.setBool('offline_license_active', true);
+      }
       RevenueCatService().isProNotifier.value = extractedIsPro;
 
       _invalidateAllProviders();
@@ -469,7 +472,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
                     color: VaultColors.phosphorGreen,
                   ),
                 ),
-                hintText: 'Backup passwordâ€¦',
+                hintText: 'Backup Password',
                 hintStyle: GoogleFonts.inter(
                   fontSize: 13,
                   color: VaultColors.textMuted,

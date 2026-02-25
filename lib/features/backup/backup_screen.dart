@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
@@ -11,6 +11,7 @@ import '../../core/database/database_service.dart';
 import '../../core/services/revenuecat_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../providers/providers.dart';
+import '../../main.dart';
 import '../../theme/theme.dart';
 
 /// Backup Center â€” E2EE encrypted vault export/import.
@@ -42,24 +43,22 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (db.isOpen) {
       final bioProgress = await db.calculateBioProgress();
       if (bioProgress < 0.05) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Error: Vault must contain core identity data before exporting.',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              backgroundColor: Colors.red.shade900,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+        showSafeSnackBar(
+          SnackBar(
+            content: Text(
+              'Error: Vault must contain core identity data before exporting.',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          );
-        }
+            backgroundColor: Colors.red.shade900,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
         return;
       }
     }
@@ -75,22 +74,22 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
         password,
         masterPin: masterPin,
       );
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'âœ“ Encrypted backup exported successfully.',
-              style: GoogleFonts.inter(color: Colors.white),
-            ),
-            backgroundColor: VaultColors.phosphorGreen.withValues(alpha: 0.85),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
+      showSafeSnackBar(
+        SnackBar(
+          content: Text(
+            'Vault exported successfully.',
+            style: GoogleFonts.inter(color: Colors.white),
           ),
-        );
-      }
-    } catch (e) {
+          backgroundColor: VaultColors.phosphorGreen.withValues(alpha: 0.85),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('[BackupScreen] Export failed: $e');
+      debugPrint('[BackupScreen] Stack trace: $stackTrace');
       _showError('Export failed: $e');
     } finally {
       if (mounted) setState(() => _exportLoading = false);
@@ -135,10 +134,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     try {
       await SyncService.instance.importFromBytes(fileBytes, password);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        showSafeSnackBar(
           SnackBar(
             content: Text(
-              'âœ“ Vault restored from encrypted backup.',
+              'Vault restored from encrypted backup.',
               style: GoogleFonts.inter(color: Colors.white),
             ),
             backgroundColor: VaultColors.phosphorGreen.withValues(alpha: 0.85),
@@ -315,7 +314,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             const SizedBox(height: 16),
             _buildDialogField(
               controller: pwCtrl,
-              hint: 'Backup passwordâ€¦',
+              hint: 'Backup Password',
               icon: Icons.vpn_key_outlined,
             ),
           ],
@@ -397,7 +396,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
 
   void _showError(String msg) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    showSafeSnackBar(
       SnackBar(
         content: Text(msg, style: GoogleFonts.inter(color: Colors.white)),
         backgroundColor: VaultColors.destructive.withValues(alpha: 0.9),
@@ -526,7 +525,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           } catch (e) {
                             if (!e.toString().contains('cancelled') &&
                                 mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              showSafeSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'RC Error: $e',
@@ -574,7 +573,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           } catch (e) {
                             if (!e.toString().contains('cancelled') &&
                                 mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              showSafeSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'RC Error: $e',
@@ -629,7 +628,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           if (newPro && mounted) {
                             _setProState(true);
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              showSafeSnackBar(
                                 SnackBar(
                                   content: Text(
                                     'âœ… Purchases restored! PRO unlocked.',
@@ -650,7 +649,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           }
                         } catch (e) {
                           if (!e.toString().contains('cancelled') && mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            showSafeSnackBar(
                               SnackBar(
                                 content: Text(
                                   'RC Error: $e',
@@ -794,7 +793,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                     onPressed: () {
                       final code = promoCtrl.text.trim().toUpperCase();
                       if (code != 'FOUNDER2026') {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        showSafeSnackBar(
                           SnackBar(
                             content: Text(
                               'Invalid promo code.',
@@ -813,7 +812,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                       }
                       Navigator.of(ctx).pop();
                       _setProState(true);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      showSafeSnackBar(
                         SnackBar(
                           content: Text(
                             'ðŸŽ‰ Founder code accepted! PRO unlocked '

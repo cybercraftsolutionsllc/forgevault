@@ -3,8 +3,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../database/database_service.dart';
@@ -54,38 +52,47 @@ class SyncService {
     final payload = await _syncService.serializeForExport();
     final vaultDataJson = jsonEncode(payload);
 
-    // 2. Fetch device state
-    final prefs = await SharedPreferences.getInstance();
-    final isPro = prefs.getBool(_proKey) ?? false;
+    // 2. Fetch device state — read live PRO status from the reactive notifier,
+    //    NOT SharedPreferences, which may be stale.
+    final isProActive = RevenueCatService().isProNotifier.value;
+    debugPrint('[Export] isPro (live notifier): $isProActive');
 
     // 3. Build master payload envelope
     final masterPayload = jsonEncode({
-      'metadata': {'masterPin': masterPin, 'isPro': isPro},
+      'metadata': {'masterPin': masterPin, 'isPro': isProActive},
       'vaultData': vaultDataJson,
     });
 
     // 4. Encrypt
     final encrypted = _cipher.encryptVault(masterPayload, password);
+    final encryptedBytes = utf8.encode(encrypted);
+    debugPrint('[Export] Encrypted payload: ${encryptedBytes.length} bytes');
 
-    // 5. Save / share
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    // 5. Save via FilePicker (all platforms)
+    try {
       final String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: 'Export Encrypted Vault',
+        dialogTitle: 'Save Encrypted Vault',
         fileName: 'vault.forge',
+        bytes: Uint8List.fromList(encryptedBytes),
       );
-      if (outputFile == null) return; // User cancelled
-      // Enforce .forge extension (user may strip it in the OS dialog)
+      if (outputFile == null) {
+        debugPrint('[Export] User cancelled save dialog');
+        return;
+      }
+      // On some platforms, FilePicker returns a path but may not write bytes.
+      // Ensure the file exists; if not, write manually.
       final safePath = outputFile.toLowerCase().endsWith('.forge')
           ? outputFile
           : '$outputFile.forge';
-      await File(safePath).writeAsString(encrypted, encoding: utf8);
-    } else {
-      final tempDir = await getTemporaryDirectory();
-      final path = '${tempDir.path}${Platform.pathSeparator}vault.forge';
-      await File(path).writeAsString(encrypted, encoding: utf8);
-      await Share.shareXFiles([
-        XFile(path),
-      ], subject: 'ForgeVault Encrypted Export');
+      final outFile = File(safePath);
+      if (!await outFile.exists() || await outFile.length() == 0) {
+        await outFile.writeAsBytes(encryptedBytes);
+      }
+      debugPrint('[Export] File saved: $safePath');
+    } catch (e, stackTrace) {
+      debugPrint('[Export] Save failed: $e');
+      debugPrint('[Export] Stack trace: $stackTrace');
+      rethrow;
     }
 
     // 6. Audit log
@@ -214,6 +221,7 @@ class SyncService {
     if (isPro) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_proKey, true);
+      await prefs.setBool('offline_license_active', true);
       RevenueCatService().isProNotifier.value = true;
     }
   }

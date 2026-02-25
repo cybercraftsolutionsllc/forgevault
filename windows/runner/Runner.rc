@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.vitavault" "\0"
-            VALUE "FileDescription", "vitavault" "\0"
+            VALUE "CompanyName", "com.cybercraftsolutionsllc" "\0"
+            VALUE "FileDescription", "ForgeVault" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "vitavault" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.vitavault. All rights reserved." "\0"
-            VALUE "OriginalFilename", "vitavault.exe" "\0"
-            VALUE "ProductName", "vitavault" "\0"
+            VALUE "InternalName", "forgevault" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 Cyber Craft Solutions, LLC. All rights reserved." "\0"
+            VALUE "OriginalFilename", "forgevault.exe" "\0"
+            VALUE "ProductName", "ForgeVault" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
