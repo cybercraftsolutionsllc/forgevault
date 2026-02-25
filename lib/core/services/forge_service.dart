@@ -18,6 +18,7 @@ import '../database/schemas/career_ledger.dart';
 import '../database/schemas/asset_ledger.dart';
 import '../database/schemas/relational_web.dart';
 import '../database/schemas/psyche_profile.dart';
+import '../database/schemas/custom_ledger_section.dart';
 import '../database/schemas/audit_log.dart';
 import 'api_key_service.dart';
 import 'gemini_nano_bridge.dart';
@@ -59,23 +60,35 @@ class ForgeService {
   /// Returns the parsed ForgeResult for user review/editing before commit.
   Future<ForgeResult> synthesizeWithReview(String extractedText) async {
     // Fetch current vault state for context-aware synthesis
-    String? currentContext;
+    String? vaultState;
     try {
-      currentContext = await _database.getBioContextString();
-      if (currentContext.trim().isEmpty) currentContext = null;
+      vaultState = await _database.getBioContextString();
+      if (vaultState.trim().isEmpty) vaultState = null;
     } catch (_) {
       // DB may not be ready yet — proceed without context
     }
 
+    // Fetch custom ledger titles and hidden sections for AI bridge
+    List<String> customTitles = [];
+    List<String> hiddenSections = [];
+    try {
+      final customSections = await _database.db.customLedgerSections
+          .where()
+          .findAll();
+      customTitles = customSections.map((s) => s.title).toList();
+      final identity = await _database.db.coreIdentitys.where().findFirst();
+      hiddenSections = identity?.hiddenSections ?? [];
+    } catch (_) {}
+
     final prompt = ForgePrompt.buildPrompt(
       extractedText,
-      existingContext: currentContext,
+      vaultState: vaultState,
+      customLedgerTitles: customTitles,
+      hiddenSections: hiddenSections,
     );
     String rawJson;
 
-    debugPrint(
-      '\n=== CLEAN TEXT TO LLM ===\n${extractedText.substring(0, extractedText.length < 500 ? extractedText.length : 500)}...\n=========================\n',
-    );
+    debugPrint('Forge: processing text (${extractedText.length} chars)');
 
     // Priority 1: Cloud API — dynamically fetch keys from ApiKeyService.
     // A fresh instance is created every call to avoid any cached state.
@@ -86,10 +99,11 @@ class ForgeService {
       final key = await keyService.getApiKey(activeProvider);
       if (key != null && key.trim().isNotEmpty) {
         // If a key exists, the cloud call MUST succeed or throw the real error.
-        // Do NOT silently catch and fall through — that hides HTTP failures
-        // behind a false "No API Key configured" message.
         final client = ForgeApiClient(keyService: keyService);
-        rawJson = await client.synthesize(extractedText);
+        rawJson = await client.synthesize(
+          extractedText,
+          vaultState: vaultState,
+        );
         final result = _parseForgeJson(rawJson);
         return _prepareForReview(result);
       }
@@ -132,9 +146,7 @@ class ForgeService {
   // ── Private: JSON Parsing ──
 
   ForgeResult _parseForgeJson(String rawJson) {
-    debugPrint(
-      '\n=== RAW AI JSON PAYLOAD ===\n$rawJson\n===========================\n',
-    );
+    debugPrint('Forge: parsing AI response (${rawJson.length} chars)');
 
     // Strip markdown code fences that LLMs love to wrap JSON in.
     // Handles: ```json, ```JSON, ```\n{...}\n```, etc.
@@ -172,6 +184,11 @@ class ForgeService {
   Future<ForgeResult> _prepareForReview(ForgeResult result) async {
     final db = _database.db;
 
+    // ── 0. PRUNING ENGINE — process AI-requested deletions first ──
+    if (result.recordsToRemove.isNotEmpty) {
+      await _applyRemovals(db, result.recordsToRemove);
+    }
+
     // ── 1. IDENTITY ALIGNMENT ──
     final existingId = await db.coreIdentitys.where().findFirst();
     if (existingId != null && result.identity != null) {
@@ -203,31 +220,19 @@ class ForgeService {
       llm.dateOfBirth ??= existingId.dateOfBirth;
       if (llm.location.isEmpty) llm.location = existingId.location;
 
-      // ── Set-based merge for ALL list fields (dedup) ──
-      llm.immutableTraits = <String>{
-        ...?existingId.immutableTraits,
-        ...?llm.immutableTraits,
-      }.toList();
-      llm.jobHistory = <String>{
-        ...?existingId.jobHistory,
-        ...?llm.jobHistory,
-      }.toList();
-      llm.educationHistory = <String>{
-        ...?existingId.educationHistory,
-        ...?llm.educationHistory,
-      }.toList();
-      llm.locationHistory = <String>{
-        ...?existingId.locationHistory,
-        ...?llm.locationHistory,
-      }.toList();
-      llm.familyLineage = <String>{
-        ...?existingId.familyLineage,
-        ...?llm.familyLineage,
-      }.toList();
-      llm.digitalFootprint = <String>{
-        ...?existingId.digitalFootprint,
-        ...?llm.digitalFootprint,
-      }.toList();
+      // ── Set-based merge for ALL list fields (fuzzy dedup) ──
+      llm.immutableTraits = _mergeListsFuzzy(
+        existingId.immutableTraits,
+        llm.immutableTraits,
+      );
+      llm.locationHistory = _mergeListsFuzzy(
+        existingId.locationHistory,
+        llm.locationHistory,
+      );
+      llm.familyLineage = _mergeListsFuzzy(
+        existingId.familyLineage,
+        llm.familyLineage,
+      );
 
       llm.lastUpdated = DateTime.now();
     }
@@ -286,38 +291,26 @@ class ForgeService {
     if (existingMedical != null && result.medicalLedger != null) {
       final m = result.medicalLedger!;
       m.id = existingMedical.id;
-      m.surgeries = <String>{
-        ...?existingMedical.surgeries,
-        ...?m.surgeries,
-      }.toList();
-      m.genetics = <String>{
-        ...?existingMedical.genetics,
-        ...?m.genetics,
-      }.toList();
-      m.vitalBaselines = <String>{
-        ...?existingMedical.vitalBaselines,
-        ...?m.vitalBaselines,
-      }.toList();
-      m.visionRx = <String>{
-        ...?existingMedical.visionRx,
-        ...?m.visionRx,
-      }.toList();
-      m.familyMedicalHistory = <String>{
-        ...?existingMedical.familyMedicalHistory,
-        ...?m.familyMedicalHistory,
-      }.toList();
-      m.bloodwork = <String>{
-        ...?existingMedical.bloodwork,
-        ...?m.bloodwork,
-      }.toList();
-      m.immunizations = <String>{
-        ...?existingMedical.immunizations,
-        ...?m.immunizations,
-      }.toList();
-      m.dentalHistory = <String>{
-        ...?existingMedical.dentalHistory,
-        ...?m.dentalHistory,
-      }.toList();
+      m.surgeries = _mergeListsFuzzy(existingMedical.surgeries, m.surgeries);
+      m.genetics = _mergeListsFuzzy(existingMedical.genetics, m.genetics);
+      m.vitalBaselines = _mergeListsFuzzy(
+        existingMedical.vitalBaselines,
+        m.vitalBaselines,
+      );
+      m.visionRx = _mergeListsFuzzy(existingMedical.visionRx, m.visionRx);
+      m.familyMedicalHistory = _mergeListsFuzzy(
+        existingMedical.familyMedicalHistory,
+        m.familyMedicalHistory,
+      );
+      m.bloodwork = _mergeListsFuzzy(existingMedical.bloodwork, m.bloodwork);
+      m.immunizations = _mergeListsFuzzy(
+        existingMedical.immunizations,
+        m.immunizations,
+      );
+      m.dentalHistory = _mergeListsFuzzy(
+        existingMedical.dentalHistory,
+        m.dentalHistory,
+      );
     }
 
     // ── 8. CAREER LEDGER ALIGNMENT ──
@@ -325,21 +318,16 @@ class ForgeService {
     if (existingCareer != null && result.careerLedger != null) {
       final c = result.careerLedger!;
       c.id = existingCareer.id;
-      c.jobs = <String>{...?existingCareer.jobs, ...?c.jobs}.toList();
-      c.degrees = <String>{...?existingCareer.degrees, ...?c.degrees}.toList();
-      c.certifications = <String>{
-        ...?existingCareer.certifications,
-        ...?c.certifications,
-      }.toList();
-      c.clearances = <String>{
-        ...?existingCareer.clearances,
-        ...?c.clearances,
-      }.toList();
-      c.skills = <String>{...?existingCareer.skills, ...?c.skills}.toList();
-      c.projects = <String>{
-        ...?existingCareer.projects,
-        ...?c.projects,
-      }.toList();
+      c.jobs = _mergeListsFuzzy(existingCareer.jobs, c.jobs);
+      c.degrees = _mergeListsFuzzy(existingCareer.degrees, c.degrees);
+      c.certifications = _mergeListsFuzzy(
+        existingCareer.certifications,
+        c.certifications,
+      );
+      c.clearances = _mergeListsFuzzy(existingCareer.clearances, c.clearances);
+      c.skills = _mergeListsFuzzy(existingCareer.skills, c.skills);
+      c.projects = _mergeListsFuzzy(existingCareer.projects, c.projects);
+      c.businesses = _mergeListsFuzzy(existingCareer.businesses, c.businesses);
     }
 
     // ── 9. ASSET LEDGER ALIGNMENT ──
@@ -347,30 +335,22 @@ class ForgeService {
     if (existingAssets != null && result.assetLedger != null) {
       final a = result.assetLedger!;
       a.id = existingAssets.id;
-      a.realEstate = <String>{
-        ...?existingAssets.realEstate,
-        ...?a.realEstate,
-      }.toList();
-      a.vehicles = <String>{
-        ...?existingAssets.vehicles,
-        ...?a.vehicles,
-      }.toList();
-      a.digitalAssets = <String>{
-        ...?existingAssets.digitalAssets,
-        ...?a.digitalAssets,
-      }.toList();
-      a.insurance = <String>{
-        ...?existingAssets.insurance,
-        ...?a.insurance,
-      }.toList();
-      a.investments = <String>{
-        ...?existingAssets.investments,
-        ...?a.investments,
-      }.toList();
-      a.valuables = <String>{
-        ...?existingAssets.valuables,
-        ...?a.valuables,
-      }.toList();
+      a.realEstate = _mergeListsFuzzy(existingAssets.realEstate, a.realEstate);
+      a.vehicles = _mergeListsFuzzy(existingAssets.vehicles, a.vehicles);
+      a.digitalAssets = _mergeListsFuzzy(
+        existingAssets.digitalAssets,
+        a.digitalAssets,
+      );
+      a.insurance = _mergeListsFuzzy(existingAssets.insurance, a.insurance);
+      a.investments = _mergeListsFuzzy(
+        existingAssets.investments,
+        a.investments,
+      );
+      a.valuables = _mergeListsFuzzy(existingAssets.valuables, a.valuables);
+      a.equityStakes = _mergeListsFuzzy(
+        existingAssets.equityStakes,
+        a.equityStakes,
+      );
     }
 
     // ── 10. RELATIONAL WEB ALIGNMENT ──
@@ -378,17 +358,14 @@ class ForgeService {
     if (existingRelWeb != null && result.relationalWeb != null) {
       final r = result.relationalWeb!;
       r.id = existingRelWeb.id;
-      r.family = <String>{...?existingRelWeb.family, ...?r.family}.toList();
-      r.mentors = <String>{...?existingRelWeb.mentors, ...?r.mentors}.toList();
-      r.adversaries = <String>{
-        ...?existingRelWeb.adversaries,
-        ...?r.adversaries,
-      }.toList();
-      r.colleagues = <String>{
-        ...?existingRelWeb.colleagues,
-        ...?r.colleagues,
-      }.toList();
-      r.friends = <String>{...?existingRelWeb.friends, ...?r.friends}.toList();
+      r.family = _mergeListsFuzzy(existingRelWeb.family, r.family);
+      r.mentors = _mergeListsFuzzy(existingRelWeb.mentors, r.mentors);
+      r.adversaries = _mergeListsFuzzy(
+        existingRelWeb.adversaries,
+        r.adversaries,
+      );
+      r.colleagues = _mergeListsFuzzy(existingRelWeb.colleagues, r.colleagues);
+      r.friends = _mergeListsFuzzy(existingRelWeb.friends, r.friends);
     }
 
     // ── 11. PSYCHE PROFILE ALIGNMENT ──
@@ -396,24 +373,18 @@ class ForgeService {
     if (existingPsyche != null && result.psycheProfile != null) {
       final p = result.psycheProfile!;
       p.id = existingPsyche.id;
-      p.beliefs = <String>{...?existingPsyche.beliefs, ...?p.beliefs}.toList();
-      p.personality = <String>{
-        ...?existingPsyche.personality,
-        ...?p.personality,
-      }.toList();
-      p.fears = <String>{...?existingPsyche.fears, ...?p.fears}.toList();
-      p.motivations = <String>{
-        ...?existingPsyche.motivations,
-        ...?p.motivations,
-      }.toList();
-      p.strengths = <String>{
-        ...?existingPsyche.strengths,
-        ...?p.strengths,
-      }.toList();
-      p.weaknesses = <String>{
-        ...?existingPsyche.weaknesses,
-        ...?p.weaknesses,
-      }.toList();
+      p.beliefs = _mergeListsFuzzy(existingPsyche.beliefs, p.beliefs);
+      p.personality = _mergeListsFuzzy(
+        existingPsyche.personality,
+        p.personality,
+      );
+      p.fears = _mergeListsFuzzy(existingPsyche.fears, p.fears);
+      p.motivations = _mergeListsFuzzy(
+        existingPsyche.motivations,
+        p.motivations,
+      );
+      p.strengths = _mergeListsFuzzy(existingPsyche.strengths, p.strengths);
+      p.weaknesses = _mergeListsFuzzy(existingPsyche.weaknesses, p.weaknesses);
       // Scalars: prefer new non-null values over existing
       p.enneagram ??= existingPsyche.enneagram;
       p.mbti ??= existingPsyche.mbti;
@@ -422,15 +393,44 @@ class ForgeService {
     return result;
   }
 
-  // ── Private: Database Save (simplified — IDs already aligned) ──
+  // ── Private: Database Save (with fuzzy dedup on all arrays) ──
 
   Future<void> _mergeIntoDatabase(ForgeResult result) async {
     final db = _database.db;
 
     await db.writeTxn(() async {
+      // ── Identity (merge arrays) ──
       if (result.identity != null) {
+        final existing = await db.coreIdentitys.where().findFirst();
+        if (existing != null) {
+          final merged = result.identity!;
+          merged.id = existing.id;
+          merged.immutableTraits = _mergeListsFuzzy(
+            existing.immutableTraits,
+            merged.immutableTraits,
+          );
+          merged.locationHistory = _mergeListsFuzzy(
+            existing.locationHistory,
+            merged.locationHistory,
+          );
+          merged.familyLineage = _mergeListsFuzzy(
+            existing.familyLineage,
+            merged.familyLineage,
+          );
+          // Preserve non-empty existing scalars
+          if (merged.fullName.isEmpty && existing.fullName.isNotEmpty) {
+            merged.fullName = existing.fullName;
+          }
+          if (merged.location.isEmpty && existing.location.isNotEmpty) {
+            merged.location = existing.location;
+          }
+          merged.dateOfBirth ??= existing.dateOfBirth;
+          // Preserve user preferences not set by the LLM
+          merged.hiddenSections = existing.hiddenSections;
+        }
         await db.coreIdentitys.put(result.identity!);
       }
+
       for (final event in result.timelineEvents) {
         await db.timelineEvents.put(event);
       }
@@ -444,6 +444,22 @@ class ForgeService {
         await db.relationshipNodes.put(rel);
       }
       if (result.healthProfile != null) {
+        final existing = await db.healthProfiles.where().findFirst();
+        if (existing != null) {
+          final hp = result.healthProfile!;
+          hp.id = existing.id;
+          hp.conditions = _mergeListsFuzzy(existing.conditions, hp.conditions);
+          hp.medications = _mergeListsFuzzy(
+            existing.medications,
+            hp.medications,
+          );
+          hp.allergies = _mergeListsFuzzy(existing.allergies, hp.allergies);
+          hp.labResults = _mergeListsFuzzy(existing.labResults, hp.labResults);
+          if ((hp.bloodType == null || hp.bloodType!.isEmpty) &&
+              existing.bloodType != null) {
+            hp.bloodType = existing.bloodType;
+          }
+        }
         await db.healthProfiles.put(result.healthProfile!);
       }
       for (final goal in result.goals) {
@@ -452,22 +468,169 @@ class ForgeService {
       for (final hv in result.habitsVices) {
         await db.habitVices.put(hv);
       }
+
+      // ── Medical Ledger (merge ALL arrays) ──
       if (result.medicalLedger != null) {
+        final existing = await db.medicalLedgers.where().findFirst();
+        if (existing != null) {
+          final m = result.medicalLedger!;
+          m.id = existing.id;
+          m.surgeries = _mergeListsFuzzy(existing.surgeries, m.surgeries);
+          m.genetics = _mergeListsFuzzy(existing.genetics, m.genetics);
+          m.vitalBaselines = _mergeListsFuzzy(
+            existing.vitalBaselines,
+            m.vitalBaselines,
+          );
+          m.visionRx = _mergeListsFuzzy(existing.visionRx, m.visionRx);
+          m.familyMedicalHistory = _mergeListsFuzzy(
+            existing.familyMedicalHistory,
+            m.familyMedicalHistory,
+          );
+          m.bloodwork = _mergeListsFuzzy(existing.bloodwork, m.bloodwork);
+          m.immunizations = _mergeListsFuzzy(
+            existing.immunizations,
+            m.immunizations,
+          );
+          m.dentalHistory = _mergeListsFuzzy(
+            existing.dentalHistory,
+            m.dentalHistory,
+          );
+        }
         await db.medicalLedgers.put(result.medicalLedger!);
       }
+
+      // ── Career Ledger (merge ALL arrays) ──
       if (result.careerLedger != null) {
+        final existing = await db.careerLedgers.where().findFirst();
+        if (existing != null) {
+          final c = result.careerLedger!;
+          c.id = existing.id;
+          c.jobs = _mergeListsFuzzy(existing.jobs, c.jobs);
+          c.degrees = _mergeListsFuzzy(existing.degrees, c.degrees);
+          c.certifications = _mergeListsFuzzy(
+            existing.certifications,
+            c.certifications,
+          );
+          c.clearances = _mergeListsFuzzy(existing.clearances, c.clearances);
+          c.skills = _mergeListsFuzzy(existing.skills, c.skills);
+          c.projects = _mergeListsFuzzy(existing.projects, c.projects);
+          c.businesses = _mergeListsFuzzy(existing.businesses, c.businesses);
+        }
         await db.careerLedgers.put(result.careerLedger!);
       }
+
+      // ── Asset Ledger (merge ALL arrays) ──
       if (result.assetLedger != null) {
+        final existing = await db.assetLedgers.where().findFirst();
+        if (existing != null) {
+          final a = result.assetLedger!;
+          a.id = existing.id;
+          a.realEstate = _mergeListsFuzzy(existing.realEstate, a.realEstate);
+          a.vehicles = _mergeListsFuzzy(existing.vehicles, a.vehicles);
+          a.digitalAssets = _mergeListsFuzzy(
+            existing.digitalAssets,
+            a.digitalAssets,
+          );
+          a.insurance = _mergeListsFuzzy(existing.insurance, a.insurance);
+          a.investments = _mergeListsFuzzy(existing.investments, a.investments);
+          a.valuables = _mergeListsFuzzy(existing.valuables, a.valuables);
+          a.equityStakes = _mergeListsFuzzy(
+            existing.equityStakes,
+            a.equityStakes,
+          );
+        }
         await db.assetLedgers.put(result.assetLedger!);
       }
+
+      // ── Relational Web (merge ALL arrays) ──
       if (result.relationalWeb != null) {
+        final existing = await db.relationalWebs.where().findFirst();
+        if (existing != null) {
+          final r = result.relationalWeb!;
+          r.id = existing.id;
+          r.family = _mergeListsFuzzy(existing.family, r.family);
+          r.mentors = _mergeListsFuzzy(existing.mentors, r.mentors);
+          r.adversaries = _mergeListsFuzzy(existing.adversaries, r.adversaries);
+          r.colleagues = _mergeListsFuzzy(existing.colleagues, r.colleagues);
+          r.friends = _mergeListsFuzzy(existing.friends, r.friends);
+        }
         await db.relationalWebs.put(result.relationalWeb!);
       }
+
+      // ── Psyche Profile (merge ALL arrays) ──
       if (result.psycheProfile != null) {
+        final existing = await db.psycheProfiles.where().findFirst();
+        if (existing != null) {
+          final p = result.psycheProfile!;
+          p.id = existing.id;
+          p.beliefs = _mergeListsFuzzy(existing.beliefs, p.beliefs);
+          p.personality = _mergeListsFuzzy(existing.personality, p.personality);
+          p.fears = _mergeListsFuzzy(existing.fears, p.fears);
+          p.motivations = _mergeListsFuzzy(existing.motivations, p.motivations);
+          p.strengths = _mergeListsFuzzy(existing.strengths, p.strengths);
+          p.weaknesses = _mergeListsFuzzy(existing.weaknesses, p.weaknesses);
+          if ((p.enneagram == null || p.enneagram!.isEmpty) &&
+              existing.enneagram != null) {
+            p.enneagram = existing.enneagram;
+          }
+          if ((p.mbti == null || p.mbti!.isEmpty) && existing.mbti != null) {
+            p.mbti = existing.mbti;
+          }
+        }
         await db.psycheProfiles.put(result.psycheProfile!);
       }
+
+      // ── Custom Ledgers (merge into existing sections) ──
+      if (result.customLedgers.isNotEmpty) {
+        for (final entry in result.customLedgers.entries) {
+          if (entry.value.isEmpty) continue;
+          // Find existing section by title
+          final existing = await db.customLedgerSections
+              .filter()
+              .titleEqualTo(entry.key)
+              .findFirst();
+          if (existing != null) {
+            // Merge by name dedup: skip items whose name already exists
+            final existingNames = existing.items
+                .map((i) => (i.name ?? '').toLowerCase().trim())
+                .toSet();
+            for (final newItem in entry.value) {
+              final key = (newItem.name ?? '').toLowerCase().trim();
+              if (key.isNotEmpty && !existingNames.contains(key)) {
+                existing.items = [...existing.items, newItem];
+                existingNames.add(key);
+              }
+            }
+            existing.lastUpdated = DateTime.now();
+            await db.customLedgerSections.put(existing);
+          }
+          // If no existing section, skip — the user must create it first
+        }
+      }
     });
+
+    // ── Audit: log successful ingestion ──
+    final fieldCount = [
+      if (result.identity != null) 1,
+      result.timelineEvents.length,
+      result.troubles.length,
+      result.finances.length,
+      result.relationships.length,
+      result.healthProfile != null ? 1 : 0,
+      result.goals.length,
+      result.habitsVices.length,
+      result.medicalLedger != null ? 1 : 0,
+      result.careerLedger != null ? 1 : 0,
+      result.assetLedger != null ? 1 : 0,
+      result.relationalWeb != null ? 1 : 0,
+      result.psycheProfile != null ? 1 : 0,
+      result.customLedgers.length,
+    ].fold<int>(0, (sum, v) => sum + v);
+    await _database.addAuditLog(
+      'Ingestion Complete',
+      'Extracted $fieldCount fields/records from document.',
+      aiSummary: result.aiSummary,
+    );
   }
 
   /// Fuzzy match: finds existing record where either title contains the
@@ -485,6 +648,156 @@ class ForgeService {
       }
     }
     return null;
+  }
+
+  /// Normalize a string for aggressive dedup comparison:
+  /// lowercase, strip ALL punctuation/symbols/digits, collapse whitespace.
+  static String _normalize(String s) {
+    return s
+        .toLowerCase()
+        .replaceAll(
+          RegExp(r'[^a-z\s]'),
+          '',
+        ) // strip everything except a-z and spaces
+        .replaceAll(RegExp(r'\s+'), ' ') // collapse whitespace
+        .trim();
+  }
+
+  /// Aggressive fuzzy list merge: combines [existing] and [incoming] lists,
+  /// silently dropping incoming entries that match existing ones after
+  /// aggressive normalization (strip punctuation, symbols, digits).
+  ///
+  /// Uses bidirectional substring check on normalized forms, plus
+  /// Jaccard word-overlap similarity as a fallback for semantic matches
+  /// (e.g., "B.S. Cybersecurity" ≈ "Bachelor of Science, Cybersecurity").
+  static List<String>? _mergeListsFuzzy(
+    List<String>? existing,
+    List<String>? incoming,
+  ) {
+    if (existing == null && incoming == null) return null;
+    if (existing == null || existing.isEmpty) return incoming;
+    if (incoming == null || incoming.isEmpty) return existing;
+
+    // First, deduplicate the existing list itself
+    final deduped = _deduplicateList(existing);
+    final result = List<String>.from(deduped!);
+    final existingNorm = result.map(_normalize).toList();
+
+    for (final entry in incoming) {
+      final entryNorm = _normalize(entry);
+      if (entryNorm.isEmpty) continue;
+
+      // Check if any existing entry matches via bidirectional substring
+      bool isDuplicate = false;
+      for (final existNorm in existingNorm) {
+        // Pass 1: exact or substring match
+        if (existNorm == entryNorm ||
+            existNorm.contains(entryNorm) ||
+            entryNorm.contains(existNorm)) {
+          isDuplicate = true;
+          break;
+        }
+        // Pass 2: Jaccard word-overlap similarity
+        if (_jaccardSimilar(existNorm, entryNorm)) {
+          isDuplicate = true;
+          break;
+        }
+      }
+
+      if (!isDuplicate) {
+        result.add(entry);
+        existingNorm.add(entryNorm);
+      }
+    }
+
+    return result;
+  }
+
+  /// Stop words stripped before Jaccard comparison — academic/degree
+  /// abbreviations, articles, and common structural terms.
+  static final _stopWords = <String>{
+    'of',
+    'and',
+    'in',
+    'at',
+    'the',
+    'a',
+    'an',
+    'for',
+    'to',
+    'bachelor',
+    'bachelors',
+    'master',
+    'masters',
+    'bs',
+    'ms',
+    'ba',
+    'ma',
+    'phd',
+    'associate',
+    'associates',
+    'degree',
+    'university',
+    'college',
+    'institute',
+    'certification',
+    'certified',
+    'certificate',
+  };
+
+  /// Jaccard word-overlap similarity:
+  /// tokenize both strings, remove stop words, compute intersection
+  /// ratio relative to the shorter token set. Returns true if > 60%.
+  static bool _jaccardSimilar(String normA, String normB) {
+    final tokA = _tokenize(normA);
+    final tokB = _tokenize(normB);
+    if (tokA.isEmpty || tokB.isEmpty) return false;
+
+    final intersection = tokA.intersection(tokB).length;
+    final shorter = tokA.length < tokB.length ? tokA.length : tokB.length;
+    return intersection / shorter > 0.6;
+  }
+
+  /// Tokenize a normalized string into a set of keywords,
+  /// stripping stop words.
+  static Set<String> _tokenize(String norm) {
+    return norm
+        .split(' ')
+        .where((w) => w.isNotEmpty && !_stopWords.contains(w))
+        .toSet();
+  }
+
+  /// Deduplicate an existing list in-place using aggressive normalization.
+  /// Keeps the first occurrence, drops later duplicates.
+  static List<String>? _deduplicateList(List<String>? list) {
+    if (list == null || list.length < 2) return list;
+
+    final seen = <String>{};
+    final result = <String>[];
+
+    for (final entry in list) {
+      final norm = _normalize(entry);
+      if (norm.isEmpty) {
+        result.add(entry); // keep blanks
+        continue;
+      }
+
+      // Check bidirectional substring against everything already seen
+      bool isDup = false;
+      for (final s in seen) {
+        if (s == norm || s.contains(norm) || norm.contains(s)) {
+          isDup = true;
+          break;
+        }
+      }
+
+      if (!isDup) {
+        seen.add(norm);
+        result.add(entry);
+      }
+    }
+
+    return result;
   }
 
   /// Timeline deduplication: checks if an event with the same year and
@@ -514,6 +827,188 @@ class ForgeService {
     return false;
   }
 
+  /// Apply AI-requested removals by fuzzy-matching against stored data.
+  static Future<void> _applyRemovals(
+    Isar db,
+    List<RemovalDirective> removals,
+  ) async {
+    final byLedger = <String, List<RemovalDirective>>{};
+    for (final r in removals) {
+      byLedger.putIfAbsent(r.ledger, () => []).add(r);
+    }
+
+    await db.writeTxn(() async {
+      // ── Identity ──
+      if (byLedger.containsKey('identity')) {
+        var id = await db.coreIdentitys.where().findFirst();
+        if (id != null) {
+          for (final r in byLedger['identity']!) {
+            switch (r.field) {
+              case 'immutabletraits':
+                id.immutableTraits = _removeFromList(
+                  id.immutableTraits,
+                  r.value,
+                );
+              case 'locationhistory':
+                id.locationHistory = _removeFromList(
+                  id.locationHistory,
+                  r.value,
+                );
+              case 'familylineage':
+                id.familyLineage = _removeFromList(id.familyLineage, r.value);
+            }
+          }
+          await db.coreIdentitys.put(id);
+        }
+      }
+
+      // ── Medical ──
+      if (byLedger.containsKey('medical')) {
+        var m = await db.medicalLedgers.where().findFirst();
+        if (m != null) {
+          for (final r in byLedger['medical']!) {
+            switch (r.field) {
+              case 'surgeries':
+                m.surgeries = _removeFromList(m.surgeries, r.value);
+              case 'genetics':
+                m.genetics = _removeFromList(m.genetics, r.value);
+              case 'vitalbaselines':
+                m.vitalBaselines = _removeFromList(m.vitalBaselines, r.value);
+              case 'visionrx':
+                m.visionRx = _removeFromList(m.visionRx, r.value);
+              case 'familymedicalhistory':
+                m.familyMedicalHistory = _removeFromList(
+                  m.familyMedicalHistory,
+                  r.value,
+                );
+              case 'bloodwork':
+                m.bloodwork = _removeFromList(m.bloodwork, r.value);
+              case 'immunizations':
+                m.immunizations = _removeFromList(m.immunizations, r.value);
+              case 'dentalhistory':
+                m.dentalHistory = _removeFromList(m.dentalHistory, r.value);
+            }
+          }
+          await db.medicalLedgers.put(m);
+        }
+      }
+
+      // ── Career ──
+      if (byLedger.containsKey('career')) {
+        var c = await db.careerLedgers.where().findFirst();
+        if (c != null) {
+          for (final r in byLedger['career']!) {
+            switch (r.field) {
+              case 'jobs':
+                c.jobs = _removeFromList(c.jobs, r.value);
+              case 'degrees':
+                c.degrees = _removeFromList(c.degrees, r.value);
+              case 'certifications':
+                c.certifications = _removeFromList(c.certifications, r.value);
+              case 'clearances':
+                c.clearances = _removeFromList(c.clearances, r.value);
+              case 'skills':
+                c.skills = _removeFromList(c.skills, r.value);
+              case 'projects':
+                c.projects = _removeFromList(c.projects, r.value);
+              case 'businesses':
+                c.businesses = _removeFromList(c.businesses, r.value);
+            }
+          }
+          await db.careerLedgers.put(c);
+        }
+      }
+
+      // ── Assets ──
+      if (byLedger.containsKey('assets')) {
+        var a = await db.assetLedgers.where().findFirst();
+        if (a != null) {
+          for (final r in byLedger['assets']!) {
+            switch (r.field) {
+              case 'realestate':
+                a.realEstate = _removeFromList(a.realEstate, r.value);
+              case 'vehicles':
+                a.vehicles = _removeFromList(a.vehicles, r.value);
+              case 'digitalassets':
+                a.digitalAssets = _removeFromList(a.digitalAssets, r.value);
+              case 'insurance':
+                a.insurance = _removeFromList(a.insurance, r.value);
+              case 'investments':
+                a.investments = _removeFromList(a.investments, r.value);
+              case 'valuables':
+                a.valuables = _removeFromList(a.valuables, r.value);
+              case 'equitystakes':
+                a.equityStakes = _removeFromList(a.equityStakes, r.value);
+            }
+          }
+          await db.assetLedgers.put(a);
+        }
+      }
+
+      // ── Relational Web ──
+      if (byLedger.containsKey('relationalweb')) {
+        var rw = await db.relationalWebs.where().findFirst();
+        if (rw != null) {
+          for (final r in byLedger['relationalweb']!) {
+            switch (r.field) {
+              case 'family':
+                rw.family = _removeFromList(rw.family, r.value);
+              case 'mentors':
+                rw.mentors = _removeFromList(rw.mentors, r.value);
+              case 'adversaries':
+                rw.adversaries = _removeFromList(rw.adversaries, r.value);
+              case 'colleagues':
+                rw.colleagues = _removeFromList(rw.colleagues, r.value);
+              case 'friends':
+                rw.friends = _removeFromList(rw.friends, r.value);
+            }
+          }
+          await db.relationalWebs.put(rw);
+        }
+      }
+
+      // ── Psyche ──
+      if (byLedger.containsKey('psyche')) {
+        var p = await db.psycheProfiles.where().findFirst();
+        if (p != null) {
+          for (final r in byLedger['psyche']!) {
+            switch (r.field) {
+              case 'beliefs':
+                p.beliefs = _removeFromList(p.beliefs, r.value);
+              case 'personality':
+                p.personality = _removeFromList(p.personality, r.value);
+              case 'fears':
+                p.fears = _removeFromList(p.fears, r.value);
+              case 'motivations':
+                p.motivations = _removeFromList(p.motivations, r.value);
+              case 'strengths':
+                p.strengths = _removeFromList(p.strengths, r.value);
+              case 'weaknesses':
+                p.weaknesses = _removeFromList(p.weaknesses, r.value);
+            }
+          }
+          await db.psycheProfiles.put(p);
+        }
+      }
+    });
+
+    debugPrint(
+      'PRUNING ENGINE: Processed ${removals.length} removal directives',
+    );
+  }
+
+  /// Remove entries from a list using fuzzy substring matching.
+  static List<String>? _removeFromList(List<String>? list, String value) {
+    if (list == null || list.isEmpty) return list;
+    final valueLower = value.toLowerCase().trim();
+    return list.where((entry) {
+      final entryLower = entry.toLowerCase().trim();
+      return !(entryLower == valueLower ||
+          entryLower.contains(valueLower) ||
+          valueLower.contains(entryLower));
+    }).toList();
+  }
+
   /// Extract first word > 4 chars from a title as a keyword for dedup.
   static String? _extractKeyword(String title) {
     final words = title.toLowerCase().split(RegExp(r'\s+'));
@@ -530,10 +1025,22 @@ class ForgeService {
         AuditLog()
           ..timestamp = DateTime.now()
           ..action = action
-          ..fileHashDestroyed = 'N/A',
+          ..details = 'Forge synthesis complete',
       );
     });
   }
+}
+
+/// Represents a single AI-requested deletion.
+class RemovalDirective {
+  final String ledger;
+  final String field;
+  final String value;
+  const RemovalDirective({
+    required this.ledger,
+    required this.field,
+    required this.value,
+  });
 }
 
 /// Parsed result from the Forge LLM synthesis.
@@ -552,6 +1059,9 @@ class ForgeResult {
   RelationalWeb? relationalWeb;
   PsycheProfile? psycheProfile;
   List<String> changelog;
+  List<RemovalDirective> recordsToRemove;
+  Map<String, List<CustomItem>> customLedgers;
+  String? aiSummary;
 
   ForgeResult({
     this.identity,
@@ -568,6 +1078,9 @@ class ForgeResult {
     this.relationalWeb,
     this.psycheProfile,
     this.changelog = const [],
+    this.recordsToRemove = const [],
+    this.customLedgers = const {},
+    this.aiSummary,
   });
 
   factory ForgeResult.fromJson(Map<String, dynamic> json) {
@@ -631,6 +1144,9 @@ class ForgeResult {
       relationalWeb: relationalWeb,
       psycheProfile: psycheProfile,
       changelog: _parseStringList(json['changelog']),
+      recordsToRemove: _parseRemovals(json['recordsToRemove']),
+      customLedgers: _parseCustomLedgers(json['customLedgers']),
+      aiSummary: json['aiSummary'] as String?,
     );
   }
 
@@ -643,10 +1159,7 @@ class ForgeResult {
       ..dateOfBirth = _parseDate(data['dateOfBirth'])
       ..location = data['location'] as String? ?? ''
       ..immutableTraits = _parseStringList(data['immutableTraits'])
-      ..digitalFootprint = _parseStringList(data['digitalFootprint'])
-      ..jobHistory = _parseStringList(data['jobHistory'])
       ..locationHistory = _parseStringList(data['locationHistory'])
-      ..educationHistory = _parseStringList(data['educationHistory'])
       ..familyLineage = _parseStringList(data['familyLineage'])
       ..lastUpdated = DateTime.now()
       ..completenessScore = 0;
@@ -760,6 +1273,48 @@ class ForgeResult {
     return data.map((e) => e.toString()).toList();
   }
 
+  static Map<String, List<CustomItem>> _parseCustomLedgers(dynamic data) {
+    if (data == null || data is! Map<String, dynamic>) return {};
+    final result = <String, List<CustomItem>>{};
+    for (final entry in data.entries) {
+      // Skip the _NOTE placeholder
+      if (entry.key == '_NOTE') continue;
+      if (entry.value is List) {
+        result[entry.key] = (entry.value as List)
+            .map((e) {
+              if (e is Map<String, dynamic>) {
+                return CustomItem()
+                  ..name = e['name'] as String?
+                  ..value = e['value'] as String?;
+              }
+              // Fallback: plain string becomes name
+              return CustomItem()..name = e.toString();
+            })
+            .where((item) {
+              return (item.name ?? '').isNotEmpty ||
+                  (item.value ?? '').isNotEmpty;
+            })
+            .toList();
+      }
+    }
+    return result;
+  }
+
+  static List<RemovalDirective> _parseRemovals(dynamic data) {
+    if (data == null || data is! List) return [];
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (e) => RemovalDirective(
+            ledger: (e['ledger'] as String?)?.toLowerCase() ?? '',
+            field: (e['field'] as String?)?.toLowerCase() ?? '',
+            value: (e['value'] as String?) ?? '',
+          ),
+        )
+        .where((r) => r.ledger.isNotEmpty && r.value.isNotEmpty)
+        .toList();
+  }
+
   // ── New Ledger Parsers ──
 
   static MedicalLedger? _parseMedical(dynamic data) {
@@ -785,6 +1340,7 @@ class ForgeResult {
       ..clearances = _parseStringList(data['clearances'])
       ..skills = _parseStringList(data['skills'])
       ..projects = _parseStringList(data['projects'])
+      ..businesses = _parseStringList(data['businesses'])
       ..lastUpdated = DateTime.now();
   }
 
@@ -797,6 +1353,7 @@ class ForgeResult {
       ..insurance = _parseStringList(data['insurance'])
       ..investments = _parseStringList(data['investments'])
       ..valuables = _parseStringList(data['valuables'])
+      ..equityStakes = _parseStringList(data['equityStakes'])
       ..lastUpdated = DateTime.now();
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,8 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/services/api_key_service.dart';
 import '../../core/services/forge_api_client.dart';
-import '../../core/services/vault_sync_service.dart';
-import '../../features/settings/pro_upgrade_screen.dart';
+import '../../core/services/revenuecat_service.dart';
 import '../../providers/providers.dart';
 import '../../theme/theme.dart';
 
@@ -29,15 +29,27 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     with TickerProviderStateMixin {
   final ApiKeyService _keyService = ApiKeyService();
   final ForgeApiClient _apiClient = ForgeApiClient(keyService: ApiKeyService());
-  final VaultSyncService _syncService = VaultSyncService();
 
   // State per provider
   final Map<LlmProvider, TextEditingController> _controllers = {};
   final Map<LlmProvider, _KeyState> _keyStates = {};
   final Map<LlmProvider, bool> _isEditing = {};
   final Map<LlmProvider, AnimationController> _pulseControllers = {};
-  bool _biometricsAvailable = false;
-  bool _useBiometrics = false;
+  bool _biometricsEnabled = false;
+
+  // Local Node-specific controllers
+  final TextEditingController _localBaseUrlController = TextEditingController(
+    text: 'http://localhost:11434/v1',
+  );
+  final TextEditingController _localModelController = TextEditingController(
+    text: 'llama3.2',
+  );
+
+  // Custom Provider-specific controllers
+  final TextEditingController _customBaseUrlController =
+      TextEditingController();
+  final TextEditingController _customModelController = TextEditingController();
+  final TextEditingController _customApiKeyController = TextEditingController();
 
   @override
   void initState() {
@@ -55,28 +67,6 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     _loadBiometricPref();
   }
 
-  Future<void> _loadBiometricPref() async {
-    try {
-      final localAuth = LocalAuthentication();
-      final canCheck = await localAuth.canCheckBiometrics;
-      final isSupported = await localAuth.isDeviceSupported();
-      if (!mounted) return;
-      setState(() => _biometricsAvailable = canCheck && isSupported);
-
-      final prefs = await SharedPreferences.getInstance();
-      if (!mounted) return;
-      setState(() => _useBiometrics = prefs.getBool('useBiometrics') ?? false);
-    } catch (_) {
-      // No biometric hardware.
-    }
-  }
-
-  Future<void> _toggleBiometric(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('useBiometrics', value);
-    if (mounted) setState(() => _useBiometrics = value);
-  }
-
   Future<void> _loadExistingKeys() async {
     for (final provider in LlmProvider.values) {
       final key = await _keyService.getKey(provider);
@@ -87,6 +77,28 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
           _keyStates[provider] = _KeyState.saved;
         });
       }
+    }
+    // Pre-fill local node config
+    final localUrl = await _keyService.getLocalBaseUrl();
+    final localModel = await _keyService.getLocalModel();
+    if (localUrl != null && localUrl.isNotEmpty) {
+      _localBaseUrlController.text = localUrl;
+    }
+    if (localModel != null && localModel.isNotEmpty) {
+      _localModelController.text = localModel;
+    }
+    // Pre-fill custom provider config
+    final customUrl = await _keyService.getCustomBaseUrl();
+    final customModel = await _keyService.getCustomModel();
+    final customKey = await _keyService.getKey(LlmProvider.custom);
+    if (customUrl != null && customUrl.isNotEmpty) {
+      _customBaseUrlController.text = customUrl;
+    }
+    if (customModel != null && customModel.isNotEmpty) {
+      _customModelController.text = customModel;
+    }
+    if (customKey != null && customKey.isNotEmpty) {
+      _customApiKeyController.text = customKey;
     }
     // Silently validate all saved keys on boot so green indicators appear
     _revalidateAllKeys(showSnackBar: false);
@@ -108,16 +120,22 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
       _controllers[provider]!.text = key;
       setState(() => _keyStates[provider] = _KeyState.validating);
 
-      final result = await _apiClient.validateKey(provider, key);
-      if (!mounted) return;
+      try {
+        final result = await _apiClient.validateKey(provider, key);
+        if (!mounted) return;
 
-      switch (result) {
-        case ValidationResult.valid:
-        case ValidationResult.validWithWarning:
-          setState(() => _keyStates[provider] = _KeyState.valid);
-          _pulseControllers[provider]!.repeat(reverse: true);
-        case ValidationResult.invalid:
-          setState(() => _keyStates[provider] = _KeyState.invalid);
+        switch (result) {
+          case ValidationResult.valid:
+            setState(() => _keyStates[provider] = _KeyState.valid);
+            _pulseControllers[provider]!.repeat(reverse: true);
+          case ValidationResult.invalid:
+            setState(() => _keyStates[provider] = _KeyState.invalid);
+        }
+      } catch (_) {
+        if (!mounted) return;
+        _controllers[provider]!.clear();
+        await _keyService.deleteKey(provider);
+        setState(() => _keyStates[provider] = _KeyState.invalid);
       }
     }
 
@@ -176,7 +194,78 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
         children: [
-          // ── Sleek Sync Button ──
+          // ── Security Warning Banner ──
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: VaultColors.surface,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: VaultColors.phosphorGreenDim.withValues(alpha: 0.4),
+                width: 0.8,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.amber.withValues(alpha: 0.12),
+                  ),
+                  child: Icon(
+                    Icons.shield_outlined,
+                    color: Colors.amber.shade600,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'SECURELY STORE YOUR API KEYS',
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.amber.shade600,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Keys are encrypted locally inside your hardware '
+                        'keystore. They cannot be recovered if you uninstall '
+                        'the app, lose your Master PIN, or fail to export a '
+                        'backup.',
+                        style: GoogleFonts.inter(
+                          fontSize: 11,
+                          color: VaultColors.textMuted,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Header
+          _buildHeader(),
+          const SizedBox(height: 24),
+
+          // Provider Cards
+          for (final provider in LlmProvider.values) ...[
+            _buildProviderCard(provider),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Scan Keystore Button (below provider cards) ──
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -200,25 +289,16 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
               ),
             ),
           ),
-          const SizedBox(height: 20),
-
-          // Header
-          _buildHeader(),
-          const SizedBox(height: 24),
-
-          // Provider Cards
-          for (final provider in LlmProvider.values) ...[
-            _buildProviderCard(provider),
-            const SizedBox(height: 16),
-          ],
 
           const SizedBox(height: 16),
           _buildInfoFooter(),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
-          // ── Security & Sync Section ──
-          _buildSecuritySyncSection(),
+          // ── Biometric Unlock Toggle ──
+          _buildBiometricToggle(),
+
+          const SizedBox(height: 32),
         ],
       ),
     );
@@ -451,8 +531,9 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
 
             const SizedBox(height: 16),
 
-            // API Key input / masked display
-            if (isEditing || state == _KeyState.empty) ...[
+            // API Key input / masked display (skip for Custom — has its own fields)
+            if (provider != LlmProvider.custom &&
+                (isEditing || state == _KeyState.empty)) ...[
               // Input mode
               TextField(
                 controller: controller,
@@ -462,7 +543,9 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
                   color: VaultColors.textPrimary,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Paste your ${provider.displayName} API key…',
+                  hintText: provider == LlmProvider.localNode
+                      ? 'API key (optional for local nodes)'
+                      : 'Paste your ${provider.displayName} API key…',
                   hintStyle: GoogleFonts.jetBrainsMono(
                     fontSize: 13,
                     color: VaultColors.textMuted,
@@ -505,8 +588,265 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
                   ),
                 ),
               ),
+
+              // Local Node: Base URL + Model Name fields
+              if (provider == LlmProvider.localNode) ...[
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _localBaseUrlController,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 13,
+                    color: VaultColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'http://localhost:11434/v1',
+                    labelText: 'Base URL',
+                    labelStyle: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: VaultColors.textMuted,
+                    ),
+                    hintStyle: GoogleFonts.jetBrainsMono(
+                      fontSize: 13,
+                      color: VaultColors.textMuted.withValues(alpha: 0.5),
+                    ),
+                    filled: true,
+                    fillColor: VaultColors.background,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: VaultColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: VaultColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: VaultColors.phosphorGreenDim,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _localModelController,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 13,
+                    color: VaultColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'llama3.2',
+                    labelText: 'Model Name',
+                    labelStyle: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: VaultColors.textMuted,
+                    ),
+                    hintStyle: GoogleFonts.jetBrainsMono(
+                      fontSize: 13,
+                      color: VaultColors.textMuted.withValues(alpha: 0.5),
+                    ),
+                    filled: true,
+                    fillColor: VaultColors.background,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: VaultColors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: VaultColors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: VaultColors.phosphorGreenDim,
+                        width: 1.5,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+
+            // Custom Provider: Always-editable fields (outside API key block)
+            if (provider == LlmProvider.custom) ...[
+              const SizedBox(height: 10),
+              TextField(
+                controller: _customBaseUrlController,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: VaultColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'https://api.together.xyz/v1/chat/completions',
+                  labelText: 'Custom Base URL',
+                  labelStyle: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                  ),
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    fontSize: 11,
+                    color: VaultColors.textMuted.withValues(alpha: 0.5),
+                  ),
+                  filled: true,
+                  fillColor: VaultColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: VaultColors.phosphorGreenDim,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _customModelController,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: VaultColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'meta-llama/Llama-3-70b',
+                  labelText: 'Custom Model Name',
+                  labelStyle: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                  ),
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    fontSize: 11,
+                    color: VaultColors.textMuted.withValues(alpha: 0.5),
+                  ),
+                  filled: true,
+                  fillColor: VaultColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: VaultColors.phosphorGreenDim,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _customApiKeyController,
+                obscureText: true,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: VaultColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'sk-...',
+                  labelText: 'Custom API Key',
+                  labelStyle: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                  ),
+                  hintStyle: GoogleFonts.jetBrainsMono(
+                    fontSize: 11,
+                    color: VaultColors.textMuted.withValues(alpha: 0.5),
+                  ),
+                  filled: true,
+                  fillColor: VaultColors.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: VaultColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: VaultColors.phosphorGreenDim,
+                      width: 1.5,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                ),
+              ),
               const SizedBox(height: 12),
-              // Save & Validate button
+              // Save Custom Config button
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: state == _KeyState.validating
+                          ? null
+                          : () => _saveAndValidate(provider),
+                      icon: state == _KeyState.validating
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: VaultColors.phosphorGreenDim,
+                              ),
+                            )
+                          : const Icon(Icons.save_rounded, size: 16),
+                      label: Text(
+                        state == _KeyState.validating
+                            ? 'Validating…'
+                            : 'Save Custom Config',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: VaultColors.primary,
+                        foregroundColor: VaultColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // Save & Validate button (non-custom providers)
+            if (provider != LlmProvider.custom) ...[
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -558,8 +898,13 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
                   ],
                 ],
               ),
-            ] else ...[
-              // Masked key display
+            ],
+
+            // Masked key display (only for non-custom providers with saved keys)
+            if (provider != LlmProvider.custom &&
+                state != _KeyState.empty &&
+                state != _KeyState.validating &&
+                !isEditing) ...[
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -568,14 +913,29 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: VaultColors.background,
-                  border: Border.all(color: VaultColors.border, width: 0.5),
+                  border: Border.all(
+                    color: state == _KeyState.valid
+                        ? VaultColors.phosphorGreenDim
+                        : state == _KeyState.invalid
+                        ? VaultColors.destructive.withValues(alpha: 0.4)
+                        : VaultColors.border,
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.lock_outline_rounded,
+                    Icon(
+                      state == _KeyState.valid
+                          ? Icons.check_circle_outline_rounded
+                          : state == _KeyState.invalid
+                          ? Icons.error_outline_rounded
+                          : Icons.lock_outline_rounded,
                       size: 14,
-                      color: VaultColors.textMuted,
+                      color: state == _KeyState.valid
+                          ? VaultColors.phosphorGreen
+                          : state == _KeyState.invalid
+                          ? VaultColors.destructive
+                          : VaultColors.textMuted,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -624,35 +984,37 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
 
             const SizedBox(height: 12),
 
-            // Get API Key link
-            InkWell(
-              onTap: () => _openKeyUrl(provider),
-              borderRadius: BorderRadius.circular(6),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.open_in_new_rounded,
-                      size: 13,
-                      color: VaultColors.primaryLight,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Get ${provider.displayName} API Key →',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+            // Get API Key link (hidden for Local Node and Custom)
+            if (provider != LlmProvider.localNode &&
+                provider != LlmProvider.custom)
+              InkWell(
+                onTap: () => _openKeyUrl(provider),
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.open_in_new_rounded,
+                        size: 13,
                         color: VaultColors.primaryLight,
-                        decoration: TextDecoration.underline,
-                        decorationColor: VaultColors.primaryLight,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        'Get ${provider.displayName} API Key →',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: VaultColors.primaryLight,
+                          decoration: TextDecoration.underline,
+                          decorationColor: VaultColors.primaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -726,95 +1088,118 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
 
   Future<void> _saveAndValidate(LlmProvider provider) async {
     final key = _controllers[provider]!.text.trim();
-    if (key.isEmpty) return;
+    if (provider != LlmProvider.localNode &&
+        provider != LlmProvider.custom &&
+        key.isEmpty) {
+      return;
+    }
 
     setState(() => _keyStates[provider] = _KeyState.validating);
 
-    // Save first
-    await _keyService.saveKey(provider, key);
+    // Save local/custom config first (base URL, model)
+    if (provider == LlmProvider.localNode) {
+      final baseUrl = _localBaseUrlController.text.trim();
+      final model = _localModelController.text.trim();
+      if (baseUrl.isNotEmpty) await _keyService.saveLocalBaseUrl(baseUrl);
+      if (model.isNotEmpty) await _keyService.saveLocalModel(model);
+    } else if (provider == LlmProvider.custom) {
+      final baseUrl = _customBaseUrlController.text.trim();
+      final model = _customModelController.text.trim();
+      if (baseUrl.isNotEmpty) await _keyService.saveCustomBaseUrl(baseUrl);
+      if (model.isNotEmpty) await _keyService.saveCustomModel(model);
+    }
 
-    // Live Spark validation
-    final result = await _apiClient.validateKey(provider, key);
+    // Live Spark validation — validate BEFORE persisting key
+    try {
+      final result = await _apiClient.validateKey(provider, key);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    switch (result) {
-      case ValidationResult.valid:
-        setState(() => _keyStates[provider] = _KeyState.valid);
-        _pulseControllers[provider]!.repeat(reverse: true);
-        _isEditing[provider] = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.bolt_rounded,
-                  color: VaultColors.phosphorGreen,
-                  size: 18,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '${provider.displayName} Live Spark — Connection verified!',
-                  style: GoogleFonts.inter(fontSize: 13),
-                ),
-              ],
-            ),
-            backgroundColor: VaultColors.primary,
-          ),
-        );
+      // Validation passed — NOW save the key
+      if (provider == LlmProvider.localNode) {
+        if (key.isNotEmpty) await _keyService.saveKey(provider, key);
+      } else if (provider == LlmProvider.custom) {
+        final customKey = _customApiKeyController.text.trim();
+        if (customKey.isNotEmpty) {
+          await _keyService.saveKey(provider, customKey);
+        }
+      } else {
+        await _keyService.saveKey(provider, key);
+      }
 
-      case ValidationResult.validWithWarning:
-        // Key format is valid but account needs credits/billing.
-        // Save anyway and show warning.
-        setState(() => _keyStates[provider] = _KeyState.valid);
-        _pulseControllers[provider]!.repeat(reverse: true);
-        _isEditing[provider] = false;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: Color(0xFFFFD600),
-                  size: 18,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    '${provider.displayName}: Key format valid, but account '
-                    'requires credits/billing.',
+      switch (result) {
+        case ValidationResult.valid:
+          setState(() => _keyStates[provider] = _KeyState.valid);
+          _pulseControllers[provider]!.repeat(reverse: true);
+          _isEditing[provider] = false;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(
+                    Icons.bolt_rounded,
+                    color: VaultColors.phosphorGreen,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${provider.displayName} Live Spark — Connection verified!',
                     style: GoogleFonts.inter(fontSize: 13),
                   ),
-                ),
-              ],
+                ],
+              ),
+              backgroundColor: VaultColors.primary,
             ),
-            backgroundColor: const Color(0xFF5C4800),
-            duration: const Duration(seconds: 5),
-          ),
-        );
+          );
 
-      case ValidationResult.invalid:
-        setState(() => _keyStates[provider] = _KeyState.invalid);
-        HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.error_rounded,
-                  color: VaultColors.destructiveLight,
-                  size: 18,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  '${provider.displayName} key validation failed. Check your key.',
-                  style: GoogleFonts.inter(fontSize: 13),
-                ),
-              ],
+        case ValidationResult.invalid:
+          setState(() => _keyStates[provider] = _KeyState.invalid);
+          HapticFeedback.heavyImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(
+                    Icons.error_rounded,
+                    color: VaultColors.destructiveLight,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${provider.displayName} key validation failed. Check your key.',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                ],
+              ),
+              backgroundColor: VaultColors.destructive,
             ),
-            backgroundColor: VaultColors.destructive,
+          );
+      }
+    } catch (e) {
+      // Validation threw — clear the invalid key from text field & storage
+      if (!mounted) return;
+      _controllers[provider]!.clear();
+      await _keyService.deleteKey(provider);
+      setState(() => _keyStates[provider] = _KeyState.invalid);
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_rounded, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '${provider.displayName}: $e',
+                  style: GoogleFonts.inter(fontSize: 13, color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        );
+          backgroundColor: VaultColors.destructive,
+          duration: const Duration(seconds: 5),
+        ),
+      );
     }
   }
 
@@ -836,469 +1221,170 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
     }
   }
 
-  // ── Security & Sync Section ──
+  // ── Biometric Preference ──
 
-  Widget _buildSecuritySyncSection() {
-    final isPro = ref.watch(isProUnlockedProvider);
-    final syncDir = ref.watch(syncDirectoryProvider);
+  Future<void> _loadBiometricPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(
+        () => _biometricsEnabled = prefs.getBool('useBiometrics') ?? false,
+      );
+    }
+  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section Header
-        Row(
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(7),
-                color: VaultColors.phosphorGreenDim,
-              ),
-              child: const Icon(
-                Icons.shield_rounded,
-                color: VaultColors.phosphorGreen,
-                size: 16,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'SECURITY & SYNC',
-              style: GoogleFonts.jetBrainsMono(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: VaultColors.textSecondary,
-                letterSpacing: 2.0,
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // Biometric Toggle
-        if (_biometricsAvailable)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: _useBiometrics
-                      ? VaultColors.phosphorGreenDim
-                      : VaultColors.border,
-                  width: _useBiometrics ? 1 : 0.5,
+  Widget _buildBiometricToggle() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: VaultColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: VaultColors.border, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: VaultColors.phosphorGreen.withValues(alpha: 0.12),
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: _useBiometrics
-                      ? [
-                          VaultColors.primary.withValues(alpha: 0.15),
-                          VaultColors.surface,
-                        ]
-                      : [VaultColors.surface, VaultColors.cardSurface],
+                child: const Icon(
+                  Icons.fingerprint_rounded,
+                  color: VaultColors.phosphorGreen,
+                  size: 20,
                 ),
               ),
-              child: SwitchListTile(
-                secondary: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: _useBiometrics
-                        ? VaultColors.primary.withValues(alpha: 0.3)
-                        : VaultColors.surfaceVariant,
-                  ),
-                  child: Icon(
-                    Icons.fingerprint_rounded,
-                    size: 22,
-                    color: _useBiometrics
-                        ? VaultColors.phosphorGreen
-                        : VaultColors.textMuted,
-                  ),
-                ),
-                title: Text(
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
                   'Biometric Unlock',
                   style: GoogleFonts.inter(
-                    fontSize: 14,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: VaultColors.textPrimary,
                   ),
                 ),
-                subtitle: Text(
-                  _useBiometrics ? 'Enabled' : 'Tap to enable',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: VaultColors.textMuted,
-                  ),
-                ),
-                value: _useBiometrics,
-                onChanged: (val) {
-                  final isPro = ref.read(isProUnlockedProvider);
-                  if (!isPro) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Biometric Unlock is a Pro feature.',
-                          style: GoogleFonts.inter(color: Colors.white),
-                        ),
-                        backgroundColor: Colors.red.shade900,
-                      ),
-                    );
-                    return;
-                  }
-                  _toggleBiometric(val);
-                },
+              ),
+              Switch.adaptive(
+                value: _biometricsEnabled,
                 activeTrackColor: VaultColors.phosphorGreen,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                onChanged: (value) => _toggleBiometrics(value),
               ),
-            ),
+            ],
           ),
-        // Export Encrypted Backup (Pro-gated)
-        _buildSettingsTile(
-          icon: Icons.backup_rounded,
-          title: 'Export Encrypted Backup',
-          subtitle: 'Share a portable .forgevault capsule',
-          trailing: isPro
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.ios_share_rounded,
-                    color: VaultColors.textMuted,
-                    size: 20,
-                  ),
-                  onPressed: () => _showExportDisclaimer(),
-                )
-              : _buildProBadge(),
-          isActive: isPro,
-        ),
-
-        const SizedBox(height: 8),
-
-        // Vault Sync Tile
-        _buildSettingsTile(
-          icon: Icons.sync_lock_rounded,
-          title: 'Vault Sync',
-          subtitle: syncDir != null
-              ? 'Sync directory configured'
-              : 'Select a sync directory to begin',
-          trailing: isPro
-              ? PopupMenuButton<String>(
-                  icon: const Icon(
-                    Icons.more_vert_rounded,
-                    color: VaultColors.textMuted,
-                    size: 20,
-                  ),
-                  color: VaultColors.surface,
-                  onSelected: (value) async {
-                    switch (value) {
-                      case 'select':
-                        final dir = await _syncService.selectSyncDirectory();
-                        if (dir != null && mounted) {
-                          ref.read(syncDirectoryProvider.notifier).state = dir;
-                        }
-                        break;
-                      case 'export':
-                        final pin = ref.read(masterPinProvider);
-                        if (pin != null) {
-                          final ok = await _syncService.exportVault(pin);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  ok
-                                      ? 'Vault exported successfully.'
-                                      : 'Export failed — set sync directory first.',
-                                ),
-                                backgroundColor: ok
-                                    ? VaultColors.primary
-                                    : VaultColors.destructive,
-                              ),
-                            );
-                          }
-                        }
-                        break;
-                      case 'import':
-                        final pin = ref.read(masterPinProvider);
-                        if (pin != null) {
-                          try {
-                            final ok = await _syncService.importVault(pin);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    ok
-                                        ? 'Vault imported and merged.'
-                                        : 'No vault file found.',
-                                  ),
-                                  backgroundColor: ok
-                                      ? VaultColors.primary
-                                      : VaultColors.destructive,
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Import failed: $e'),
-                                  backgroundColor: VaultColors.destructive,
-                                ),
-                              );
-                            }
-                          }
-                        }
-                        break;
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: 'select',
-                      child: Text('Select Sync Directory'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'export',
-                      child: Text('Export Vault'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'import',
-                      child: Text('Import & Merge'),
-                    ),
-                  ],
-                )
-              : _buildProBadge(),
-          isActive: isPro && syncDir != null,
-        ),
-
-        const SizedBox(height: 12),
-
-        // Upgrade to Pro Tile
-        _buildSettingsTile(
-          icon: isPro
-              ? Icons.verified_user_rounded
-              : Icons.workspace_premium_rounded,
-          title: isPro ? 'Pro Active' : 'Upgrade to Pro',
-          subtitle: isPro
-              ? 'All fortress features unlocked'
-              : 'Unlock Biometrics, Sync & more',
-          trailing: isPro
-              ? Icon(
-                  Icons.check_circle_rounded,
-                  color: VaultColors.phosphorGreen.withValues(alpha: 0.7),
-                  size: 20,
-                )
-              : const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: VaultColors.textMuted,
-                  size: 16,
-                ),
-          onTap: isPro
-              ? null
-              : () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const ProUpgradeScreen()),
-                  );
-                },
-          isActive: isPro,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    Widget? trailing,
-    VoidCallback? onTap,
-    bool isActive = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isActive ? VaultColors.phosphorGreenDim : VaultColors.border,
-            width: isActive ? 1 : 0.5,
-          ),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1A1A1A), Color(0xFF121212), Color(0xFF0F0F0F)],
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: isActive
-                    ? VaultColors.primary.withValues(alpha: 0.3)
-                    : VaultColors.surfaceVariant,
-              ),
-              child: Icon(
-                icon,
-                size: 20,
-                color: isActive
-                    ? VaultColors.phosphorGreen
-                    : VaultColors.textMuted,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: VaultColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: VaultColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // ignore: use_null_aware_elements
-            if (trailing != null) trailing,
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Export Disclaimer ──
-
-  Future<void> _showExportDisclaimer() async {
-    final proceed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: VaultColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: VaultColors.border, width: 0.5),
-        ),
-        title: Text(
-          '\u{1F6D1} STOP: Save Your API Keys',
-          style: GoogleFonts.jetBrainsMono(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: VaultColors.textPrimary,
-            letterSpacing: 1,
-          ),
-        ),
-        content: Text(
-          'Your database is encrypted with your PIN and is safe to export.\n\n'
-          'CRITICAL WARNING: Your API Keys are securely bound to this '
-          "device's hardware chip and WILL NOT export. If you are moving "
-          'to a new device or wiping this one, you MUST copy your API keys '
-          'manually to a secure location first!',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: VaultColors.textSecondary,
-            height: 1.6,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 48),
             child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(color: VaultColors.textMuted),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: VaultColors.primary,
-              foregroundColor: VaultColors.textPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              'I UNDERSTAND, EXPORT',
-              style: GoogleFonts.jetBrainsMono(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
+              'Use FaceID, TouchID, or Fingerprint to unlock '
+              'your vault without entering your PIN.',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: VaultColors.textMuted,
+                height: 1.4,
               ),
             ),
           ),
         ],
       ),
     );
-
-    if (proceed != true || !mounted) return;
-
-    final pin = ref.read(masterPinProvider);
-    if (pin == null) return;
-
-    try {
-      await _syncService.exportCapsule(pin);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Capsule ready for sharing',
-              style: GoogleFonts.inter(fontSize: 13),
-            ),
-            backgroundColor: Colors.green.shade800,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Export failed: $e',
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
-            ),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
   }
 
-  Widget _buildProBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        color: VaultColors.primary.withValues(alpha: 0.3),
-        border: Border.all(color: VaultColors.phosphorGreenDim, width: 0.5),
-      ),
-      child: Text(
-        'PRO',
-        style: GoogleFonts.jetBrainsMono(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: VaultColors.phosphorGreen,
-          letterSpacing: 1,
-        ),
-      ),
+  Future<void> _toggleBiometrics(bool enable) async {
+    // PRO Gate
+    final isPro = RevenueCatService().isProNotifier.value;
+    if (!isPro) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Biometric Unlock is a PRO feature. Upgrade to enable.',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            backgroundColor: VaultColors.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    const storage = FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
     );
+    final prefs = await SharedPreferences.getInstance();
+
+    if (enable) {
+      // Authenticate with biometrics before enabling
+      try {
+        final localAuth = LocalAuthentication();
+        final didAuth = await localAuth.authenticate(
+          localizedReason: 'Verify your identity to enable biometric unlock',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            biometricOnly: false,
+          ),
+        );
+        if (!didAuth) return; // User cancelled or failed
+
+        // Save the current master PIN to SecureStorage
+        final masterPin = ref.read(masterPinProvider);
+        if (masterPin == null || masterPin.isEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'No active PIN session. Unlock your vault first.',
+                  style: GoogleFonts.inter(color: Colors.white),
+                ),
+                backgroundColor: Colors.red.shade900,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            );
+          }
+          return;
+        }
+
+        await storage.write(key: 'biometric_pin', value: masterPin);
+        await prefs.setBool('useBiometrics', true);
+        if (mounted) setState(() => _biometricsEnabled = true);
+      } on PlatformException {
+        // Biometric auth not available or failed
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Biometric authentication failed or unavailable.',
+                style: GoogleFonts.inter(color: Colors.white),
+              ),
+              backgroundColor: Colors.red.shade900,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      // Disable: remove stored PIN and flag
+      await storage.delete(key: 'biometric_pin');
+      await prefs.setBool('useBiometrics', false);
+      if (mounted) setState(() => _biometricsEnabled = false);
+    }
   }
 }
 

@@ -9,11 +9,15 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/welcome/welcome_screen.dart';
 import 'core/database/database_service.dart';
 import 'core/services/lifecycle_guard.dart';
+import 'core/services/revenuecat_service.dart';
 import 'core/services/security_flags_service.dart';
 import 'theme/theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize RevenueCat (no-op on unsupported platforms).
+  await RevenueCatService().init();
 
   // Force dark system chrome overlay
   SystemChrome.setSystemUIOverlayStyle(

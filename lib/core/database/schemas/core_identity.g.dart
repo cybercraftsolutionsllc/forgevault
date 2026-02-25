@@ -27,48 +27,38 @@ const CoreIdentitySchema = CollectionSchema(
       name: r'dateOfBirth',
       type: IsarType.dateTime,
     ),
-    r'digitalFootprint': PropertySchema(
-      id: 2,
-      name: r'digitalFootprint',
-      type: IsarType.stringList,
-    ),
-    r'educationHistory': PropertySchema(
-      id: 3,
-      name: r'educationHistory',
-      type: IsarType.stringList,
-    ),
     r'familyLineage': PropertySchema(
-      id: 4,
+      id: 2,
       name: r'familyLineage',
       type: IsarType.stringList,
     ),
     r'fullName': PropertySchema(
-      id: 5,
+      id: 3,
       name: r'fullName',
       type: IsarType.string,
     ),
+    r'hiddenSections': PropertySchema(
+      id: 4,
+      name: r'hiddenSections',
+      type: IsarType.stringList,
+    ),
     r'immutableTraits': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'immutableTraits',
       type: IsarType.stringList,
     ),
-    r'jobHistory': PropertySchema(
-      id: 7,
-      name: r'jobHistory',
-      type: IsarType.stringList,
-    ),
     r'lastUpdated': PropertySchema(
-      id: 8,
+      id: 6,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'location': PropertySchema(
-      id: 9,
+      id: 7,
       name: r'location',
       type: IsarType.string,
     ),
     r'locationHistory': PropertySchema(
-      id: 10,
+      id: 8,
       name: r'locationHistory',
       type: IsarType.stringList,
     )
@@ -94,30 +84,6 @@ int _coreIdentityEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
-    final list = object.digitalFootprint;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount += value.length * 3;
-        }
-      }
-    }
-  }
-  {
-    final list = object.educationHistory;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount += value.length * 3;
-        }
-      }
-    }
-  }
-  {
     final list = object.familyLineage;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
@@ -130,20 +96,15 @@ int _coreIdentityEstimateSize(
     }
   }
   bytesCount += 3 + object.fullName.length * 3;
+  bytesCount += 3 + object.hiddenSections.length * 3;
   {
-    final list = object.immutableTraits;
-    if (list != null) {
-      bytesCount += 3 + list.length * 3;
-      {
-        for (var i = 0; i < list.length; i++) {
-          final value = list[i];
-          bytesCount += value.length * 3;
-        }
-      }
+    for (var i = 0; i < object.hiddenSections.length; i++) {
+      final value = object.hiddenSections[i];
+      bytesCount += value.length * 3;
     }
   }
   {
-    final list = object.jobHistory;
+    final list = object.immutableTraits;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -178,15 +139,13 @@ void _coreIdentitySerialize(
 ) {
   writer.writeLong(offsets[0], object.completenessScore);
   writer.writeDateTime(offsets[1], object.dateOfBirth);
-  writer.writeStringList(offsets[2], object.digitalFootprint);
-  writer.writeStringList(offsets[3], object.educationHistory);
-  writer.writeStringList(offsets[4], object.familyLineage);
-  writer.writeString(offsets[5], object.fullName);
-  writer.writeStringList(offsets[6], object.immutableTraits);
-  writer.writeStringList(offsets[7], object.jobHistory);
-  writer.writeDateTime(offsets[8], object.lastUpdated);
-  writer.writeString(offsets[9], object.location);
-  writer.writeStringList(offsets[10], object.locationHistory);
+  writer.writeStringList(offsets[2], object.familyLineage);
+  writer.writeString(offsets[3], object.fullName);
+  writer.writeStringList(offsets[4], object.hiddenSections);
+  writer.writeStringList(offsets[5], object.immutableTraits);
+  writer.writeDateTime(offsets[6], object.lastUpdated);
+  writer.writeString(offsets[7], object.location);
+  writer.writeStringList(offsets[8], object.locationHistory);
 }
 
 CoreIdentity _coreIdentityDeserialize(
@@ -198,16 +157,14 @@ CoreIdentity _coreIdentityDeserialize(
   final object = CoreIdentity();
   object.completenessScore = reader.readLong(offsets[0]);
   object.dateOfBirth = reader.readDateTimeOrNull(offsets[1]);
-  object.digitalFootprint = reader.readStringList(offsets[2]);
-  object.educationHistory = reader.readStringList(offsets[3]);
-  object.familyLineage = reader.readStringList(offsets[4]);
-  object.fullName = reader.readString(offsets[5]);
+  object.familyLineage = reader.readStringList(offsets[2]);
+  object.fullName = reader.readString(offsets[3]);
+  object.hiddenSections = reader.readStringList(offsets[4]) ?? [];
   object.id = id;
-  object.immutableTraits = reader.readStringList(offsets[6]);
-  object.jobHistory = reader.readStringList(offsets[7]);
-  object.lastUpdated = reader.readDateTime(offsets[8]);
-  object.location = reader.readString(offsets[9]);
-  object.locationHistory = reader.readStringList(offsets[10]);
+  object.immutableTraits = reader.readStringList(offsets[5]);
+  object.lastUpdated = reader.readDateTime(offsets[6]);
+  object.location = reader.readString(offsets[7]);
+  object.locationHistory = reader.readStringList(offsets[8]);
   return object;
 }
 
@@ -225,20 +182,16 @@ P _coreIdentityDeserializeProp<P>(
     case 2:
       return (reader.readStringList(offset)) as P;
     case 3:
-      return (reader.readStringList(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readStringList(offset)) as P;
+      return (reader.readStringList(offset) ?? []) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringList(offset)) as P;
     case 6:
-      return (reader.readStringList(offset)) as P;
-    case 7:
-      return (reader.readStringList(offset)) as P;
-    case 8:
       return (reader.readDateTime(offset)) as P;
-    case 9:
+    case 7:
       return (reader.readString(offset)) as P;
-    case 10:
+    case 8:
       return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -466,496 +419,6 @@ extension CoreIdentityQueryFilter
         upper: upper,
         includeUpper: includeUpper,
       ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'digitalFootprint',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'digitalFootprint',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'digitalFootprint',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementContains(String value,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'digitalFootprint',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementMatches(String pattern,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'digitalFootprint',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'digitalFootprint',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'digitalFootprint',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      digitalFootprintLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'digitalFootprint',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'educationHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'educationHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'educationHistory',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementContains(String value,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'educationHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementMatches(String pattern,
-          {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'educationHistory',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'educationHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'educationHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      educationHistoryLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'educationHistory',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
     });
   }
 
@@ -1338,6 +801,232 @@ extension CoreIdentityQueryFilter
     });
   }
 
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'hiddenSections',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'hiddenSections',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementMatches(String pattern,
+          {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'hiddenSections',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'hiddenSections',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'hiddenSections',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
+      hiddenSectionsLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'hiddenSections',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition> idEqualTo(
       Id value) {
     return QueryBuilder.apply(this, (query) {
@@ -1628,249 +1317,6 @@ extension CoreIdentityQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'immutableTraits',
-        lower,
-        includeLower,
-        upper,
-        includeUpper,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'jobHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'jobHistory',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'jobHistory',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'jobHistory',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'jobHistory',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'jobHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'jobHistory',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        length,
-        true,
-        length,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        true,
-        0,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        false,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        0,
-        true,
-        length,
-        include,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
-        length,
-        include,
-        999999,
-        true,
-      );
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QAfterFilterCondition>
-      jobHistoryLengthBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'jobHistory',
         lower,
         includeLower,
         upper,
@@ -2485,20 +1931,6 @@ extension CoreIdentityQueryWhereDistinct
   }
 
   QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByDigitalFootprint() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'digitalFootprint');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByEducationHistory() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'educationHistory');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
       distinctByFamilyLineage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'familyLineage');
@@ -2513,15 +1945,16 @@ extension CoreIdentityQueryWhereDistinct
   }
 
   QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
-      distinctByImmutableTraits() {
+      distinctByHiddenSections() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'immutableTraits');
+      return query.addDistinctBy(r'hiddenSections');
     });
   }
 
-  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct> distinctByJobHistory() {
+  QueryBuilder<CoreIdentity, CoreIdentity, QDistinct>
+      distinctByImmutableTraits() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'jobHistory');
+      return query.addDistinctBy(r'immutableTraits');
     });
   }
 
@@ -2569,20 +2002,6 @@ extension CoreIdentityQueryProperty
   }
 
   QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      digitalFootprintProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'digitalFootprint');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      educationHistoryProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'educationHistory');
-    });
-  }
-
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
       familyLineageProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'familyLineage');
@@ -2595,17 +2014,17 @@ extension CoreIdentityQueryProperty
     });
   }
 
-  QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      immutableTraitsProperty() {
+  QueryBuilder<CoreIdentity, List<String>, QQueryOperations>
+      hiddenSectionsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'immutableTraits');
+      return query.addPropertyName(r'hiddenSections');
     });
   }
 
   QueryBuilder<CoreIdentity, List<String>?, QQueryOperations>
-      jobHistoryProperty() {
+      immutableTraitsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'jobHistory');
+      return query.addPropertyName(r'immutableTraits');
     });
   }
 

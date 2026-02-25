@@ -14,6 +14,7 @@ import '../core/database/schemas/career_ledger.dart';
 import '../core/database/schemas/asset_ledger.dart';
 import '../core/database/schemas/relational_web.dart';
 import '../core/database/schemas/psyche_profile.dart';
+import '../core/database/schemas/custom_ledger_section.dart';
 import '../core/crypto/ephemeral_key_service.dart';
 
 /// Global provider for the database singleton.
@@ -173,4 +174,14 @@ final bioProgressProvider = FutureProvider<double>((ref) async {
   final db = ref.watch(databaseProvider);
   if (!db.isOpen) return 0.0;
   return db.calculateBioProgress();
+});
+
+/// Watches all CustomLedgerSection records.
+final customLedgerSectionsProvider = StreamProvider<List<CustomLedgerSection>>((
+  ref,
+) {
+  ref.watch(dbGenerationProvider);
+  final db = ref.watch(databaseProvider);
+  if (!db.isOpen) return Stream.value([]);
+  return db.watchCustomLedgerSections();
 });

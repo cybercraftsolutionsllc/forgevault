@@ -22,13 +22,18 @@ const AuditLogSchema = CollectionSchema(
       name: r'action',
       type: IsarType.string,
     ),
-    r'fileHashDestroyed': PropertySchema(
+    r'aiSummary': PropertySchema(
       id: 1,
-      name: r'fileHashDestroyed',
+      name: r'aiSummary',
+      type: IsarType.string,
+    ),
+    r'details': PropertySchema(
+      id: 2,
+      name: r'details',
       type: IsarType.string,
     ),
     r'timestamp': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'timestamp',
       type: IsarType.dateTime,
     )
@@ -68,7 +73,13 @@ int _auditLogEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.action.length * 3;
-  bytesCount += 3 + object.fileHashDestroyed.length * 3;
+  {
+    final value = object.aiSummary;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.details.length * 3;
   return bytesCount;
 }
 
@@ -79,8 +90,9 @@ void _auditLogSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.action);
-  writer.writeString(offsets[1], object.fileHashDestroyed);
-  writer.writeDateTime(offsets[2], object.timestamp);
+  writer.writeString(offsets[1], object.aiSummary);
+  writer.writeString(offsets[2], object.details);
+  writer.writeDateTime(offsets[3], object.timestamp);
 }
 
 AuditLog _auditLogDeserialize(
@@ -91,9 +103,10 @@ AuditLog _auditLogDeserialize(
 ) {
   final object = AuditLog();
   object.action = reader.readString(offsets[0]);
-  object.fileHashDestroyed = reader.readString(offsets[1]);
+  object.aiSummary = reader.readStringOrNull(offsets[1]);
+  object.details = reader.readString(offsets[2]);
   object.id = id;
-  object.timestamp = reader.readDateTime(offsets[2]);
+  object.timestamp = reader.readDateTime(offsets[3]);
   return object;
 }
 
@@ -107,8 +120,10 @@ P _auditLogDeserializeProp<P>(
     case 0:
       return (reader.readString(offset)) as P;
     case 1:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readString(offset)) as P;
+    case 3:
       return (reader.readDateTime(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -432,63 +447,75 @@ extension AuditLogQueryFilter
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedEqualTo(
-    String value, {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'aiSummary',
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'aiSummary',
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryEqualTo(
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedGreaterThan(
-    String value, {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryGreaterThan(
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedLessThan(
-    String value, {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryLessThan(
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedBetween(
-    String lower,
-    String upper, {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryBetween(
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -498,71 +525,200 @@ extension AuditLogQueryFilter
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedStartsWith(
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedEndsWith(
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryContains(
+      String value,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedIsEmpty() {
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> aiSummaryIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
         value: '',
       ));
     });
   }
 
   QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition>
-      fileHashDestroyedIsNotEmpty() {
+      aiSummaryIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'fileHashDestroyed',
+        property: r'aiSummary',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'details',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'details',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'details',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'details',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterFilterCondition> detailsIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'details',
         value: '',
       ));
     });
@@ -693,15 +849,27 @@ extension AuditLogQuerySortBy on QueryBuilder<AuditLog, AuditLog, QSortBy> {
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByFileHashDestroyed() {
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByAiSummary() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileHashDestroyed', Sort.asc);
+      return query.addSortBy(r'aiSummary', Sort.asc);
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByFileHashDestroyedDesc() {
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByAiSummaryDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileHashDestroyed', Sort.desc);
+      return query.addSortBy(r'aiSummary', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByDetails() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> sortByDetailsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.desc);
     });
   }
 
@@ -732,15 +900,27 @@ extension AuditLogQuerySortThenBy
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByFileHashDestroyed() {
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByAiSummary() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileHashDestroyed', Sort.asc);
+      return query.addSortBy(r'aiSummary', Sort.asc);
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByFileHashDestroyedDesc() {
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByAiSummaryDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'fileHashDestroyed', Sort.desc);
+      return query.addSortBy(r'aiSummary', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByDetails() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QAfterSortBy> thenByDetailsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'details', Sort.desc);
     });
   }
 
@@ -778,11 +958,17 @@ extension AuditLogQueryWhereDistinct
     });
   }
 
-  QueryBuilder<AuditLog, AuditLog, QDistinct> distinctByFileHashDestroyed(
+  QueryBuilder<AuditLog, AuditLog, QDistinct> distinctByAiSummary(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'fileHashDestroyed',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'aiSummary', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<AuditLog, AuditLog, QDistinct> distinctByDetails(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'details', caseSensitive: caseSensitive);
     });
   }
 
@@ -807,9 +993,15 @@ extension AuditLogQueryProperty
     });
   }
 
-  QueryBuilder<AuditLog, String, QQueryOperations> fileHashDestroyedProperty() {
+  QueryBuilder<AuditLog, String?, QQueryOperations> aiSummaryProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'fileHashDestroyed');
+      return query.addPropertyName(r'aiSummary');
+    });
+  }
+
+  QueryBuilder<AuditLog, String, QQueryOperations> detailsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'details');
     });
   }
 

@@ -19,5 +19,8 @@ class CareerLedger {
 
   List<String>? projects;
 
+  /// Companies owned, founder roles, board seats
+  List<String>? businesses;
+
   late DateTime lastUpdated;
 }

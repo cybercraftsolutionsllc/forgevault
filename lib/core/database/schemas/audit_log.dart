@@ -2,6 +2,8 @@ import 'package:isar/isar.dart';
 
 part 'audit_log.g.dart';
 
+/// Tracks user-visible audit events: document ingestion, manual edits,
+/// purge operations, and synthesis runs.
 @collection
 class AuditLog {
   Id id = Isar.autoIncrement;
@@ -9,7 +11,9 @@ class AuditLog {
   @Index()
   late DateTime timestamp;
 
-  late String action; // "VACUUM_STARTED", "PURGE_COMPLETE", "FORGE_SYNTHESIS"
+  late String action; // "Ingestion Complete", "Manual Vault Edit", "Purge"
 
-  late String fileHashDestroyed;
+  String details = ''; // Human-readable summary of what happened
+
+  String? aiSummary; // AI-generated receipt: what was extracted vs skipped
 }

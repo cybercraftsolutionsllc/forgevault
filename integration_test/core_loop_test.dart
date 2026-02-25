@@ -142,7 +142,7 @@ void main() {
           AuditLog()
             ..timestamp = DateTime.now()
             ..action = 'FORGE_SYNTHESIS'
-            ..fileHashDestroyed = 'test_hash_fake_journal',
+            ..details = 'test_hash_fake_journal',
         );
       });
 
@@ -190,16 +190,14 @@ void main() {
       );
     });
 
-    testWidgets('PurgeService safe mode moves file to debug trash', (
-      tester,
-    ) async {
+    testWidgets('PurgeService deletes file and destroys key', (tester) async {
       // ── Arrange ──
       // Create a disposable test file to purge
       final tempDir = Directory.systemTemp;
       final testFile = File(
         '${tempDir.path}${Platform.pathSeparator}purge_test_${DateTime.now().millisecondsSinceEpoch}.txt',
       );
-      await testFile.writeAsString('This file should be moved, not deleted.');
+      await testFile.writeAsString('This file should be deleted.');
       expect(await testFile.exists(), isTrue);
 
       final originalPath = testFile.path;
@@ -219,27 +217,23 @@ void main() {
       // ── Act ──
       await purge.purge(
         sandboxPath: originalPath,
-        fileHash: 'test_hash_purge_safe_mode',
+        fileHash: 'test_hash_purge_production',
         ephemeralCrypto: ephemeral,
       );
 
-      // ── Assert: File no longer at original location ──
+      // ── Assert: File deleted from disk ──
       expect(
         await testFile.exists(),
         isFalse,
-        reason: 'Original file should be moved away from its path',
+        reason: 'Purged file should be permanently deleted',
       );
 
-      // ── Assert: File is in debug trash ──
-      final trashDir = await PurgeService.getDebugTrashDir();
-      final trashContents = await trashDir.list().toList();
-      final movedFile = trashContents.whereType<File>().where(
-        (f) => f.path.contains('purge_test_'),
-      );
+      // ── Assert: Audit log written ──
+      final auditLogs = await isar.auditLogs.where().findAll();
       expect(
-        movedFile.isNotEmpty,
+        auditLogs.any((log) => log.action == 'PURGE_COMPLETE'),
         isTrue,
-        reason: 'File should exist in ForgeVault_debug_trash/',
+        reason: 'Audit log should contain PURGE_COMPLETE entry',
       );
     });
   });

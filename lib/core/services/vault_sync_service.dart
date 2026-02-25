@@ -32,13 +32,13 @@ import '../database/schemas/psyche_profile.dart';
 /// The Encrypted Courier — Zero-Trust Multi-Device Sync (BYOS).
 ///
 /// Bundles the entire Isar database into an AES-256-GCM encrypted file
-/// (`vault_state.forgevault`) that can be placed in any OS-level sync
+/// (`vault_state.forge`) that can be placed in any OS-level sync
 /// directory (iCloud Drive, Google Drive, OneDrive, etc.).
 ///
 /// Encryption key is derived from the user's Master PIN via PBKDF2.
 /// No cloud APIs. No OAuth. No Firebase. Pure filesystem sync.
 class VaultSyncService {
-  static const String _syncFileName = 'vault_state.forgevault';
+  static const String _syncFileName = 'vault_state.forge';
   static const String _syncDirKey = 'ForgeVault_sync_directory';
   static const int _keyLength = 32; // AES-256
   static const int _saltLength = 16;
@@ -115,7 +115,7 @@ class VaultSyncService {
 
   // ── Import (Read, Decrypt & Merge) ──
 
-  /// Read `vault_state.forgevault` from the sync directory, verify the
+  /// Read `vault_state.forge` from the sync directory, verify the
   /// AES-256-GCM authentication tag, decrypt, and merge into Isar.
   ///
   /// Merge strategy: per-record, newest `lastUpdated` wins.
@@ -175,7 +175,7 @@ class VaultSyncService {
 
   // ── Capsule Export (Share Sheet) ──
 
-  /// Bundle the entire vault + PBKDF2 salt into a portable `.forgevault`
+  /// Bundle the entire vault + PBKDF2 salt into a portable `.forge`
   /// capsule and open the OS Share Sheet.
   ///
   /// The capsule is a JSON file:
@@ -222,7 +222,7 @@ class VaultSyncService {
       // Desktop: use native save dialog
       final String? outputFile = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Encrypted Vault',
-        fileName: 'ForgeVault_Backup.forgevault',
+        fileName: 'ForgeVault_Backup.forge',
       );
       if (outputFile != null) {
         await File(outputFile).writeAsString(capsule);
@@ -231,7 +231,7 @@ class VaultSyncService {
       // Mobile: write to temp dir and trigger Share Sheet
       final tempDir = await getTemporaryDirectory();
       final capsulePath =
-          '${tempDir.path}${Platform.pathSeparator}ForgeVault_Backup.forgevault';
+          '${tempDir.path}${Platform.pathSeparator}ForgeVault_Backup.forge';
       final file = File(capsulePath);
       await file.writeAsString(capsule);
 
@@ -247,7 +247,7 @@ class VaultSyncService {
 
   // ── Capsule Import (Cold-Start Restore) ──
 
-  /// Import a `.forgevault` capsule from [filePath], decrypting with [pin].
+  /// Import a `.forge` capsule from [filePath], decrypting with [pin].
   ///
   /// This overwrites the local PBKDF2 salt and PIN verification hash
   /// so the restored device uses the same crypto material.
@@ -328,6 +328,37 @@ class VaultSyncService {
 
     // 7. Merge into local Isar
     await _mergeIntoDatabase(DatabaseService.instance.db, payload);
+  }
+  // ── Public API for E2EE Sync ──
+
+  /// Serialize the full database for E2EE export. Public wrapper around
+  /// the private [_serializeDatabase].
+  Future<Map<String, dynamic>> serializeForExport() =>
+      _serializeDatabase(DatabaseService.instance.db);
+
+  /// Clear all Isar collections and deep-insert from [payload] to create
+  /// a perfect 1:1 mirror. Preserves `hiddenSections` from the payload.
+  Future<void> replaceFromPayload(Map<String, dynamic> payload) async {
+    final db = DatabaseService.instance.db;
+    // Clear all existing data
+    await db.writeTxn(() async {
+      await db.coreIdentitys.clear();
+      await db.timelineEvents.clear();
+      await db.troubles.clear();
+      await db.financeRecords.clear();
+      await db.relationshipNodes.clear();
+      await db.auditLogs.clear();
+      await db.healthProfiles.clear();
+      await db.goals.clear();
+      await db.habitVices.clear();
+      await db.medicalLedgers.clear();
+      await db.careerLedgers.clear();
+      await db.assetLedgers.clear();
+      await db.relationalWebs.clear();
+      await db.psycheProfiles.clear();
+    });
+    // Deep-insert all records from the payload
+    await _mergeIntoDatabase(db, payload);
   }
 
   // ── Serialization ──
@@ -612,10 +643,7 @@ class VaultSyncService {
     'dateOfBirth': ci.dateOfBirth?.toIso8601String(),
     'location': ci.location,
     'immutableTraits': ci.immutableTraits,
-    'digitalFootprint': ci.digitalFootprint,
-    'jobHistory': ci.jobHistory,
     'locationHistory': ci.locationHistory,
-    'educationHistory': ci.educationHistory,
     'familyLineage': ci.familyLineage,
     'lastUpdated': ci.lastUpdated.toIso8601String(),
     'completenessScore': ci.completenessScore,
@@ -632,16 +660,7 @@ class VaultSyncService {
       ..immutableTraits = (j['immutableTraits'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList()
-      ..digitalFootprint = (j['digitalFootprint'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList()
-      ..jobHistory = (j['jobHistory'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList()
       ..locationHistory = (j['locationHistory'] as List<dynamic>?)
-          ?.map((e) => e.toString())
-          .toList()
-      ..educationHistory = (j['educationHistory'] as List<dynamic>?)
           ?.map((e) => e.toString())
           .toList()
       ..familyLineage = (j['familyLineage'] as List<dynamic>?)
@@ -737,7 +756,8 @@ class VaultSyncService {
     'id': al.id,
     'timestamp': al.timestamp.toIso8601String(),
     'action': al.action,
-    'fileHashDestroyed': al.fileHashDestroyed,
+    'details': al.details,
+    'aiSummary': al.aiSummary,
   };
 
   AuditLog _auditLogFromJson(Map<String, dynamic> j) {
@@ -745,7 +765,8 @@ class VaultSyncService {
       ..id = j['id'] as int
       ..timestamp = DateTime.parse(j['timestamp'] as String)
       ..action = j['action'] as String
-      ..fileHashDestroyed = j['fileHashDestroyed'] as String;
+      ..details = (j['details'] as String?) ?? ''
+      ..aiSummary = j['aiSummary'] as String?;
   }
 
   Map<String, dynamic> _healthProfileToJson(HealthProfile hp) => {

@@ -124,7 +124,10 @@ class VacuumService {
           try {
             final bytes = await file.readAsBytes();
             final rawDocx = docxToText(bytes);
-            extractedText = rawDocx.replaceAll(RegExp(r'<[^>]*>'), ' ');
+            extractedText = rawDocx.replaceAll(
+              RegExp(r'<[^>]+>', multiLine: true, dotAll: true),
+              ' ',
+            );
           } catch (e) {
             throw Exception('DOCX extraction failed: $e');
           }
@@ -235,7 +238,10 @@ class VacuumService {
         try {
           final bytes = await File(path).readAsBytes();
           final rawDocx = docxToText(bytes);
-          text = rawDocx.replaceAll(RegExp(r'<[^>]*>'), ' ');
+          text = rawDocx.replaceAll(
+            RegExp(r'<[^>]+>', multiLine: true, dotAll: true),
+            ' ',
+          );
         } catch (e) {
           throw Exception(
             'DOCX extraction failed for ${path.split(Platform.pathSeparator).last}: $e',
@@ -327,7 +333,7 @@ class VacuumService {
         AuditLog()
           ..timestamp = DateTime.now()
           ..action = action
-          ..fileHashDestroyed = fileHash,
+          ..details = fileHash,
       );
     });
   }

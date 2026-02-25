@@ -8,7 +8,7 @@ import '../../theme/theme.dart';
 
 /// Help Center — FAQ and debug tools.
 ///
-/// Explains API key setup, Safe Mode, RAG Nexus, and Sync.
+/// Explains API key setup, RAG Nexus, and Sync.
 /// Includes a Factory Reset button (debug builds only).
 class HelpScreen extends StatelessWidget {
   const HelpScreen({super.key});
@@ -77,14 +77,13 @@ class HelpScreen extends StatelessWidget {
           'The Nuke Protocol is an emergency data destruction system. When '
           'triggered, it cryptographically shreds all locally stored data '
           'including the Isar database, encryption keys, shared preferences, '
-          'and cached files. In Release Mode, this destruction is irreversible '
-          '— the data cannot be recovered by any means. In Debug Mode, files '
-          'are moved to a recovery folder instead (see Safe Mode).',
+          'and cached files. This destruction is irreversible '
+          '— the data cannot be recovered by any means.',
     ),
     _FaqItem(
       question: 'How does Backup & Restore work?',
       answer:
-          'Export creates an AES-256-GCM encrypted bundle (.forgevault file) '
+          'Export creates an AES-256-GCM encrypted bundle (.forge file) '
           'containing all your Isar data. You choose where to save it — local '
           'folder, USB drive, or cloud-synced directory (OneDrive, Dropbox, '
           'etc.). Restore decrypts the bundle with your Master PIN and merges '

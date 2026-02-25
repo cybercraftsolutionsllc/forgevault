@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  VitaVault Network Security Configuration
+  ForgeVault Network Security Configuration
   - Blocks ALL cleartext (HTTP) traffic globally
   - Allows HTTPS connections ONLY to approved AI provider domains
   - All other domains are blocked at the OS level

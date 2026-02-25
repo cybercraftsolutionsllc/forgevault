@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Vitavault</string>
+	<string>ForgeVault</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>vitavault</string>
+	<string>forgevault</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -66,7 +66,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- ── VitaVault Network Security ── -->
+	<!-- ── ForgeVault Network Security ── -->
 	<!-- Block all arbitrary network loads by default -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -103,5 +103,8 @@
 	<!-- Exclude Application Support directory from iCloud backup -->
 	<key>NSSupportsLiveActivities</key>
 	<false/>
+	<!-- Biometric Authentication (FaceID) -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>ForgeVault requires FaceID to seamlessly unlock your secure vault.</string>
 </dict>
 </plist>

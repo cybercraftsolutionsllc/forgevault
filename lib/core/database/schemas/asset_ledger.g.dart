@@ -22,33 +22,38 @@ const AssetLedgerSchema = CollectionSchema(
       name: r'digitalAssets',
       type: IsarType.stringList,
     ),
-    r'insurance': PropertySchema(
+    r'equityStakes': PropertySchema(
       id: 1,
+      name: r'equityStakes',
+      type: IsarType.stringList,
+    ),
+    r'insurance': PropertySchema(
+      id: 2,
       name: r'insurance',
       type: IsarType.stringList,
     ),
     r'investments': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'investments',
       type: IsarType.stringList,
     ),
     r'lastUpdated': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'realEstate': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'realEstate',
       type: IsarType.stringList,
     ),
     r'valuables': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'valuables',
       type: IsarType.stringList,
     ),
     r'vehicles': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'vehicles',
       type: IsarType.stringList,
     )
@@ -75,6 +80,18 @@ int _assetLedgerEstimateSize(
   var bytesCount = offsets.last;
   {
     final list = object.digitalAssets;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
+  {
+    final list = object.equityStakes;
     if (list != null) {
       bytesCount += 3 + list.length * 3;
       {
@@ -155,12 +172,13 @@ void _assetLedgerSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeStringList(offsets[0], object.digitalAssets);
-  writer.writeStringList(offsets[1], object.insurance);
-  writer.writeStringList(offsets[2], object.investments);
-  writer.writeDateTime(offsets[3], object.lastUpdated);
-  writer.writeStringList(offsets[4], object.realEstate);
-  writer.writeStringList(offsets[5], object.valuables);
-  writer.writeStringList(offsets[6], object.vehicles);
+  writer.writeStringList(offsets[1], object.equityStakes);
+  writer.writeStringList(offsets[2], object.insurance);
+  writer.writeStringList(offsets[3], object.investments);
+  writer.writeDateTime(offsets[4], object.lastUpdated);
+  writer.writeStringList(offsets[5], object.realEstate);
+  writer.writeStringList(offsets[6], object.valuables);
+  writer.writeStringList(offsets[7], object.vehicles);
 }
 
 AssetLedger _assetLedgerDeserialize(
@@ -171,13 +189,14 @@ AssetLedger _assetLedgerDeserialize(
 ) {
   final object = AssetLedger();
   object.digitalAssets = reader.readStringList(offsets[0]);
+  object.equityStakes = reader.readStringList(offsets[1]);
   object.id = id;
-  object.insurance = reader.readStringList(offsets[1]);
-  object.investments = reader.readStringList(offsets[2]);
-  object.lastUpdated = reader.readDateTime(offsets[3]);
-  object.realEstate = reader.readStringList(offsets[4]);
-  object.valuables = reader.readStringList(offsets[5]);
-  object.vehicles = reader.readStringList(offsets[6]);
+  object.insurance = reader.readStringList(offsets[2]);
+  object.investments = reader.readStringList(offsets[3]);
+  object.lastUpdated = reader.readDateTime(offsets[4]);
+  object.realEstate = reader.readStringList(offsets[5]);
+  object.valuables = reader.readStringList(offsets[6]);
+  object.vehicles = reader.readStringList(offsets[7]);
   return object;
 }
 
@@ -195,12 +214,14 @@ P _assetLedgerDeserializeProp<P>(
     case 2:
       return (reader.readStringList(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
-    case 4:
       return (reader.readStringList(offset)) as P;
+    case 4:
+      return (reader.readDateTime(offset)) as P;
     case 5:
       return (reader.readStringList(offset)) as P;
     case 6:
+      return (reader.readStringList(offset)) as P;
+    case 7:
       return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -535,6 +556,249 @@ extension AssetLedgerQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'digitalAssets',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'equityStakes',
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'equityStakes',
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'equityStakes',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'equityStakes',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'equityStakes',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'equityStakes',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'equityStakes',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<AssetLedger, AssetLedger, QAfterFilterCondition>
+      equityStakesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'equityStakes',
         lower,
         includeLower,
         upper,
@@ -1924,6 +2188,12 @@ extension AssetLedgerQueryWhereDistinct
     });
   }
 
+  QueryBuilder<AssetLedger, AssetLedger, QDistinct> distinctByEquityStakes() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'equityStakes');
+    });
+  }
+
   QueryBuilder<AssetLedger, AssetLedger, QDistinct> distinctByInsurance() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'insurance');
@@ -1973,6 +2243,13 @@ extension AssetLedgerQueryProperty
       digitalAssetsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'digitalAssets');
+    });
+  }
+
+  QueryBuilder<AssetLedger, List<String>?, QQueryOperations>
+      equityStakesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'equityStakes');
     });
   }
 

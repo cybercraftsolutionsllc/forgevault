@@ -19,5 +19,8 @@ class AssetLedger {
 
   List<String>? valuables;
 
+  /// Startup equity, angel investments, business stakes
+  List<String>? equityStakes;
+
   late DateTime lastUpdated;
 }

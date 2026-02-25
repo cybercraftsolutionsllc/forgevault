@@ -108,10 +108,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       );
 
       if (didAuthenticate && mounted) {
-        // Use stored PIN to initialize database.
-        final storedPin = ref.read(masterPinProvider);
-        if (storedPin != null) {
+        // Read PIN from SecureStorage (saved when biometrics were enabled).
+        const storage = FlutterSecureStorage(
+          aOptions: AndroidOptions(encryptedSharedPreferences: true),
+        );
+        final storedPin = await storage.read(key: 'biometric_pin');
+        if (storedPin != null && storedPin.isNotEmpty) {
           await DatabaseService.instance.initialize(storedPin);
+          ref.read(masterPinProvider.notifier).state = storedPin;
           // Fire-and-forget: warm the API key cache.
           ApiKeyService().getActiveProvider();
           widget.onAuthenticated();
@@ -172,9 +176,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         }
 
         // PINs match — set up and initialize
-        debugPrint('PIN setup: calling setupPin...');
         await DatabaseService.instance.setupPin(pin);
-        debugPrint('PIN setup: calling initialize...');
         await DatabaseService.instance.initialize(pin);
 
         // Bump generation so stream providers resubscribe to fresh Isar
@@ -230,8 +232,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           HapticFeedback.heavyImpact();
         }
       }
-    } catch (e, stackTrace) {
-      debugPrint('PIN submit error: $e\n$stackTrace');
+    } catch (e) {
       setState(() => _pinError = true);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -310,29 +311,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                         ],
                       ),
                       child: Center(
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFF2A2A2A),
-                                Color(0xFF1A1A1A),
-                                Color(0xFF0F0F0F),
-                              ],
-                            ),
-                            border: Border.all(
-                              color: VaultColors.border,
-                              width: 1,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.security_rounded,
-                            size: 36,
-                            color: VaultColors.phosphorGreen,
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/logo.png',
+                            width: 88,
+                            height: 88,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
@@ -350,6 +334,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                     fontWeight: FontWeight.w800,
                     color: VaultColors.textPrimary,
                     letterSpacing: 6,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  'Forge your identity. Secure your sovereignty.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: VaultColors.textSecondary.withValues(alpha: 0.6),
+                    letterSpacing: 0.3,
                   ),
                 ),
 
@@ -589,22 +586,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       await DatabaseService.instance.nukeDatabase();
     } catch (_) {}
 
-    // Flush bio progress cache so Dashboard reads 0%
+    // 2. Flush ALL in-memory Riverpod state (kill memory zombies)
+    ref.read(masterPinProvider.notifier).state = null;
+    ref.read(isAuthenticatedProvider.notifier).state = false;
+    ref.read(isProUnlockedProvider.notifier).state = false;
+    ref.read(syncDirectoryProvider.notifier).state = null;
+    ref.read(vacuumStateProvider.notifier).state = VacuumState.idle;
     ref.invalidate(bioProgressProvider);
     // Bump generation counter so ALL stream providers resubscribe
     ref.read(dbGenerationProvider.notifier).state++;
 
-    // 2. Wipe FlutterSecureStorage (salt, PIN hash, API keys)
+    // 3. Wipe FlutterSecureStorage (salt, PIN hash, API keys, biometric_pin)
     const storage = FlutterSecureStorage(
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
     );
     await storage.deleteAll();
 
-    // 3. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
+    // 4. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    // 4. Wipe the salt and PIN verification files from app support dir
+    // 5. Wipe the salt and PIN verification files from app support dir
     try {
       final supportDir = await getApplicationSupportDirectory();
       final saltFile = File(

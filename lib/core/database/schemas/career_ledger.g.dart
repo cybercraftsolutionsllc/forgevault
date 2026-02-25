@@ -17,38 +17,43 @@ const CareerLedgerSchema = CollectionSchema(
   name: r'CareerLedger',
   id: -1725444937252569597,
   properties: {
-    r'certifications': PropertySchema(
+    r'businesses': PropertySchema(
       id: 0,
+      name: r'businesses',
+      type: IsarType.stringList,
+    ),
+    r'certifications': PropertySchema(
+      id: 1,
       name: r'certifications',
       type: IsarType.stringList,
     ),
     r'clearances': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'clearances',
       type: IsarType.stringList,
     ),
     r'degrees': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'degrees',
       type: IsarType.stringList,
     ),
     r'jobs': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'jobs',
       type: IsarType.stringList,
     ),
     r'lastUpdated': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'lastUpdated',
       type: IsarType.dateTime,
     ),
     r'projects': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'projects',
       type: IsarType.stringList,
     ),
     r'skills': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'skills',
       type: IsarType.stringList,
     )
@@ -73,6 +78,18 @@ int _careerLedgerEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final list = object.businesses;
+    if (list != null) {
+      bytesCount += 3 + list.length * 3;
+      {
+        for (var i = 0; i < list.length; i++) {
+          final value = list[i];
+          bytesCount += value.length * 3;
+        }
+      }
+    }
+  }
   {
     final list = object.certifications;
     if (list != null) {
@@ -154,13 +171,14 @@ void _careerLedgerSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeStringList(offsets[0], object.certifications);
-  writer.writeStringList(offsets[1], object.clearances);
-  writer.writeStringList(offsets[2], object.degrees);
-  writer.writeStringList(offsets[3], object.jobs);
-  writer.writeDateTime(offsets[4], object.lastUpdated);
-  writer.writeStringList(offsets[5], object.projects);
-  writer.writeStringList(offsets[6], object.skills);
+  writer.writeStringList(offsets[0], object.businesses);
+  writer.writeStringList(offsets[1], object.certifications);
+  writer.writeStringList(offsets[2], object.clearances);
+  writer.writeStringList(offsets[3], object.degrees);
+  writer.writeStringList(offsets[4], object.jobs);
+  writer.writeDateTime(offsets[5], object.lastUpdated);
+  writer.writeStringList(offsets[6], object.projects);
+  writer.writeStringList(offsets[7], object.skills);
 }
 
 CareerLedger _careerLedgerDeserialize(
@@ -170,14 +188,15 @@ CareerLedger _careerLedgerDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = CareerLedger();
-  object.certifications = reader.readStringList(offsets[0]);
-  object.clearances = reader.readStringList(offsets[1]);
-  object.degrees = reader.readStringList(offsets[2]);
+  object.businesses = reader.readStringList(offsets[0]);
+  object.certifications = reader.readStringList(offsets[1]);
+  object.clearances = reader.readStringList(offsets[2]);
+  object.degrees = reader.readStringList(offsets[3]);
   object.id = id;
-  object.jobs = reader.readStringList(offsets[3]);
-  object.lastUpdated = reader.readDateTime(offsets[4]);
-  object.projects = reader.readStringList(offsets[5]);
-  object.skills = reader.readStringList(offsets[6]);
+  object.jobs = reader.readStringList(offsets[4]);
+  object.lastUpdated = reader.readDateTime(offsets[5]);
+  object.projects = reader.readStringList(offsets[6]);
+  object.skills = reader.readStringList(offsets[7]);
   return object;
 }
 
@@ -197,10 +216,12 @@ P _careerLedgerDeserializeProp<P>(
     case 3:
       return (reader.readStringList(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
-    case 5:
       return (reader.readStringList(offset)) as P;
+    case 5:
+      return (reader.readDateTime(offset)) as P;
     case 6:
+      return (reader.readStringList(offset)) as P;
+    case 7:
       return (reader.readStringList(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -301,6 +322,249 @@ extension CareerLedgerQueryWhere
 
 extension CareerLedgerQueryFilter
     on QueryBuilder<CareerLedger, CareerLedger, QFilterCondition> {
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'businesses',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'businesses',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'businesses',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'businesses',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'businesses',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'businesses',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesElementIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'businesses',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        0,
+        true,
+        0,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesLengthLessThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
+      businessesLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'businesses',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
+
   QueryBuilder<CareerLedger, CareerLedger, QAfterFilterCondition>
       certificationsIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -1921,6 +2185,12 @@ extension CareerLedgerQuerySortThenBy
 
 extension CareerLedgerQueryWhereDistinct
     on QueryBuilder<CareerLedger, CareerLedger, QDistinct> {
+  QueryBuilder<CareerLedger, CareerLedger, QDistinct> distinctByBusinesses() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'businesses');
+    });
+  }
+
   QueryBuilder<CareerLedger, CareerLedger, QDistinct>
       distinctByCertifications() {
     return QueryBuilder.apply(this, (query) {
@@ -1970,6 +2240,13 @@ extension CareerLedgerQueryProperty
   QueryBuilder<CareerLedger, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<CareerLedger, List<String>?, QQueryOperations>
+      businessesProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'businesses');
     });
   }
 

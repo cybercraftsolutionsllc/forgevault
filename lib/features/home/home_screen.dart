@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../core/database/database_service.dart';
+import '../../core/database/schemas/audit_log.dart';
 import '../../providers/providers.dart';
 import '../../theme/theme.dart';
 
@@ -182,24 +184,263 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
 
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: VaultDecorations.metallicCard(),
-              child: Center(
-                child: Text(
-                  'No audit entries yet.\nVacuum a file to begin.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 12,
-                    color: VaultColors.textMuted,
-                    height: 1.8,
+            StreamBuilder<List<AuditLog>>(
+              stream: DatabaseService.instance.watchRecentAuditLogs(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: VaultDecorations.metallicCard(),
+                    child: Center(
+                      child: Text(
+                        'No audit entries yet.\nVacuum a file to begin.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.jetBrainsMono(
+                          fontSize: 12,
+                          color: VaultColors.textMuted,
+                          height: 1.8,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                final logs = snapshot.data!;
+                return Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: VaultDecorations.metallicCard(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: logs.map((log) {
+                      final ts =
+                          '${log.timestamp.month}/${log.timestamp.day} '
+                          '${log.timestamp.hour.toString().padLeft(2, '0')}:'
+                          '${log.timestamp.minute.toString().padLeft(2, '0')}';
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () => _showAuditDetail(context, log),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 4,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                ts,
+                                style: GoogleFonts.jetBrainsMono(
+                                  fontSize: 10,
+                                  color: VaultColors.textMuted,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      log.action,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: VaultColors.phosphorGreen,
+                                      ),
+                                    ),
+                                    if (log.details.isNotEmpty)
+                                      Text(
+                                        log.details,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          color: VaultColors.textSecondary,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 18,
+                                color: VaultColors.textMuted,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                ),
-              ),
+                );
+              },
             ),
 
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showAuditDetail(BuildContext context, AuditLog log) {
+    final fullTs =
+        '${log.timestamp.year}-${log.timestamp.month.toString().padLeft(2, '0')}-'
+        '${log.timestamp.day.toString().padLeft(2, '0')}  '
+        '${log.timestamp.hour.toString().padLeft(2, '0')}:'
+        '${log.timestamp.minute.toString().padLeft(2, '0')}:'
+        '${log.timestamp.second.toString().padLeft(2, '0')}';
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: VaultColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: VaultColors.border),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 440, maxHeight: 520),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Icon(
+                      Icons.receipt_long_outlined,
+                      color: VaultColors.phosphorGreen,
+                      size: 22,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Audit Detail',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: VaultColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        color: VaultColors.textMuted,
+                        size: 20,
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(color: VaultColors.border, height: 1),
+                const SizedBox(height: 16),
+
+                // Timestamp
+                Text(
+                  fullTs,
+                  style: GoogleFonts.jetBrainsMono(
+                    fontSize: 12,
+                    color: VaultColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Action badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: VaultColors.phosphorGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    log.action,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: VaultColors.phosphorGreen,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Details
+                if (log.details.isNotEmpty) ...[
+                  Text(
+                    log.details,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: VaultColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // AI Summary Receipt
+                if (log.aiSummary != null && log.aiSummary!.isNotEmpty) ...[
+                  Divider(color: VaultColors.border, height: 1),
+                  const SizedBox(height: 12),
+                  Text(
+                    'AI EXTRACTION RECEIPT',
+                    style: GoogleFonts.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: VaultColors.textMuted,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Text(
+                        log.aiSummary!,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: VaultColors.textPrimary,
+                          height: 1.6,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (log.aiSummary == null || log.aiSummary!.isEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'No AI summary available for this event.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                      color: VaultColors.textMuted,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 20),
+                // Close button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: VaultColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Close',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

@@ -69,14 +69,12 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
       ),
       body: Column(
         children: [
-          // Changelog (AI Modification Log)
-          if (_result.changelog.isNotEmpty) _buildChangelog(),
-
-          // Scrollable content
+          // Scrollable content (changelog + ledger cards)
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
               children: [
+                if (_result.changelog.isNotEmpty) _buildChangelog(),
                 if (_result.identity != null) _buildIdentitySection(),
                 if (_result.timelineEvents.isNotEmpty) _buildTimelineSection(),
                 if (_result.troubles.isNotEmpty) _buildTroublesSection(),
@@ -91,7 +89,7 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
                 if (_result.assetLedger != null) _buildAssetsSection(),
                 if (_result.relationalWeb != null) _buildRelationalWebSection(),
                 if (_result.psycheProfile != null) _buildPsycheSection(),
-                const SizedBox(height: 100),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -299,28 +297,10 @@ class _SynthesisReviewScreenState extends State<SynthesisReviewScreen> {
                 id.dateOfBirth?.toIso8601String().split('T').first ?? '',
                 (_) {},
               ),
-              if ((id.digitalFootprint ?? []).isNotEmpty)
-                _buildEditableField(
-                  'Digital Footprint',
-                  id.digitalFootprint!.join(', '),
-                  (_) {},
-                ),
-              if ((id.jobHistory ?? []).isNotEmpty)
-                _buildEditableField(
-                  'Job History',
-                  id.jobHistory!.join(', '),
-                  (_) {},
-                ),
               if ((id.locationHistory ?? []).isNotEmpty)
                 _buildEditableField(
                   'Location History',
                   id.locationHistory!.join(', '),
-                  (_) {},
-                ),
-              if ((id.educationHistory ?? []).isNotEmpty)
-                _buildEditableField(
-                  'Education History',
-                  id.educationHistory!.join(', '),
                   (_) {},
                 ),
               if ((id.familyLineage ?? []).isNotEmpty)

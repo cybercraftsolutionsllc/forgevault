@@ -3,13 +3,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:isar/isar.dart';
 
 import '../../core/database/database_service.dart';
+import '../../core/database/schemas/core_identity.dart';
+import '../../core/database/schemas/career_ledger.dart';
+import '../../core/database/schemas/medical_ledger.dart';
+import '../../core/database/schemas/asset_ledger.dart';
+import '../../core/database/schemas/relational_web.dart';
+import '../../core/database/schemas/psyche_profile.dart';
+import '../../core/database/schemas/health_profile.dart';
 import '../../core/services/api_key_service.dart';
 import '../../core/services/forge_api_client.dart';
 import '../../core/services/local_rag_service.dart';
 import '../../theme/theme.dart';
 import 'mint_viewer_screen.dart';
+
+// Regex pattern to detect DELETE tags in Nexus responses.
+final _deleteTagPattern = RegExp(
+  r'<DELETE>(.*?)</DELETE>',
+  caseSensitive: false,
+);
 
 /// Nexus Chat Console â€” private conversational UI with BYOK LLM.
 ///
@@ -112,6 +126,14 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _activateBlueprint(_Blueprint bp) async {
+    // ── Resume Minter: ask for target Job Description ──
+    String? jobDescription;
+    if (bp.name == 'resume') {
+      jobDescription = await _showJobDescriptionDialog();
+      // User cancelled the dialog entirely → abort
+      if (jobDescription == null) return;
+    }
+
     // Build the appropriate context blob
     String contextBlob;
     switch (bp.name) {
@@ -133,24 +155,167 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
     );
     if (approved != true) return;
 
+    // Build the prompt — inject JD for resume minting
+    String finalPrompt;
+    if (bp.name == 'resume' &&
+        jobDescription != null &&
+        jobDescription.isNotEmpty) {
+      finalPrompt =
+          'You are an executive resume strategist who transforms career data '
+          'into high-impact, ATS-optimized resumes. Follow this exact process:\n\n'
+          'STEP 1 — STRATEGY (output inside <strategy> tags, hidden from user):\n'
+          '- Identify the 5 core pain points and requirements in the JD.\n'
+          '- For each pain point, map exactly which Vault data (jobs, skills, '
+          'certs, clearances) solves it.\n'
+          '- Identify any gaps between JD requirements and Vault data. '
+          'Do NOT invent data to fill gaps.\n'
+          '- Determine which past roles are irrelevant and should be '
+          'minimized or omitted entirely.\n\n'
+          'STEP 2 — EXECUTIVE NARRATIVE:\n'
+          '- Write each bullet using: Action Verb + Specific Skill/Tool + '
+          'Measurable Impact or Scope.\n'
+          '- Frame existing experience to directly address JD language '
+          'and priorities.\n'
+          '- Front-load the most JD-relevant roles. Aggressively minimize '
+          'or omit non-relevant positions.\n\n'
+          'STEP 3 — OUTPUT FORMAT (CRITICAL):\n'
+          '- Use ALL CAPS for section headers (e.g., PROFESSIONAL SUMMARY).\n'
+          '- Use standard dashes (-) for bullet points.\n'
+          '- Do NOT use any Markdown formatting. No asterisks (**), '
+          'no underscores (_), no hashes (#), no bold, no italic.\n'
+          '- Sections: PROFESSIONAL SUMMARY, CORE COMPETENCIES, '
+          'PROFESSIONAL EXPERIENCE, CERTIFICATIONS AND CLEARANCES, '
+          'EDUCATION, TECHNICAL SKILLS.\n\n'
+          'RULES:\n'
+          '- Use ONLY data from the Vault. Do NOT hallucinate or invent '
+          'any experience, skills, or credentials.\n'
+          '- Optimize keyword density for ATS scanning.\n'
+          '- The Professional Summary must directly address the JD '
+          'requirements in 3-4 sentences.\n\n'
+          '--- TARGET JOB DESCRIPTION ---\n'
+          '$jobDescription\n'
+          '--- END JOB DESCRIPTION ---';
+    } else {
+      finalPrompt = bp.prompt;
+    }
+
     // Add user message
     setState(() {
       _messages.add(
-        _ChatMessage(text: 'ðŸŽ« ${bp.label}', isUser: true, isBlueprint: true),
+        _ChatMessage(
+          text: '\u{1F3AB} ${bp.label}',
+          isUser: true,
+          isBlueprint: true,
+        ),
       );
       _isProcessing = true;
     });
     _scrollToBottom();
 
-    // Build the full prompt with RAG context â€” the context blob
-    // and blueprint instruction are injected by askNexus.
-
     // Send to LLM
     await _sendToLlm(
-      bp.prompt,
+      finalPrompt,
       isarContext: contextBlob,
       isBlueprint: true,
       blueprintTitle: bp.label,
+    );
+  }
+
+  /// Show dialog for the user to paste a target Job Description.
+  /// Returns the JD text (may be empty if user skips), or null if cancelled.
+  Future<String?> _showJobDescriptionDialog() async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.work_outline_rounded, color: Color(0xFF64B5F6)),
+            const SizedBox(width: 10),
+            Text(
+              'Target Job Description',
+              style: GoogleFonts.orbitron(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Paste the job listing below. The resume will be '
+                'tailored to match this role.',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                maxLines: 8,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Paste job description here...',
+                  hintStyle: GoogleFonts.inter(color: Colors.white30),
+                  filled: true,
+                  fillColor: const Color(0xFF0D0D1A),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A4A)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF2A2A4A)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Color(0xFF64B5F6)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: Colors.white38),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, ''),
+            child: Text(
+              'Skip (Generic)',
+              style: GoogleFonts.inter(color: Colors.white60),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF64B5F6),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Mint Resume',
+              style: GoogleFonts.orbitron(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -224,10 +389,25 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
       if (!mounted) return;
 
       final client = ForgeApiClient(keyService: keyService);
-      final response = await client.askNexus(
-        query: query,
-        context: isarContext,
-      );
+      var response = await client.askNexus(query: query, context: isarContext);
+
+      // ── Agentic Interceptor: parse and execute <DELETE> tags ──
+      final deleteMatches = _deleteTagPattern.allMatches(response).toList();
+      if (deleteMatches.isNotEmpty) {
+        final targets = deleteMatches.map((m) => m.group(1)!.trim()).toList();
+        // Strip tags from displayed response
+        response = response.replaceAll(_deleteTagPattern, '').trim();
+        // Execute deletions in background
+        await _executeNexusDeletions(targets);
+      }
+
+      // Strip <strategy> CoT block from resume output (hidden from user)
+      response = response
+          .replaceAll(
+            RegExp(r'<strategy>[\s\S]*?</strategy>', caseSensitive: false),
+            '',
+          )
+          .trim();
 
       setState(() {
         _messages.add(
@@ -242,10 +422,7 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
       });
       _scrollToBottom();
     } catch (e) {
-      developer.log(
-        '\x1B[31m[NEXUS] LLM Error: $e\x1B[0m',
-        name: 'NexusChat',
-      );
+      developer.log('\x1B[31m[NEXUS] LLM Error: $e\x1B[0m', name: 'NexusChat');
       setState(() {
         _messages.add(
           _ChatMessage(text: 'Nexus Error: $e', isUser: false, isError: true),
@@ -262,6 +439,131 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// Execute Nexus-requested deletions across all Isar ledgers.
+  Future<void> _executeNexusDeletions(List<String> targets) async {
+    final db = DatabaseService.instance.db;
+    int removedCount = 0;
+
+    bool fuzzyMatch(String entry, String target) {
+      final entryLower = entry.toLowerCase().trim();
+      final targetLower = target.toLowerCase().trim();
+      return entryLower == targetLower ||
+          entryLower.contains(targetLower) ||
+          targetLower.contains(entryLower);
+    }
+
+    List<String>? pruneList(List<String>? list, String target) {
+      if (list == null || list.isEmpty) return list;
+      final before = list.length;
+      final pruned = list.where((e) => !fuzzyMatch(e, target)).toList();
+      removedCount += before - pruned.length;
+      return pruned;
+    }
+
+    await db.writeTxn(() async {
+      for (final target in targets) {
+        // Identity arrays
+        final id = await db.coreIdentitys.where().findFirst();
+        if (id != null) {
+          id.immutableTraits = pruneList(id.immutableTraits, target);
+          id.locationHistory = pruneList(id.locationHistory, target);
+          id.familyLineage = pruneList(id.familyLineage, target);
+          await db.coreIdentitys.put(id);
+        }
+
+        // Career
+        final career = await db.careerLedgers.where().findFirst();
+        if (career != null) {
+          career.jobs = pruneList(career.jobs, target);
+          career.degrees = pruneList(career.degrees, target);
+          career.certifications = pruneList(career.certifications, target);
+          career.clearances = pruneList(career.clearances, target);
+          career.skills = pruneList(career.skills, target);
+          career.projects = pruneList(career.projects, target);
+          await db.careerLedgers.put(career);
+        }
+
+        // Medical
+        final medical = await db.medicalLedgers.where().findFirst();
+        if (medical != null) {
+          medical.surgeries = pruneList(medical.surgeries, target);
+          medical.genetics = pruneList(medical.genetics, target);
+          medical.vitalBaselines = pruneList(medical.vitalBaselines, target);
+          medical.visionRx = pruneList(medical.visionRx, target);
+          medical.familyMedicalHistory = pruneList(
+            medical.familyMedicalHistory,
+            target,
+          );
+          medical.bloodwork = pruneList(medical.bloodwork, target);
+          medical.immunizations = pruneList(medical.immunizations, target);
+          medical.dentalHistory = pruneList(medical.dentalHistory, target);
+          await db.medicalLedgers.put(medical);
+        }
+
+        // Assets
+        final assets = await db.assetLedgers.where().findFirst();
+        if (assets != null) {
+          assets.realEstate = pruneList(assets.realEstate, target);
+          assets.vehicles = pruneList(assets.vehicles, target);
+          assets.digitalAssets = pruneList(assets.digitalAssets, target);
+          assets.insurance = pruneList(assets.insurance, target);
+          assets.investments = pruneList(assets.investments, target);
+          assets.valuables = pruneList(assets.valuables, target);
+          await db.assetLedgers.put(assets);
+        }
+
+        // Relational Web
+        final rw = await db.relationalWebs.where().findFirst();
+        if (rw != null) {
+          rw.family = pruneList(rw.family, target);
+          rw.mentors = pruneList(rw.mentors, target);
+          rw.adversaries = pruneList(rw.adversaries, target);
+          rw.colleagues = pruneList(rw.colleagues, target);
+          rw.friends = pruneList(rw.friends, target);
+          await db.relationalWebs.put(rw);
+        }
+
+        // Psyche
+        final psyche = await db.psycheProfiles.where().findFirst();
+        if (psyche != null) {
+          psyche.beliefs = pruneList(psyche.beliefs, target);
+          psyche.personality = pruneList(psyche.personality, target);
+          psyche.fears = pruneList(psyche.fears, target);
+          psyche.motivations = pruneList(psyche.motivations, target);
+          psyche.strengths = pruneList(psyche.strengths, target);
+          psyche.weaknesses = pruneList(psyche.weaknesses, target);
+          await db.psycheProfiles.put(psyche);
+        }
+
+        // Health
+        final hp = await db.healthProfiles.where().findFirst();
+        if (hp != null) {
+          hp.conditions = pruneList(hp.conditions, target);
+          hp.medications = pruneList(hp.medications, target);
+          hp.allergies = pruneList(hp.allergies, target);
+          hp.labResults = pruneList(hp.labResults, target);
+          await db.healthProfiles.put(hp);
+        }
+      }
+    });
+
+    if (removedCount > 0 && mounted) {
+      setState(() {
+        _messages.add(
+          _ChatMessage(
+            text:
+                '🗑️ Nexus removed $removedCount item${removedCount > 1 ? 's' : ''} from your vault.',
+            isUser: false,
+          ),
+        );
+      });
+      developer.log(
+        'NEXUS DELETION: Removed $removedCount items for targets: $targets',
+        name: 'NexusChat',
+      );
     }
   }
 
@@ -361,7 +663,7 @@ class _NexusChatScreenState extends State<NexusChatScreen> {
                   ),
                 ),
                 child: Text(
-                  'ðŸŽ« Blueprint: $blueprintName',
+                  '\u{1F3AB} Blueprint: $blueprintName',
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -1006,4 +1308,3 @@ class _ChatBubble extends StatelessWidget {
     );
   }
 }
-

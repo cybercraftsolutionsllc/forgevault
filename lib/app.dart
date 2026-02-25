@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'core/config/environment_config.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/help/help_screen.dart';
 import 'features/home/home_screen.dart';
@@ -9,6 +8,7 @@ import 'features/vacuum/vacuum_screen.dart';
 import 'features/bio/bio_viewer_screen.dart';
 import 'features/nexus/nexus_chat_screen.dart';
 import 'features/engine_room/engine_room_screen.dart';
+import 'features/backup/backup_screen.dart';
 import 'theme/theme.dart';
 
 /// Navigation Shell — bottom navigation with 5 destinations.
@@ -37,7 +37,7 @@ class _NavigationShellState extends State<_NavigationShell> {
   int _currentIndex = 0;
 
   void _switchTab(int index) {
-    if (index >= 0 && index < 5) {
+    if (index >= 0 && index < 6) {
       setState(() => _currentIndex = index);
     }
   }
@@ -48,6 +48,7 @@ class _NavigationShellState extends State<_NavigationShell> {
     const BioViewerScreen(),
     const NexusChatScreen(),
     const EngineRoomScreen(),
+    const BackupScreen(),
   ];
 
   @override
@@ -86,52 +87,7 @@ class _NavigationShellState extends State<_NavigationShell> {
         ],
       ),
       body: Stack(
-        children: [
-          IndexedStack(index: _currentIndex, children: _screens),
-
-          // ── Blast Shield Watermark ──
-          if (isSafeMode)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 4,
-              right: 8,
-              child: GestureDetector(
-                onTap: () => _showSafeModeDialog(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.4),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        size: 14,
-                        color: Colors.red.withValues(alpha: 0.7),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'SAFE MODE',
-                        style: TextStyle(
-                          color: Colors.red.withValues(alpha: 0.7),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
+        children: [IndexedStack(index: _currentIndex, children: _screens)],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
@@ -164,57 +120,10 @@ class _NavigationShellState extends State<_NavigationShell> {
             selectedIcon: Icon(Icons.settings_suggest_rounded),
             label: 'Engine',
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showSafeModeDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: VaultColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: VaultColors.border, width: 0.5),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.shield_outlined,
-              color: VaultColors.destructive,
-              size: 22,
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Safe Mode',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700,
-                color: VaultColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Safe Mode is active. Files purged in the Vacuum will be moved '
-          'to a debug folder instead of permanently destroyed.\n\n'
-          'To arm the physical shredder, compile ForgeVault in Release Mode.',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            color: VaultColors.textSecondary,
-            height: 1.6,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              'Understood',
-              style: GoogleFonts.inter(
-                color: VaultColors.phosphorGreen,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+          NavigationDestination(
+            icon: Icon(Icons.shield_outlined),
+            selectedIcon: Icon(Icons.shield_rounded),
+            label: 'Backups',
           ),
         ],
       ),

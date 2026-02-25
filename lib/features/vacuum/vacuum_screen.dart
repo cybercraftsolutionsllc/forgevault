@@ -108,50 +108,6 @@ class _VacuumScreenState extends State<VacuumScreen>
   }
 
   // ─────────────────────────────────────────────────────────────
-  // File Browse
-  // ─────────────────────────────────────────────────────────────
-
-  Future<void> _browseFiles() async {
-    if (_isIngesting) return;
-
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: [
-          'pdf',
-          'docx',
-          'doc',
-          'txt',
-          'png',
-          'jpg',
-          'jpeg',
-          'heic',
-          'webp',
-          'eml',
-          'mp3',
-          'wav',
-          'm4a',
-        ],
-      );
-
-      if (result == null || result.files.isEmpty) return;
-      final file = result.files.first;
-      if (file.path == null) return;
-
-      _startIngestion(file.path!, file.name);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('File picker error: $e'),
-            backgroundColor: VaultColors.destructive,
-          ),
-        );
-      }
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────
   // Ingestion Pipeline
   // ─────────────────────────────────────────────────────────────
 
@@ -872,60 +828,6 @@ class _VacuumScreenState extends State<VacuumScreen>
                     const SizedBox(height: 4),
                     Text(
                       'Use camera to capture a document',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color: VaultColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _browseFiles,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: VaultColors.surface,
-                  foregroundColor: VaultColors.textPrimary,
-                  padding: const EdgeInsets.all(24),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(
-                      color: VaultColors.primaryLight.withValues(alpha: 0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  elevation: 0,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: VaultColors.primaryLight.withValues(alpha: 0.15),
-                      ),
-                      child: Icon(
-                        Icons.folder_open_rounded,
-                        size: 28,
-                        color: VaultColors.primaryLight,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'BROWSE FILES',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: VaultColors.textPrimary,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'PDF • DOCX • Images • Email • Audio',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 11,

@@ -1,7 +1,13 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Supported cloud LLM providers for BYOK.
+/// Supported LLM providers for BYOK (including local nodes).
 enum LlmProvider {
+  localNode(
+    displayName: 'Local Node',
+    description: 'Ollama / LM Studio — runs on your own GPU',
+    keyUrl: '',
+    iconCodePoint: 0xe30a, // dns (server icon)
+  ),
   grok(
     displayName: 'Grok',
     description: 'xAI\'s Grok — fast reasoning model',
@@ -43,6 +49,12 @@ enum LlmProvider {
     description: 'Mistral AI — European frontier model',
     keyUrl: 'https://console.mistral.ai/api-keys/',
     iconCodePoint: 0xe3a5, // air
+  ),
+  custom(
+    displayName: 'Custom Provider',
+    description: 'Any provider with an OpenAI-compatible API',
+    keyUrl: '',
+    iconCodePoint: 0xe429, // tune
   );
 
   final String displayName;
@@ -67,6 +79,8 @@ enum LlmProvider {
 /// - Linux → libsecret
 class ApiKeyService {
   static const _keyPrefix = 'vitavault_api_key_';
+  static const _localBaseUrlKey = 'vitavault_local_base_url';
+  static const _localModelKey = 'vitavault_local_model';
 
   final FlutterSecureStorage _storage;
 
@@ -98,6 +112,16 @@ class ApiKeyService {
 
   /// Check if a key exists for the given provider.
   Future<bool> hasKey(LlmProvider provider) async {
+    // For localNode, check if base URL is configured (key is optional)
+    if (provider == LlmProvider.localNode) {
+      final url = await getLocalBaseUrl();
+      return url != null && url.isNotEmpty;
+    }
+    // For custom, check if base URL is configured
+    if (provider == LlmProvider.custom) {
+      final url = await getCustomBaseUrl();
+      return url != null && url.isNotEmpty;
+    }
     final key = await getKey(provider);
     return key != null && key.isNotEmpty;
   }
@@ -106,7 +130,9 @@ class ApiKeyService {
   /// Returns null if no keys are configured.
   Future<LlmProvider?> getFirstAvailableProvider() async {
     for (final provider in LlmProvider.values) {
-      if (await hasKey(provider)) return provider;
+      if (await hasKey(provider)) {
+        return provider;
+      }
     }
     return null;
   }
@@ -126,8 +152,17 @@ class ApiKeyService {
   /// Alias for [getFirstAvailableProvider] — named for spec compliance.
   Future<LlmProvider?> getActiveProvider() async {
     for (final provider in LlmProvider.values) {
+      if (provider == LlmProvider.localNode) {
+        final url = await getLocalBaseUrl();
+        if (url != null && url.isNotEmpty) {
+          return provider;
+        }
+        continue;
+      }
       final key = await _storage.read(key: _storageKey(provider));
-      if (key != null && key.isNotEmpty) return provider;
+      if (key != null && key.isNotEmpty) {
+        return provider;
+      }
     }
     return null;
   }
@@ -150,6 +185,67 @@ class ApiKeyService {
       result[provider] = await _storage.read(key: _storageKey(provider));
     }
     return result;
+  }
+
+  // ── Local Node Configuration ──
+
+  /// Save the local node base URL (e.g., http://localhost:11434/v1).
+  Future<void> saveLocalBaseUrl(String url) async {
+    await _storage.write(key: _localBaseUrlKey, value: url);
+  }
+
+  /// Get the configured local node base URL.
+  Future<String?> getLocalBaseUrl() async {
+    return _storage.read(key: _localBaseUrlKey);
+  }
+
+  /// Save the local node model name (e.g., llama3.2, mistral).
+  Future<void> saveLocalModel(String model) async {
+    await _storage.write(key: _localModelKey, value: model);
+  }
+
+  /// Get the configured local node model name.
+  Future<String?> getLocalModel() async {
+    return _storage.read(key: _localModelKey);
+  }
+
+  /// Delete all local node configuration.
+  Future<void> deleteLocalConfig() async {
+    await _storage.delete(key: _localBaseUrlKey);
+    await _storage.delete(key: _localModelKey);
+    await deleteKey(LlmProvider.localNode);
+  }
+
+  // \u2500\u2500 Custom Provider Configuration \u2500\u2500
+
+  static const _customBaseUrlKey = 'vitavault_custom_base_url';
+  static const _customModelKey = 'vitavault_custom_model';
+
+  /// Save the custom provider base URL.
+  Future<void> saveCustomBaseUrl(String url) async {
+    await _storage.write(key: _customBaseUrlKey, value: url);
+  }
+
+  /// Get the configured custom provider base URL.
+  Future<String?> getCustomBaseUrl() async {
+    return _storage.read(key: _customBaseUrlKey);
+  }
+
+  /// Save the custom provider model name.
+  Future<void> saveCustomModel(String model) async {
+    await _storage.write(key: _customModelKey, value: model);
+  }
+
+  /// Get the configured custom provider model name.
+  Future<String?> getCustomModel() async {
+    return _storage.read(key: _customModelKey);
+  }
+
+  /// Delete all custom provider configuration.
+  Future<void> deleteCustomConfig() async {
+    await _storage.delete(key: _customBaseUrlKey);
+    await _storage.delete(key: _customModelKey);
+    await deleteKey(LlmProvider.custom);
   }
 
   /// Mask a key for display (show first 8 + last 4 chars).

@@ -10,6 +10,12 @@ import '../database/schemas/health_profile.dart';
 import '../database/schemas/relationship_node.dart';
 import '../database/schemas/timeline_event.dart';
 import '../database/schemas/trouble.dart';
+import '../database/schemas/career_ledger.dart';
+import '../database/schemas/medical_ledger.dart';
+import '../database/schemas/asset_ledger.dart';
+import '../database/schemas/relational_web.dart';
+import '../database/schemas/psyche_profile.dart';
+import '../database/schemas/custom_ledger_section.dart';
 
 /// Local RAG Engine — queries the encrypted Isar vault to build
 /// dense, token-efficient context blobs for LLM consumption.
@@ -70,12 +76,31 @@ class LocalRagService {
     if (includeIdentity) {
       final identity = await _isar.coreIdentitys.where().findFirst();
       if (identity != null) {
-        blob['identity'] = {
-          'name': identity.fullName,
-          'location': identity.location,
-          'dob': identity.dateOfBirth?.toIso8601String().split('T').first,
-          'traits': identity.immutableTraits,
-        };
+        final idData = <String, dynamic>{};
+        if (identity.fullName.isNotEmpty) {
+          idData['name'] = identity.fullName;
+        }
+        if (identity.location.isNotEmpty) {
+          idData['location'] = identity.location;
+        }
+        if (identity.dateOfBirth != null) {
+          idData['dob'] = identity.dateOfBirth!
+              .toIso8601String()
+              .split('T')
+              .first;
+        }
+        if ((identity.immutableTraits ?? []).isNotEmpty) {
+          idData['traits'] = identity.immutableTraits;
+        }
+        if ((identity.locationHistory ?? []).isNotEmpty) {
+          idData['locationHistory'] = identity.locationHistory;
+        }
+        if ((identity.familyLineage ?? []).isNotEmpty) {
+          idData['familyLineage'] = identity.familyLineage;
+        }
+        if (idData.isNotEmpty) {
+          blob['identity'] = idData;
+        }
       }
     }
 
@@ -236,7 +261,198 @@ class LocalRagService {
       }
     }
 
-    return jsonEncode(blob);
+    // ── Career Ledger (always included — critical for all queries) ──
+    final career = await _isar.careerLedgers.where().findFirst();
+    if (career != null) {
+      final careerData = <String, dynamic>{};
+      if ((career.jobs ?? []).isNotEmpty) {
+        careerData['jobs'] = career.jobs;
+      }
+      if ((career.degrees ?? []).isNotEmpty) {
+        careerData['degrees'] = career.degrees;
+      }
+      if ((career.certifications ?? []).isNotEmpty) {
+        careerData['certifications'] = career.certifications;
+      }
+      if ((career.clearances ?? []).isNotEmpty) {
+        careerData['clearances'] = career.clearances;
+      }
+      if ((career.skills ?? []).isNotEmpty) {
+        careerData['skills'] = career.skills;
+      }
+      if ((career.projects ?? []).isNotEmpty) {
+        careerData['projects'] = career.projects;
+      }
+      if ((career.businesses ?? []).isNotEmpty) {
+        careerData['businesses'] = career.businesses;
+      }
+      if (careerData.isNotEmpty) {
+        blob['career'] = careerData;
+      }
+    }
+
+    // ── Medical Ledger ──
+    final medical = await _isar.medicalLedgers.where().findFirst();
+    if (medical != null) {
+      final medData = <String, dynamic>{};
+      if ((medical.surgeries ?? []).isNotEmpty) {
+        medData['surgeries'] = medical.surgeries;
+      }
+      if ((medical.genetics ?? []).isNotEmpty) {
+        medData['genetics'] = medical.genetics;
+      }
+      if ((medical.vitalBaselines ?? []).isNotEmpty) {
+        medData['vitalBaselines'] = medical.vitalBaselines;
+      }
+      if ((medical.visionRx ?? []).isNotEmpty) {
+        medData['visionRx'] = medical.visionRx;
+      }
+      if ((medical.familyMedicalHistory ?? []).isNotEmpty) {
+        medData['familyMedicalHistory'] = medical.familyMedicalHistory;
+      }
+      if ((medical.bloodwork ?? []).isNotEmpty) {
+        medData['bloodwork'] = medical.bloodwork;
+      }
+      if ((medical.immunizations ?? []).isNotEmpty) {
+        medData['immunizations'] = medical.immunizations;
+      }
+      if ((medical.dentalHistory ?? []).isNotEmpty) {
+        medData['dentalHistory'] = medical.dentalHistory;
+      }
+      if (medData.isNotEmpty) {
+        blob['medical'] = medData;
+      }
+    }
+
+    // ── Asset Ledger ──
+    final assets = await _isar.assetLedgers.where().findFirst();
+    if (assets != null) {
+      final assetData = <String, dynamic>{};
+      if ((assets.realEstate ?? []).isNotEmpty) {
+        assetData['realEstate'] = assets.realEstate;
+      }
+      if ((assets.vehicles ?? []).isNotEmpty) {
+        assetData['vehicles'] = assets.vehicles;
+      }
+      if ((assets.digitalAssets ?? []).isNotEmpty) {
+        assetData['digitalAssets'] = assets.digitalAssets;
+      }
+      if ((assets.insurance ?? []).isNotEmpty) {
+        assetData['insurance'] = assets.insurance;
+      }
+      if ((assets.investments ?? []).isNotEmpty) {
+        assetData['investments'] = assets.investments;
+      }
+      if ((assets.valuables ?? []).isNotEmpty) {
+        assetData['valuables'] = assets.valuables;
+      }
+      if ((assets.equityStakes ?? []).isNotEmpty) {
+        assetData['equityStakes'] = assets.equityStakes;
+      }
+      if (assetData.isNotEmpty) {
+        blob['assets'] = assetData;
+      }
+    }
+
+    // ── Relational Web ──
+    final relWeb = await _isar.relationalWebs.where().findFirst();
+    if (relWeb != null) {
+      final rwData = <String, dynamic>{};
+      if ((relWeb.family ?? []).isNotEmpty) {
+        rwData['family'] = relWeb.family;
+      }
+      if ((relWeb.mentors ?? []).isNotEmpty) {
+        rwData['mentors'] = relWeb.mentors;
+      }
+      if ((relWeb.adversaries ?? []).isNotEmpty) {
+        rwData['adversaries'] = relWeb.adversaries;
+      }
+      if ((relWeb.colleagues ?? []).isNotEmpty) {
+        rwData['colleagues'] = relWeb.colleagues;
+      }
+      if ((relWeb.friends ?? []).isNotEmpty) {
+        rwData['friends'] = relWeb.friends;
+      }
+      if (rwData.isNotEmpty) {
+        blob['relationalWeb'] = rwData;
+      }
+    }
+
+    // ── Psyche Profile ──
+    final psyche = await _isar.psycheProfiles.where().findFirst();
+    if (psyche != null) {
+      final psyData = <String, dynamic>{};
+      if (psyche.mbti != null && psyche.mbti!.isNotEmpty) {
+        psyData['mbti'] = psyche.mbti;
+      }
+      if (psyche.enneagram != null && psyche.enneagram!.isNotEmpty) {
+        psyData['enneagram'] = psyche.enneagram;
+      }
+      if ((psyche.beliefs ?? []).isNotEmpty) {
+        psyData['beliefs'] = psyche.beliefs;
+      }
+      if ((psyche.personality ?? []).isNotEmpty) {
+        psyData['personality'] = psyche.personality;
+      }
+      if ((psyche.fears ?? []).isNotEmpty) {
+        psyData['fears'] = psyche.fears;
+      }
+      if ((psyche.motivations ?? []).isNotEmpty) {
+        psyData['motivations'] = psyche.motivations;
+      }
+      if ((psyche.strengths ?? []).isNotEmpty) {
+        psyData['strengths'] = psyche.strengths;
+      }
+      if ((psyche.weaknesses ?? []).isNotEmpty) {
+        psyData['weaknesses'] = psyche.weaknesses;
+      }
+      if (psyData.isNotEmpty) {
+        blob['psyche'] = psyData;
+      }
+    }
+
+    // ── Custom Ledger Sections ──
+    final customSections = await _isar.customLedgerSections.where().findAll();
+    if (customSections.isNotEmpty) {
+      final customData = <String, dynamic>{};
+      for (final section in customSections) {
+        if (section.items.isNotEmpty) {
+          customData[section.title] = section.items
+              .map((i) => {'name': i.name ?? '', 'value': i.value ?? ''})
+              .toList();
+        }
+      }
+      if (customData.isNotEmpty) {
+        blob['customLedgers'] = customData;
+      }
+    }
+
+    // ── Hidden Section Filtering ──
+    // Remove any default sections the user has hidden
+    final identity = await _isar.coreIdentitys.where().findFirst();
+    if (identity != null && identity.hiddenSections.isNotEmpty) {
+      // Map display titles to blob keys
+      const titleToKey = {
+        'Timeline': 'timeline',
+        'Troubles': 'troubles',
+        'Finances': 'finances',
+        'Relationships': 'relationships',
+        'Health': 'health',
+        'Goals': 'goals',
+        'Habits & Vices': 'habits',
+        'Medical Ledger': 'medical',
+        'Career Ledger': 'career',
+        'Asset Ledger': 'assets',
+        'Relational Web': 'relationalWeb',
+        'Psyche Profile': 'psyche',
+      };
+      for (final hidden in identity.hiddenSections) {
+        final key = titleToKey[hidden];
+        if (key != null) blob.remove(key);
+      }
+    }
+
+    return _compressToMarkdown(blob);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -320,4 +536,56 @@ class LocalRagService {
     }
     return summary;
   }
+
+  // ─────────────────────────────────────────────────────────────
+  // Vault Compressor — dense Markdown format
+  // ─────────────────────────────────────────────────────────────
+
+  /// Convert the blob map into dense, token-efficient Markdown.
+  ///
+  /// Empty arrays, null strings, and bare keys are completely stripped.
+  /// Output is roughly 60-80% smaller than pretty-printed JSON.
+  static String _compressToMarkdown(Map<String, dynamic> blob) {
+    if (blob.isEmpty) return '(vault empty)';
+
+    final buf = StringBuffer();
+    for (final section in blob.keys) {
+      final value = blob[section];
+      buf.writeln('## ${_titleCase(section)}');
+      if (value is Map<String, dynamic>) {
+        for (final key in value.keys) {
+          final v = value[key];
+          if (v is List && v.isNotEmpty) {
+            buf.writeln('**$key:** ${v.join(', ')}');
+          } else if (v != null && v.toString().isNotEmpty) {
+            buf.writeln('**$key:** $v');
+          }
+        }
+      } else if (value is List) {
+        for (final item in value) {
+          if (item is Map<String, dynamic>) {
+            final parts = <String>[];
+            for (final k in item.keys) {
+              final iv = item[k];
+              if (iv != null && iv.toString().isNotEmpty) {
+                parts.add('$k: $iv');
+              }
+            }
+            if (parts.isNotEmpty) buf.writeln('- ${parts.join(' | ')}');
+          } else {
+            buf.writeln('- $item');
+          }
+        }
+      } else if (value != null) {
+        buf.writeln(value.toString());
+      }
+      buf.writeln();
+    }
+    return buf.toString().trim();
+  }
+
+  static String _titleCase(String s) => s.replaceAllMapped(
+    RegExp(r'(^|[A-Z])'),
+    (m) => m.start == 0 ? m[0]!.toUpperCase() : ' ${m[0]}',
+  );
 }
