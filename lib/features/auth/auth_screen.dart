@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app.dart';
 import '../../core/services/api_key_service.dart';
 import '../../core/services/lifecycle_guard.dart';
+import '../../core/services/revenuecat_service.dart';
 import '../../theme/theme.dart';
 import '../../core/database/database_service.dart';
 import '../../providers/providers.dart';
@@ -605,6 +606,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     // 4. Wipe SharedPreferences (onboarding, biometrics, Pro flags)
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+
+    // 5. Reset in-memory PRO state (the ValueNotifier survives prefs.clear)
+    RevenueCatService().isProNotifier.value = false;
 
     // 5. Wipe the salt and PIN verification files from app support dir
     try {

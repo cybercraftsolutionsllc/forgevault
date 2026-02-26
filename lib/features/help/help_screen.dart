@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/database_service.dart';
+import '../../core/services/revenuecat_service.dart';
 import '../../theme/theme.dart';
 
 /// Help Center — FAQ and debug tools.
@@ -326,6 +327,9 @@ class HelpScreen extends StatelessWidget {
       // 1. Clear shared preferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
+
+      // Reset in-memory PRO state
+      RevenueCatService().isProNotifier.value = false;
 
       // 2. Wipe the Isar database
       final db = DatabaseService.instance;

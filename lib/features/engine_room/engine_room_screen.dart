@@ -298,6 +298,44 @@ class _EngineRoomScreenState extends ConsumerState<EngineRoomScreen>
           // ── Biometric Unlock Toggle ──
           _buildBiometricToggle(),
 
+          const SizedBox(height: 24),
+
+          // ── Legal ──
+          Divider(color: VaultColors.border, thickness: 0.5),
+          ListTile(
+            leading: Icon(
+              Icons.privacy_tip_outlined,
+              size: 20,
+              color: VaultColors.textMuted,
+            ),
+            title: Text(
+              'Privacy Policy',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: VaultColors.textSecondary,
+              ),
+            ),
+            trailing: Icon(
+              Icons.open_in_new,
+              size: 14,
+              color: VaultColors.textMuted,
+            ),
+            onTap: () => launchUrl(
+              Uri.parse('https://craftedcybersolutions.com/privacy.html'),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              'Version 1.0.0',
+              style: GoogleFonts.inter(
+                fontSize: 11,
+                color: VaultColors.textMuted,
+              ),
+            ),
+          ),
+
           const SizedBox(height: 32),
         ],
       ),

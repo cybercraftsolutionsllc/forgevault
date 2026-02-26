@@ -9,8 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/database_service.dart';
 import '../../core/services/revenuecat_service.dart';
+import '../../core/services/license_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../providers/providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../main.dart';
 import '../../theme/theme.dart';
 
@@ -410,118 +412,250 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   void _showUpgradeModal() {
     final promoCtrl = TextEditingController();
     final rc = RevenueCatService();
+    String? licenseError;
 
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: VaultColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: VaultColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+            ),
           ),
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-        title: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+          contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          title: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                  ),
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Colors.black,
+                  size: 20,
                 ),
               ),
-              child: const Icon(
-                Icons.workspace_premium_rounded,
-                color: Colors.black,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'ForgeVault PRO',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFFFFD700),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'ForgeVault PRO',
+                  style: GoogleFonts.inter(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFFFFD700),
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        content: ValueListenableBuilder<bool>(
-          valueListenable: rc.isProNotifier,
-          builder: (context, isPro, _) => SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ── PRO UNLOCKED badge ──
-                if (isPro) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: VaultColors.phosphorGreen.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: VaultColors.phosphorGreen.withValues(alpha: 0.3),
+            ],
+          ),
+          content: ValueListenableBuilder<bool>(
+            valueListenable: rc.isProNotifier,
+            builder: (context, isPro, _) => SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // ── PRO UNLOCKED badge ──
+                  if (isPro) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.verified_rounded,
-                          color: VaultColors.phosphorGreen,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'PRO UNLOCKED',
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: VaultColors.phosphorGreen,
-                            letterSpacing: 2,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: VaultColors.phosphorGreen.withValues(alpha: 0.1),
+                        border: Border.all(
+                          color: VaultColors.phosphorGreen.withValues(
+                            alpha: 0.3,
                           ),
                         ),
-                      ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.verified_rounded,
+                            color: VaultColors.phosphorGreen,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'PRO UNLOCKED',
+                            style: GoogleFonts.jetBrainsMono(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: VaultColors.phosphorGreen,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  Text(
+                    'Unlock portable encrypted backups, priority '
+                    'support, and future PRO features.',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: VaultColors.textSecondary,
+                      height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                Text(
-                  'Unlock portable encrypted backups, priority '
-                  'support, and future PRO features.',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: VaultColors.textSecondary,
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // â”€â”€ RevenueCat Paywall (supported platforms only) â”€â”€
-                if (rc.isSupported) ...[
-                  if (!isPro)
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
+                  // â”€â”€ RevenueCat Paywall (supported platforms only) â”€â”€
+                  if (rc.isSupported) ...[
+                    if (!isPro)
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () async {
+                            Navigator.of(ctx).pop();
+                            try {
+                              await rc.presentPaywall();
+                              // Re-check Pro status after paywall
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final newPro = prefs.getBool('isPro') ?? false;
+                              if (newPro && mounted) _setProState(true);
+                            } catch (e) {
+                              if (!e.toString().contains('cancelled') &&
+                                  mounted) {
+                                showSafeSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'RC Error: $e',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    backgroundColor: VaultColors.destructive
+                                        .withValues(alpha: 0.9),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.storefront_rounded, size: 18),
+                          label: Text(
+                            'View Premium Plans',
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFD700),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            Navigator.of(ctx).pop();
+                            try {
+                              await rc.showCustomerCenter();
+                            } catch (e) {
+                              if (!e.toString().contains('cancelled') &&
+                                  mounted) {
+                                showSafeSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'RC Error: $e',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    backgroundColor: VaultColors.destructive
+                                        .withValues(alpha: 0.9),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.manage_accounts_rounded,
+                            size: 18,
+                          ),
+                          label: Text(
+                            'Manage Subscription',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFFFD700),
+                            side: BorderSide(
+                              color: const Color(
+                                0xFFFFD700,
+                              ).withValues(alpha: 0.4),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+
+                    // Restore Purchases
+                    Center(
+                      child: TextButton.icon(
                         onPressed: () async {
                           Navigator.of(ctx).pop();
                           try {
-                            await rc.presentPaywall();
-                            // Re-check Pro status after paywall
+                            await rc.restorePurchases();
                             final prefs = await SharedPreferences.getInstance();
                             final newPro = prefs.getBool('isPro') ?? false;
-                            if (newPro && mounted) _setProState(true);
+                            if (newPro && mounted) {
+                              _setProState(true);
+                              if (mounted) {
+                                showSafeSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'âœ… Purchases restored! PRO unlocked.',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    backgroundColor: VaultColors.phosphorGreen
+                                        .withValues(alpha: 0.9),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
                           } catch (e) {
                             if (!e.toString().contains('cancelled') &&
                                 mounted) {
@@ -544,69 +678,83 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                             }
                           }
                         },
-                        icon: const Icon(Icons.storefront_rounded, size: 18),
+                        icon: const Icon(Icons.refresh_rounded, size: 16),
                         label: Text(
-                          'View Premium Plans',
+                          'Restore Purchases',
                           style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD700),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: VaultColors.textMuted,
                           ),
                         ),
                       ),
-                    )
-                  else
+                    ),
+                  ],
+
+                  // â”€â”€ Windows/Web Fallback â”€â”€
+                  if (!rc.isSupported) ...[
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: VaultColors.background,
+                        border: Border.all(
+                          color: VaultColors.border,
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.info_outline_rounded,
+                            size: 16,
+                            color: VaultColors.textMuted,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              Platform.isWindows || Platform.isLinux
+                                  ? 'Purchase a lifetime license via our '
+                                        'secure web portal. You will receive '
+                                        'a Cryptographic License Key via email.'
+                                  : 'Premium features are managed via our '
+                                        'mobile apps. Purchase PRO on iOS or '
+                                        'Android, then import your .forge backup.',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: VaultColors.textSecondary,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // ── Web Checkout (Desktop only) ──
+                  if (Platform.isWindows || Platform.isLinux) ...[
+                    const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: ElevatedButton.icon(
                         onPressed: () async {
-                          Navigator.of(ctx).pop();
-                          try {
-                            await rc.showCustomerCenter();
-                          } catch (e) {
-                            if (!e.toString().contains('cancelled') &&
-                                mounted) {
-                              showSafeSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'RC Error: $e',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  backgroundColor: VaultColors.destructive
-                                      .withValues(alpha: 0.9),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            }
-                          }
+                          await launchUrl(
+                            Uri.parse(
+                              'https://buy.stripe.com/6oU28q30m2is8yu5lKb3q03',
+                            ),
+                            mode: LaunchMode.externalApplication,
+                          );
                         },
-                        icon: const Icon(
-                          Icons.manage_accounts_rounded,
-                          size: 18,
-                        ),
+                        icon: const Icon(Icons.open_in_new, size: 16),
                         label: Text(
-                          'Manage Subscription',
+                          'Purchase PRO Online',
                           style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                         ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFFFD700),
-                          side: BorderSide(
-                            color: const Color(
-                              0xFFFFD700,
-                            ).withValues(alpha: 0.4),
-                          ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -614,255 +762,166 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 10),
+                  ],
+                  const SizedBox(height: 16),
 
-                  // Restore Purchases
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        Navigator.of(ctx).pop();
-                        try {
-                          await rc.restorePurchases();
-                          final prefs = await SharedPreferences.getInstance();
-                          final newPro = prefs.getBool('isPro') ?? false;
-                          if (newPro && mounted) {
-                            _setProState(true);
-                            if (mounted) {
-                              showSafeSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'âœ… Purchases restored! PRO unlocked.',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  backgroundColor: VaultColors.phosphorGreen
-                                      .withValues(alpha: 0.9),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          if (!e.toString().contains('cancelled') && mounted) {
-                            showSafeSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'RC Error: $e',
-                                  style: GoogleFonts.inter(color: Colors.white),
-                                ),
-                                backgroundColor: VaultColors.destructive
-                                    .withValues(alpha: 0.9),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      icon: const Icon(Icons.refresh_rounded, size: 16),
-                      label: Text(
-                        'Restore Purchases',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: VaultColors.textMuted,
+                  // â”€â”€ Promo Code (always available) â”€â”€
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: VaultColors.border,
+                          thickness: 0.5,
                         ),
                       ),
-                    ),
-                  ),
-                ],
-
-                // â”€â”€ Windows/Web Fallback â”€â”€
-                if (!rc.isSupported) ...[
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: VaultColors.background,
-                      border: Border.all(color: VaultColors.border, width: 0.5),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.info_outline_rounded,
-                          size: 16,
-                          color: VaultColors.textMuted,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Premium features are managed via our '
-                            'mobile apps. Purchase PRO on iOS or '
-                            'Android, and your status will '
-                            'automatically sync to this PC when you '
-                            'import your encrypted .forge backup.',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: VaultColors.textSecondary,
-                              height: 1.5,
-                            ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'OR',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: VaultColors.textMuted,
+                            letterSpacing: 2,
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 16),
-
-                // â”€â”€ Promo Code (always available) â”€â”€
-                Row(
-                  children: [
-                    Expanded(
-                      child: Divider(color: VaultColors.border, thickness: 0.5),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'OR',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: VaultColors.textMuted,
-                          letterSpacing: 2,
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: VaultColors.border,
+                          thickness: 0.5,
                         ),
                       ),
-                    ),
-                    Expanded(
-                      child: Divider(color: VaultColors.border, thickness: 0.5),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                TextField(
-                  controller: promoCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 14,
-                    color: VaultColors.textPrimary,
-                    letterSpacing: 2,
+                    ],
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'PROMO CODE',
-                    hintStyle: GoogleFonts.jetBrainsMono(
-                      fontSize: 12,
-                      color: VaultColors.textMuted,
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: promoCtrl,
+                    textCapitalization: TextCapitalization.characters,
+                    style: GoogleFonts.jetBrainsMono(
+                      fontSize: 14,
+                      color: VaultColors.textPrimary,
                       letterSpacing: 2,
                     ),
-                    prefixIcon: Icon(
-                      Icons.confirmation_number_outlined,
-                      size: 18,
-                      color: VaultColors.textMuted,
-                    ),
-                    filled: true,
-                    fillColor: VaultColors.background,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: VaultColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: VaultColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFFD700),
-                        width: 1.5,
+                    decoration: InputDecoration(
+                      hintText: (Platform.isWindows || Platform.isLinux)
+                          ? 'CRYPTOGRAPHIC LICENSE KEY'
+                          : 'PROMO CODE',
+                      hintStyle: GoogleFonts.jetBrainsMono(
+                        fontSize: 12,
+                        color: VaultColors.textMuted,
+                        letterSpacing: 2,
                       ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      final code = promoCtrl.text.trim().toUpperCase();
-                      if (code != 'FOUNDER2026') {
-                        showSafeSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Invalid promo code.',
-                              style: GoogleFonts.inter(color: Colors.white),
-                            ),
-                            backgroundColor: VaultColors.destructive.withValues(
-                              alpha: 0.9,
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.of(ctx).pop();
-                      _setProState(true);
-                      showSafeSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'ðŸŽ‰ Founder code accepted! PRO unlocked '
-                            'forever.',
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          backgroundColor: VaultColors.phosphorGreen.withValues(
-                            alpha: 0.9,
-                          ),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.redeem_rounded, size: 16),
-                    label: Text(
-                      'Redeem Code',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFFD700),
-                      side: BorderSide(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                      prefixIcon: Icon(
+                        Icons.confirmation_number_outlined,
+                        size: 18,
+                        color: VaultColors.textMuted,
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
+                      filled: true,
+                      fillColor: VaultColors.background,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: VaultColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: VaultColors.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFFD700),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-              ],
+                  if (licenseError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        licenseError!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: VaultColors.destructive,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final code = promoCtrl.text.trim();
+                        final isValid =
+                            await LicenseService.verifyDesktopLicense(code);
+
+                        if (!isValid) {
+                          // Show inline error — do NOT use SnackBar inside modal.
+                          setDialogState(() {
+                            licenseError = 'Invalid License Key / Promo Code.';
+                          });
+                          return;
+                        }
+
+                        // Valid key — persist PRO and close modal.
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('offline_license_active', true);
+                        RevenueCatService().isProNotifier.value = true;
+                        Navigator.of(ctx).pop();
+                        // The Dashboard PRO badge auto-updates via ValueListenableBuilder.
+                      },
+                      icon: const Icon(Icons.vpn_key_rounded, size: 16),
+                      label: Text(
+                        (Platform.isWindows || Platform.isLinux)
+                            ? 'Unlock PRO'
+                            : 'Redeem Code',
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFFFD700),
+                        side: BorderSide(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await launchUrl(
+                  Uri.parse('https://craftedcybersolutions.com/privacy.html'),
+                );
+              },
+              child: Text(
+                'Privacy Policy',
+                style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(
+                'Maybe Later',
+                style: GoogleFonts.inter(color: VaultColors.textMuted),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              'Maybe Later',
-              style: GoogleFonts.inter(color: VaultColors.textMuted),
-            ),
-          ),
-        ],
       ),
     );
   }
