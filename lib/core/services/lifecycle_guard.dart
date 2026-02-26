@@ -59,11 +59,12 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
           _backgroundedAt = DateTime.now();
           setState(() => _isBlurred = true);
 
-          // ── Memory Scrub: clear sensitive in-memory data ──
-          _scrubSensitiveMemory();
-
           // ── Clipboard Wipe: prevent cross-app snooping ──
           ClipboardTimebomb.clearNow();
+          // NOTE: We intentionally do NOT scrub providers here.
+          // The blur overlay hides PII visually. Provider state
+          // (text inputs, vacuum progress) is preserved so the UI
+          // is intact on short resumes (< 60s).
         }
         break;
 
@@ -74,7 +75,9 @@ class _LifecycleGuardState extends ConsumerState<LifecycleGuard>
               : Duration.zero;
 
           if (elapsed > _reauthThreshold) {
-            // Exceeded 60s — seal vault and push lock screen.
+            // Exceeded 60s — scrub sensitive memory, seal vault,
+            // and push lock screen for re-authentication.
+            _scrubSensitiveMemory();
             _sealVaultIfOpen();
             ref.invalidate(vacuumStateProvider);
             ref.invalidate(databaseProvider);

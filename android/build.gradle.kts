@@ -26,6 +26,13 @@ subprojects {
                     setNamespace.invoke(androidPlugin, project.group.toString())
                 }
             } catch (ignored: Exception) {}
+
+            // Force all subprojects to compile against SDK 35 so
+            // android:attr/lStar (requires 31+) resolves correctly.
+            try {
+                val setCompileSdk = androidPlugin.javaClass.getMethod("setCompileSdkVersion", Int::class.java)
+                setCompileSdk.invoke(androidPlugin, 36)
+            } catch (ignored: Exception) {}
         }
     }
     project.evaluationDependsOn(":app")

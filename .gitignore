@@ -49,3 +49,8 @@ app.*.map.json
 .env.*
 *.isar
 *.isar.lock
+
+# Release artifacts
+ForgeVault-*.zip
+ForgeVault-*.apk
+build_log.txt
