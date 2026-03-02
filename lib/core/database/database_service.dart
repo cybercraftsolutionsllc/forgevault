@@ -1034,25 +1034,27 @@ class DatabaseService {
   ///
   /// 1. `db.clear()` — vaporize all records internally.
   /// 2. `db.close(deleteFromDisk: true)` — Isar's built-in shredder.
-  /// 3. Retry loop: 3 attempts × 500 ms to force-delete `.isar` + `.lock`.
-  /// 4. Fallback: rename locked `.isar` → `.isar.trash`, zero-fill it.
-  /// 5. Also delete `.isar.aes` (the sealed vault blob).
+  /// 3. Independently resolve the canonical DB path (never trust _isarPath).
+  /// 4. Retry loop: 3 attempts × 500 ms to force-delete `.isar` + `.lock`.
+  /// 5. Fallback: rename locked `.isar` → `.isar.trash`, zero-fill it.
+  /// 6. Also delete `.isar.aes` (the sealed vault blob).
   Future<void> nukeDatabase() async {
-    String? dbPath;
+    // Step 1: If Isar is still open, clear records and close.
     try {
       if (_isar != null && _isar!.isOpen) {
-        // Vaporize all data internally (bypasses OS file locks)
         await _isar!.writeTxn(() async => await _isar!.clear());
-        dbPath = _isar!.path;
         await _isar!.close(deleteFromDisk: true);
       }
     } catch (_) {}
-
     _isar = null;
-    dbPath ??= _isarPath;
-    if (dbPath == null) return;
 
-    // Retry loop: 3 attempts to delete the files
+    // Step 2: ALWAYS resolve the canonical path independently.
+    // This is critical — _isarPath and _isar.path can both be null/wrong
+    // if the lifecycle guard already sealed and closed the database.
+    final dir = await getApplicationSupportDirectory();
+    final dbPath = '${dir.path}${Platform.pathSeparator}vitavault.isar';
+
+    // Step 3: Retry loop — force-delete .isar + .lock files
     for (var attempt = 0; attempt < 3; attempt++) {
       await Future.delayed(const Duration(milliseconds: 500));
       final dbFile = File(dbPath);
@@ -1067,7 +1069,7 @@ class DatabaseService {
       } catch (_) {}
     }
 
-    // Fallback: if the file STILL exists, rename to .trash and zero-fill
+    // Step 4: Fallback — rename to .trash and zero-fill
     final dbFile = File(dbPath);
     if (dbFile.existsSync()) {
       try {
@@ -1088,7 +1090,7 @@ class DatabaseService {
       } catch (_) {}
     }
 
-    // Shred the sealed vault (.aes) as well
+    // Step 5: Shred the sealed vault (.aes) as well
     final aesFile = File('$dbPath.aes');
     if (aesFile.existsSync()) {
       try {
@@ -1097,6 +1099,7 @@ class DatabaseService {
     }
 
     _isarPath = null;
+    debugPrint('[NukeDatabase] Scorched-earth complete: $dbPath');
   }
 
   // ── Private Helpers ──

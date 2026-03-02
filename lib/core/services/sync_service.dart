@@ -26,8 +26,6 @@ class SyncService {
   final _cipher = CipherService.instance;
   final _syncService = VaultSyncService();
 
-  static const _proKey = 'forgevault_pro_unlocked';
-
   /// Export the entire vault as an E2EE `.forge` file.
   ///
   /// The encrypted payload is a master JSON envelope:
@@ -220,7 +218,7 @@ class SyncService {
     final isPro = metadata['isPro'] as bool? ?? false;
     if (isPro) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_proKey, true);
+      await prefs.setBool('isPro', true);
       await prefs.setBool('offline_license_active', true);
       RevenueCatService().isProNotifier.value = true;
     }

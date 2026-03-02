@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/database/database_service.dart';
@@ -324,22 +328,38 @@ class HelpScreen extends StatelessWidget {
 
   Future<void> _performFactoryReset(BuildContext context) async {
     try {
-      // 1. Clear shared preferences
+      // 1. Clear shared preferences (onboarding, biometrics, Pro flags)
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
 
-      // Reset in-memory PRO state
+      // 2. Reset in-memory PRO state
       RevenueCatService().isProNotifier.value = false;
 
-      // 2. Wipe the Isar database
-      final db = DatabaseService.instance;
-      if (db.isOpen) {
-        final isar = db.db;
-        await isar.writeTxn(() async {
-          await isar.clear();
-        });
-        await db.close();
-      }
+      // 3. Scorched-earth database destruction (files + .aes + .lock)
+      try {
+        await DatabaseService.instance.nukeDatabase();
+      } catch (_) {}
+
+      // 4. Wipe FlutterSecureStorage (salt, PIN hash, API keys)
+      try {
+        const storage = FlutterSecureStorage(
+          aOptions: AndroidOptions(encryptedSharedPreferences: true),
+        );
+        await storage.deleteAll();
+      } catch (_) {}
+
+      // 5. Delete salt and PIN verification files
+      try {
+        final supportDir = await getApplicationSupportDirectory();
+        final saltFile = File(
+          '${supportDir.path}${Platform.pathSeparator}.vitavault_salt',
+        );
+        final verifyFile = File(
+          '${supportDir.path}${Platform.pathSeparator}.vitavault_pin_verify',
+        );
+        if (saltFile.existsSync()) saltFile.deleteSync();
+        if (verifyFile.existsSync()) verifyFile.deleteSync();
+      } catch (_) {}
 
       // 3. Restart the app by popping to root and rebuilding
       if (context.mounted) {

@@ -237,7 +237,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       // â”€â”€ Step 6: Save device state â”€â”€
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', true);
-      await prefs.setBool('forgevault_pro_unlocked', extractedIsPro);
+      await prefs.setBool('isPro', extractedIsPro);
       if (extractedIsPro) {
         await prefs.setBool('offline_license_active', true);
       }

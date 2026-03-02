@@ -20,7 +20,7 @@ class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._();
   factory RevenueCatService() => _instance;
 
-  static const String _apiKey = 'test_GfUdTTEWewFMayHdBUCPceONGpg';
+  static const String _apiKey = 'goog_eQKDwABpcLEAADEHXkYviwQCENN';
   static const String _entitlementId = 'Cyber Craft Solutions, LLC Pro';
 
   /// Reactive Pro status — drives UI via ValueListenableBuilder.
