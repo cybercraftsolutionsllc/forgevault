@@ -58,3 +58,6 @@ build_log.txt
 # Release signing
 android/key.properties
 android/app/forgevault-release.jks
+
+# Play Store images
+forgevault-images/
