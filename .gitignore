@@ -54,3 +54,7 @@ app.*.map.json
 ForgeVault-*.zip
 ForgeVault-*.apk
 build_log.txt
+
+# Release signing
+android/key.properties
+android/app/forgevault-release.jks
