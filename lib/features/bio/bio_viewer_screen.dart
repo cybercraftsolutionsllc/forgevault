@@ -22,9 +22,9 @@ import '../../core/database/schemas/custom_ledger_section.dart';
 import '../../providers/providers.dart';
 import '../../theme/theme.dart';
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// CRUD Helpers â€” read-mutate-write for singleton Isar ledgers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
+// CRUD Helpers — read-mutate-write for singleton Isar ledgers
+// ─────────────────────────────────────────────────────────────
 
 Future<void> _addToIdentityList(
   String value,
@@ -117,7 +117,7 @@ Future<void> _addToPsyche(
   });
 }
 
-/// Bio Viewer â€” reactive accordion view of all Isar collections.
+/// Bio Viewer — reactive accordion view of all Isar collections.
 ///
 /// Each section streams live data from Isar via [StreamProvider]s.
 /// The UI auto-updates whenever the Forge commits new records.
@@ -147,7 +147,7 @@ class BioViewerScreen extends ConsumerWidget {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.all(20),
         children: [
-          // â”€â”€ Header â”€â”€
+          // ── Header ──
           Text(
             'Your Living\nLife Bio',
             style: GoogleFonts.playfairDisplay(
@@ -167,10 +167,10 @@ class BioViewerScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // â”€â”€ Identity â”€â”€
+          // ── Identity ──
           const _IdentitySection(),
 
-          // â”€â”€ Location History â”€â”€
+          // ── Location History ──
           _IdentityListSection(
             ref: ref,
             icon: Icons.map_outlined,
@@ -197,7 +197,7 @@ class BioViewerScreen extends ConsumerWidget {
             ],
           ),
 
-          // â”€â”€ Family & Lineage â”€â”€
+          // ── Family & Lineage ──
           _IdentityListSection(
             ref: ref,
             icon: Icons.account_tree_outlined,
@@ -224,7 +224,7 @@ class BioViewerScreen extends ConsumerWidget {
             ],
           ),
 
-          // â”€â”€ Timeline â”€â”€
+          // ── Timeline ──
           if (!hiddenSections.contains('Timeline'))
             _ListStreamSection<TimelineEvent>(
               icon: Icons.timeline_outlined,
@@ -255,7 +255,7 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Troubles â”€â”€
+          // ── Troubles ──
           if (!hiddenSections.contains('Troubles'))
             _ListStreamSection<Trouble>(
               icon: Icons.warning_amber_outlined,
@@ -264,7 +264,7 @@ class BioViewerScreen extends ConsumerWidget {
               provider: troublesStreamProvider,
               ref: ref,
               itemBuilder: (t) =>
-                  '${t.title} â€” Severity ${t.severity}/10${t.isResolved ? ' âœ“' : ''}',
+                  '${t.title} \u2014 Severity ${t.severity}/10${t.isResolved ? ' \u2713' : ''}',
               idExtractor: (t) => t.id,
               onDismissed: (id) => DatabaseService.instance.deleteTrouble(id),
               onItemEdit: (t, newVal) async {
@@ -276,7 +276,7 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Finances â”€â”€
+          // ── Finances ──
           if (!hiddenSections.contains('Finances'))
             _ListStreamSection<FinanceRecord>(
               icon: Icons.account_balance_wallet_outlined,
@@ -298,7 +298,7 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Relationships â”€â”€
+          // ── Relationships ──
           if (!hiddenSections.contains('Relationships'))
             _ListStreamSection<RelationshipNode>(
               icon: Icons.people_outline,
@@ -320,10 +320,10 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Health â”€â”€
+          // ── Health ──
           if (!hiddenSections.contains('Health')) _HealthSection(ref: ref),
 
-          // â”€â”€ Goals â”€â”€
+          // ── Goals ──
           if (!hiddenSections.contains('Goals'))
             _ListStreamSection<Goal>(
               icon: Icons.flag_outlined,
@@ -332,7 +332,7 @@ class BioViewerScreen extends ConsumerWidget {
               provider: goalsStreamProvider,
               ref: ref,
               itemBuilder: (g) =>
-                  '${g.title} â€” ${g.progress}%${g.isCompleted ? ' âœ“' : ''}',
+                  '${g.title} \u2014 ${g.progress}%${g.isCompleted ? ' \u2713' : ''}',
               idExtractor: (g) => g.id,
               onDismissed: (id) => DatabaseService.instance.deleteGoal(id),
               onItemEdit: (g, newVal) async {
@@ -344,7 +344,7 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Habits & Vices â”€â”€
+          // ── Habits & Vices ──
           if (!hiddenSections.contains('Habits & Vices'))
             _ListStreamSection<HabitVice>(
               icon: Icons.repeat_outlined,
@@ -353,7 +353,7 @@ class BioViewerScreen extends ConsumerWidget {
               provider: habitsStreamProvider,
               ref: ref,
               itemBuilder: (h) =>
-                  '${h.name} (${h.isVice ? "Vice" : "Habit"}) â€” ${h.frequency}',
+                  '${h.name} (${h.isVice ? "Vice" : "Habit"}) \u2014 ${h.frequency}',
               idExtractor: (h) => h.id,
               onDismissed: (id) => DatabaseService.instance.deleteHabitVice(id),
               onItemEdit: (h, newVal) async {
@@ -365,7 +365,7 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Medical Ledger â”€â”€
+          // ── Medical Ledger ──
           if (!hiddenSections.contains('Medical Ledger'))
             _LedgerSection<MedicalLedger>(
               ref: ref,
@@ -513,7 +513,7 @@ class BioViewerScreen extends ConsumerWidget {
               ],
             ),
 
-          // â”€â”€ Career Ledger â”€â”€
+          // ── Career Ledger ──
           if (!hiddenSections.contains('Career Ledger'))
             _LedgerSection<CareerLedger>(
               ref: ref,
@@ -644,7 +644,7 @@ class BioViewerScreen extends ConsumerWidget {
               ],
             ),
 
-          // â”€â”€ Asset Ledger â”€â”€
+          // ── Asset Ledger ──
           if (!hiddenSections.contains('Asset Ledger'))
             _LedgerSection<AssetLedger>(
               ref: ref,
@@ -775,7 +775,7 @@ class BioViewerScreen extends ConsumerWidget {
               ],
             ),
 
-          // â”€â”€ Relational Web â”€â”€
+          // ── Relational Web ──
           if (!hiddenSections.contains('Relational Web'))
             _LedgerSection<RelationalWeb>(
               ref: ref,
@@ -872,7 +872,7 @@ class BioViewerScreen extends ConsumerWidget {
               ],
             ),
 
-          // â”€â”€ Psyche Profile â”€â”€
+          // ── Psyche Profile ──
           if (!hiddenSections.contains('Psyche Profile'))
             _LedgerSection<PsycheProfile>(
               ref: ref,
@@ -996,10 +996,10 @@ class BioViewerScreen extends ConsumerWidget {
               },
             ),
 
-          // â”€â”€ Custom Ledger Sections â”€â”€
+          // ── Custom Ledger Sections ──
           ..._buildCustomSections(ref, context),
 
-          // â”€â”€ + Create Custom Section button â”€â”€
+          // ── + Create Custom Section button ──
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: OutlinedButton.icon(
@@ -1018,7 +1018,7 @@ class BioViewerScreen extends ConsumerWidget {
             ),
           ),
 
-          // â”€â”€ Manage Hidden Sections button â”€â”€
+          // ── Manage Hidden Sections button ──
           Padding(
             padding: const EdgeInsets.only(bottom: 32),
             child: TextButton.icon(
@@ -1038,7 +1038,7 @@ class BioViewerScreen extends ConsumerWidget {
     );
   }
 
-  // â”€â”€ Custom Section Builder â”€â”€
+  // ── Custom Section Builder ──
   List<Widget> _buildCustomSections(WidgetRef ref, BuildContext context) {
     final customAsync = ref.watch(customLedgerSectionsProvider);
     return customAsync.when(
@@ -1086,7 +1086,7 @@ class BioViewerScreen extends ConsumerWidget {
     );
   }
 
-  // â”€â”€ Create Custom Section Dialog â”€â”€
+  // ── Create Custom Section Dialog ──
   void _showCreateSectionDialog(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
@@ -1143,15 +1143,15 @@ class BioViewerScreen extends ConsumerWidget {
     );
   }
 
-  // â”€â”€ Manage Hidden Sections Dialog â”€â”€
+  // ── Manage Hidden Sections Dialog ──
   void _showManageHiddenDialog(BuildContext context, WidgetRef ref) {
     showDialog(context: context, builder: (ctx) => _HiddenSectionsDialog());
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Identity Section â€” Seamless Inline Property Sheet
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
+// Identity Section — Seamless Inline Property Sheet
+// ─────────────────────────────────────────────────────────────
 
 class _IdentitySection extends ConsumerStatefulWidget {
   const _IdentitySection();
@@ -1179,7 +1179,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
     super.dispose();
   }
 
-  // â”€â”€ Sync controllers from stream data (one-time per identity) â”€â”€
+  // ── Sync controllers from stream data (one-time per identity) ──
   void _syncControllers(CoreIdentity identity) {
     if (_loadedId == identity.id) return;
     _loadedId = identity.id;
@@ -1190,7 +1190,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
     _traitsCtrl.text = identity.immutableTraits?.join('\n') ?? '';
   }
 
-  // â”€â”€ Auto-create identity record if null â”€â”€
+  // ── Auto-create identity record if null ──
   Future<void> _ensureIdentity() async {
     final db = DatabaseService.instance.db;
     final existing = await db.coreIdentitys.where().findFirst();
@@ -1202,7 +1202,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
     await db.writeTxn(() async => db.coreIdentitys.put(identity));
   }
 
-  // â”€â”€ Debounced auto-save â”€â”€
+  // ── Debounced auto-save ──
   void _scheduleSave() {
     _saveTimer?.cancel();
     _saveTimer = Timer(const Duration(milliseconds: 800), _persistNow);
@@ -1307,7 +1307,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
                     controller: _traitsCtrl,
                     hint: 'One trait per line',
                   ),
-                  // â”€â”€ Completeness indicator â”€â”€
+                  // ── Completeness indicator ──
                   const SizedBox(height: 12),
                   Row(
                     children: [
@@ -1353,7 +1353,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
     );
   }
 
-  // â”€â”€ Single-line inline field (Notion-style) â”€â”€
+  // ── Single-line inline field (Notion-style) ──
   Widget _inlineField({
     required IconData icon,
     required String label,
@@ -1413,7 +1413,7 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
     );
   }
 
-  // â”€â”€ Multi-line inline field â”€â”€
+  // ── Multi-line inline field ──
   Widget _inlineMultiField({
     required IconData icon,
     required String label,
@@ -1480,9 +1480,9 @@ class _IdentitySectionState extends ConsumerState<_IdentitySection> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Health Section (single record)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _HealthSection extends StatelessWidget {
   final WidgetRef ref;
@@ -1507,7 +1507,7 @@ class _HealthSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // â”€â”€ Conditions â”€â”€
+                  // ── Conditions ──
                   if ((hp.conditions ?? []).isNotEmpty) ...[
                     _sectionLabel('Conditions'),
                     ...hp.conditions!.asMap().entries.map(
@@ -1526,7 +1526,7 @@ class _HealthSection extends StatelessWidget {
                       ),
                     ),
                   ],
-                  // â”€â”€ Medications â”€â”€
+                  // ── Medications ──
                   if ((hp.medications ?? []).isNotEmpty) ...[
                     _sectionLabel('Medications'),
                     ...hp.medications!.asMap().entries.map(
@@ -1545,7 +1545,7 @@ class _HealthSection extends StatelessWidget {
                       ),
                     ),
                   ],
-                  // â”€â”€ Allergies â”€â”€
+                  // ── Allergies ──
                   if ((hp.allergies ?? []).isNotEmpty) ...[
                     _sectionLabel('Allergies'),
                     ...hp.allergies!.asMap().entries.map(
@@ -1564,11 +1564,11 @@ class _HealthSection extends StatelessWidget {
                       ),
                     ),
                   ],
-                  // â”€â”€ Scalar fields â”€â”€
+                  // ── Scalar fields ──
                   _dataRow('Blood Type', hp.bloodType ?? '\u2014'),
                   if (hp.primaryPhysician != null)
                     _dataRow('Physician', hp.primaryPhysician!),
-                  // â”€â”€ Lab Results â”€â”€
+                  // ── Lab Results ──
                   if ((hp.labResults ?? []).isNotEmpty) ...[
                     _sectionLabel('Lab Results'),
                     ...hp.labResults!.asMap().entries.map(
@@ -1597,9 +1597,9 @@ class _HealthSection extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Generic Ledger Section (single-record stream with List<String> fields)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _LedgerField<T> {
   final String label;
@@ -1660,7 +1660,7 @@ class _LedgerSection<T> extends StatelessWidget {
               }
             }
 
-            // List<String> field rows â€” individual items w/ CRUD
+            // List<String> field rows — individual items w/ CRUD
             for (final field in fieldExtractors) {
               final list = field.extractor(record);
               if (list != null && list.isNotEmpty) {
@@ -1726,9 +1726,9 @@ class _LedgerSection<T> extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Identity Derived List Sections (Career, Location, Lineage, Digital)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _ListDescriptor {
   final String label;
@@ -1876,9 +1876,9 @@ class _IdentityListSection extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Generic List Section (streams a List<T>)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _ListStreamSection<T> extends StatelessWidget {
   final IconData icon;
@@ -1963,9 +1963,9 @@ class _ListStreamSection<T> extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Shared Accordion Container
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _BioAccordion extends StatelessWidget {
   final IconData icon;
@@ -2013,9 +2013,9 @@ class _BioAccordion extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// CRUD Item Row â€” each array item with edit pencil + delete trash
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
+// CRUD Item Row — each array item with edit pencil + delete trash
+// ─────────────────────────────────────────────────────────────
 
 class _CrudItemRow extends StatefulWidget {
   final String value;
@@ -2208,9 +2208,9 @@ class _CrudItemRowState extends State<_CrudItemRow> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Add Entry Button â€” opens a dialog for manual CRUD
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
+// Add Entry Button — opens a dialog for manual CRUD
+// ─────────────────────────────────────────────────────────────
 
 class _AddEntryButton extends StatelessWidget {
   final String label;
@@ -2312,7 +2312,7 @@ class _AddEntryButton extends StatelessWidget {
   }
 }
 
-// â”€â”€ Shared Utility Widgets â”€â”€
+// ── Shared Utility Widgets ──
 
 Widget _loadingTile() => const Padding(
   padding: EdgeInsets.all(16),
@@ -2372,7 +2372,7 @@ Widget _dataRow(String label, String value) => Padding(
       ),
       Expanded(
         child: Text(
-          value.isEmpty ? 'â€”' : value,
+          value.isEmpty ? '—' : value,
           style: GoogleFonts.inter(
             fontSize: 13,
             color: VaultColors.textPrimary,
@@ -2383,9 +2383,9 @@ Widget _dataRow(String label, String value) => Padding(
   ),
 );
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Custom Ledger Card â€” renders a user-created section
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
+// Custom Ledger Card — renders a user-created section
+// ─────────────────────────────────────────────────────────────
 
 class _CustomLedgerCard extends StatelessWidget {
   final CustomLedgerSection section;
@@ -2485,7 +2485,7 @@ class _CustomLedgerCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // Items â€” key/value rows
+            // Items — key/value rows
             ...section.items.asMap().entries.map((entry) {
               final item = entry.value;
               final display = (item.value?.isNotEmpty == true)
@@ -2707,9 +2707,9 @@ class _CustomLedgerCard extends StatelessWidget {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 // Hidden Sections Dialog
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────
 
 class _HiddenSectionsDialog extends StatefulWidget {
   @override

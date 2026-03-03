@@ -17,11 +17,11 @@ import '../../theme/theme.dart';
 import '../auth/auth_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 
-/// Welcome Screen â€” shown when no Master PIN / salt is configured.
+/// Welcome Screen — shown when no Master PIN / salt is configured.
 ///
 /// Provides two entry points:
-/// 1. **Initialize New Vault** â€” routes to the Onboarding flow.
-/// 2. **Restore from Backup** â€” picks a `.forge` artifact, prompts
+/// 1. **Initialize New Vault** — routes to the Onboarding flow.
+/// 2. **Restore from Backup** — picks a `.forge` artifact, prompts
 ///    for the backup password, decrypts, and bootstraps the database.
 class WelcomeScreen extends ConsumerStatefulWidget {
   final VoidCallback onInitialize;
@@ -62,7 +62,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     super.dispose();
   }
 
-  /// Handle Initialize tap â€” self-navigating to avoid dead callbacks.
+  /// Handle Initialize tap — self-navigating to avoid dead callbacks.
   ///
   /// When pushed from the Nuke flow, `widget.onInitialize` is `() {}`.
   /// In that case, we self-navigate to the OnboardingScreen via Navigator.
@@ -70,7 +70,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     // Try the parent callback first (works from main.dart routing)
     widget.onInitialize();
 
-    // Self-navigate as fallback â€” push OnboardingScreen directly.
+    // Self-navigate as fallback — push OnboardingScreen directly.
     // OnboardingScreen will navigate to AuthScreen on completion.
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -155,14 +155,14 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
   Future<void> _restoreFromForge(Uint8List fileBytes) async {
     if (!mounted) return;
 
-    // â”€â”€ Step 1: Transport password â”€â”€
+    // ── Step 1: Transport password ──
     final password = await _showPasswordDialog();
     if (password == null || password.isEmpty) return;
 
     setState(() => _isRestoring = true);
 
     try {
-      // â”€â”€ Step 2: Decrypt + extract envelope â”€â”€
+      // ── Step 2: Decrypt + extract envelope ──
       final syncService = SyncService.instance;
       final envelope = syncService.decryptAndExtract(fileBytes, password);
       final metadata = envelope['metadata'] as Map<String, dynamic>;
@@ -172,7 +172,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       final extractedPin = metadata['masterPin'] as String?;
       final extractedIsPro = metadata['isPro'] as bool? ?? false;
 
-      // â”€â”€ Step 3: Verify Vault â€” user must enter the Master PIN â”€â”€
+      // ── Step 3: Verify Vault — user must enter the Master PIN ──
       if (!mounted) return;
       final enteredPin = await _showVerifyPinDialog(extractedPin != null);
       if (enteredPin == null || enteredPin.isEmpty) {
@@ -225,16 +225,16 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
       // the entered PIN becomes the new Master PIN)
       final pinToUse = extractedPin ?? enteredPin;
 
-      // â”€â”€ Step 4: Boot the database â”€â”€
+      // ── Step 4: Boot the database ──
       await DatabaseService.instance.setupPin(pinToUse);
       await DatabaseService.instance.initialize(pinToUse);
       ref.read(dbGenerationProvider.notifier).state++;
       ref.read(masterPinProvider.notifier).state = pinToUse;
 
-      // â”€â”€ Step 5: Import vaultData into Isar â”€â”€
+      // ── Step 5: Import vaultData into Isar ──
       await SyncService.instance.importParsedPayload(vaultData);
 
-      // â”€â”€ Step 6: Save device state â”€â”€
+      // ── Step 6: Save device state ──
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedOnboarding', true);
       await prefs.setBool('isPro', extractedIsPro);
@@ -245,7 +245,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
       _invalidateAllProviders();
 
-      // â”€â”€ Step 7: Route to main app â”€â”€
+      // ── Step 7: Route to main app ──
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -307,7 +307,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     }
   }
 
-  /// Show "Verify Vault" dialog â€” user must enter the vault's Master PIN.
+  /// Show "Verify Vault" dialog — user must enter the vault's Master PIN.
   Future<String?> _showVerifyPinDialog(bool hasExtractedPin) {
     final pinCtrl = TextEditingController();
     return showDialog<String>(
@@ -528,7 +528,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
             children: [
               const Spacer(flex: 3),
 
-              // â”€â”€ Animated Vault Icon â”€â”€
+              // ── Animated Vault Icon ──
               AnimatedBuilder(
                 animation: _glowAnimation,
                 builder: (context, child) {
@@ -571,7 +571,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
               const SizedBox(height: 48),
 
-              // â”€â”€ Title â”€â”€
+              // ── Title ──
               Text(
                 'ForgeVault',
                 style: GoogleFonts.inter(
@@ -596,7 +596,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
               const Spacer(flex: 2),
 
-              // â”€â”€ Initialize Button â”€â”€
+              // ── Initialize Button ──
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -627,7 +627,7 @@ class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
 
               const SizedBox(height: 16),
 
-              // â”€â”€ Restore Button â”€â”€
+              // ── Restore Button ──
               SizedBox(
                 width: double.infinity,
                 height: 56,

@@ -16,7 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../main.dart';
 import '../../theme/theme.dart';
 
-/// Backup Center â€” E2EE encrypted vault export/import.
+/// Backup Center — E2EE encrypted vault export/import.
 /// Portable backups are a PRO-only feature.
 class BackupScreen extends ConsumerStatefulWidget {
   const BackupScreen({super.key});
@@ -29,7 +29,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
   bool _exportLoading = false;
   bool _importLoading = false;
 
-  /// Pro status â€” driven reactively by RevenueCatService.isProNotifier.
+  /// Pro status — driven reactively by RevenueCatService.isProNotifier.
   bool get _isPro => RevenueCatService().isProNotifier.value;
 
   Future<void> _setProState(bool value) async {
@@ -38,9 +38,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     RevenueCatService().isProNotifier.value = value;
   }
 
-  // â”€â”€ Export Dialog Flow â”€â”€
+  // ── Export Dialog Flow ──
   Future<void> _handleExport() async {
-    // â”€â”€ Sovereignty Gate: block empty vault exports â”€â”€
+    // ── Sovereignty Gate: block empty vault exports ──
     final db = DatabaseService.instance;
     if (db.isOpen) {
       final bioProgress = await db.calculateBioProgress();
@@ -98,7 +98,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     }
   }
 
-  // â”€â”€ Import Dialog Flow â”€â”€
+  // ── Import Dialog Flow ──
   Future<void> _handleImport() async {
     // 1. Pick file first (load bytes into RAM for Android compat)
     final result = await FilePicker.platform.pickFiles(
@@ -114,7 +114,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       return;
     }
 
-    // 2. Aggressively extract bytes â€” RAM first, path fallback
+    // 2. Aggressively extract bytes — RAM first, path fallback
     Uint8List? fileBytes = file.bytes;
     if (fileBytes == null && file.path != null) {
       fileBytes = await File(file.path!).readAsBytes();
@@ -408,7 +408,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
   }
 
-  // â”€â”€ RevenueCat Pro Upgrade Modal â”€â”€
+  // ── RevenueCat Pro Upgrade Modal ──
   void _showUpgradeModal() {
     final promoCtrl = TextEditingController();
     final rc = RevenueCatService();
@@ -505,7 +505,8 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   ],
                   Text(
                     'Unlock portable encrypted backups, priority '
-                    'support, and future PRO features.',
+                    'support, and all future PRO features with a '
+                    'one-time lifetime purchase.',
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       color: VaultColors.textSecondary,
@@ -514,7 +515,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // â”€â”€ RevenueCat Paywall (supported platforms only) â”€â”€
+                  // ── RevenueCat Paywall (supported platforms only) ──
                   if (rc.isSupported) ...[
                     if (!isPro)
                       SizedBox(
@@ -553,7 +554,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                           },
                           icon: const Icon(Icons.storefront_rounded, size: 18),
                           label: Text(
-                            'View Premium Plans',
+                            'Unlock PRO \u2014 \$29.99',
                             style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -563,60 +564,6 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                             backgroundColor: const Color(0xFFFFD700),
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            Navigator.of(ctx).pop();
-                            try {
-                              await rc.showCustomerCenter();
-                            } catch (e) {
-                              if (!e.toString().contains('cancelled') &&
-                                  mounted) {
-                                showSafeSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'RC Error: $e',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    backgroundColor: VaultColors.destructive
-                                        .withValues(alpha: 0.9),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          icon: const Icon(
-                            Icons.manage_accounts_rounded,
-                            size: 18,
-                          ),
-                          label: Text(
-                            'Manage Subscription',
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFFFFD700),
-                            side: BorderSide(
-                              color: const Color(
-                                0xFFFFD700,
-                              ).withValues(alpha: 0.4),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -640,7 +587,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                                 showSafeSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'âœ… Purchases restored! PRO unlocked.',
+                                      '\u2705 Purchases restored! PRO unlocked.',
                                       style: GoogleFonts.inter(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w600,
@@ -691,7 +638,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                     ),
                   ],
 
-                  // â”€â”€ Windows/Web Fallback â”€â”€
+                  // ── Windows/Web Fallback ──
                   if (!rc.isSupported) ...[
                     Container(
                       padding: const EdgeInsets.all(14),
@@ -765,7 +712,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   ],
                   const SizedBox(height: 16),
 
-                  // â”€â”€ Promo Code (always available) â”€â”€
+                  // ── Promo Code (always available) ──
                   Row(
                     children: [
                       Expanded(
@@ -940,7 +887,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             children: [
               const SizedBox(height: 20),
 
-              // â”€â”€ Header â”€â”€
+              // ── Header ──
               Center(
                 child: Column(
                   children: [
@@ -996,10 +943,10 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               ),
               const SizedBox(height: 32),
 
-              // â”€â”€ PRO Gate Banner â”€â”€
+              // ── PRO Gate Banner ──
               if (!_isPro) ...[_buildProBanner(), const SizedBox(height: 20)],
 
-              // â”€â”€ Export Card â”€â”€
+              // ── Export Card ──
               _buildCard(
                 icon: Icons.file_upload_outlined,
                 title: 'Export Encrypted Backup',
@@ -1051,7 +998,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               ),
               const SizedBox(height: 20),
 
-              // â”€â”€ Import Card â”€â”€
+              // ── Import Card ──
               _buildCard(
                 icon: Icons.file_download_outlined,
                 title: 'Restore from Backup',
@@ -1094,7 +1041,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
               ),
               const SizedBox(height: 24),
 
-              // â”€â”€ Security Notice â”€â”€
+              // ── Security Notice ──
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
@@ -1116,7 +1063,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                     Expanded(
                       child: Text(
                         'Your password never leaves this device. The .forge file '
-                        'is encrypted with AES-256-GCM â€” even if intercepted, '
+                        'is encrypted with AES-256-GCM — even if intercepted, '
                         'the data is unreadable without your password.',
                         style: GoogleFonts.inter(
                           fontSize: 11,
@@ -1136,7 +1083,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     );
   }
 
-  // â”€â”€ PRO Upgrade Banner â”€â”€
+  // ── PRO Upgrade Banner ──
   Widget _buildProBanner() {
     return Container(
       padding: const EdgeInsets.all(20),
