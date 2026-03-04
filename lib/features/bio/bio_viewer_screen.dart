@@ -992,7 +992,7 @@ class BioViewerScreen extends ConsumerWidget {
                 if (p.mbti != null && p.mbti!.isNotEmpty) {
                   parts.add('MBTI: ${p.mbti}');
                 }
-                return parts.isEmpty ? null : parts.join('  â€¢  ');
+                return parts.isEmpty ? null : parts.join('  •  ');
               },
             ),
 

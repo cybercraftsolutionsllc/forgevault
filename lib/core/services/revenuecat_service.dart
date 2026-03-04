@@ -21,7 +21,7 @@ class RevenueCatService {
   factory RevenueCatService() => _instance;
 
   static const String _apiKey = 'goog_eQKDwABpcLEAADEHXkYviwQCENN';
-  static const String _entitlementId = 'Cyber Craft Solutions, LLC Pro';
+  static const String _entitlementId = 'ForgeVault Pro';
 
   /// Reactive Pro status — drives UI via ValueListenableBuilder.
   final ValueNotifier<bool> isProNotifier = ValueNotifier<bool>(false);
@@ -95,10 +95,7 @@ class RevenueCatService {
   /// displaying errors to the user.
   Future<void> presentPaywall() async {
     if (!isSupported) return;
-    await RevenueCatUI.presentPaywallIfNeeded(
-      _entitlementId,
-      displayCloseButton: true,
-    );
+    await RevenueCatUI.presentPaywall(displayCloseButton: true);
     // Forcefully re-fetch status after paywall closes.
     await init();
   }

@@ -163,7 +163,10 @@ class _VacuumScreenState extends State<VacuumScreen>
         purgeService: purgeService,
         database: database,
       );
-      await vacuum.ingest(filePath, onPhaseChanged: _onPhaseChanged);
+      final ingestResult = await vacuum.ingest(
+        filePath,
+        onPhaseChanged: _onPhaseChanged,
+      );
 
       // ── Forge Synthesis: send extracted text to LLM for structuring ──
       if (mounted) {
@@ -173,9 +176,7 @@ class _VacuumScreenState extends State<VacuumScreen>
           geminiNano: GeminiNanoBridge(),
           database: db,
         );
-        final extractedText = await File(
-          filePath,
-        ).readAsString().catchError((_) => '');
+        final extractedText = ingestResult.extractedText ?? '';
 
         // Pre-flight empty string check — prevent sending blank data to LLM.
         if (extractedText.trim().isEmpty) {

@@ -156,6 +156,66 @@ class HelpScreen extends StatelessWidget {
           'Master PIN. Even backup files are AES-256 encrypted and useless '
           'without your PIN.',
     ),
+    _FaqItem(
+      question: 'How do I scan a document on my phone?',
+      answer:
+          'Go to the Vacuum tab and tap "Scan Document." This opens your '
+          'phone\'s camera — take a photo of any document (bill, receipt, ID, '
+          'letter, etc.). ForgeVault uses on-device ML Kit OCR to extract text '
+          'directly from the image without sending anything to the cloud. The '
+          'extracted text is then sent to your BYOK AI provider for '
+          'categorization. You review the results before anything is saved.',
+    ),
+    _FaqItem(
+      question: 'What does ForgeVault PRO include?',
+      answer:
+          'PRO unlocks encrypted backup & restore (.forge files), Vault Sync '
+          'across devices via shared folders, and priority support. '
+          'PRO is a one-time lifetime purchase — no subscriptions, no recurring '
+          'charges. All core features (data ingestion, AI synthesis, Nexus '
+          'chat, and the Nuke Protocol) are available in the free version.',
+    ),
+    _FaqItem(
+      question: 'What data categories does ForgeVault track?',
+      answer:
+          'ForgeVault organizes your life into 13+ categories: Identity '
+          '(name, DOB, SSN, addresses), Timeline (major life events), '
+          'Troubles (legal issues, disputes), Finances (income, debts, '
+          'accounts), Relationships (family, friends, contacts), Health '
+          '(conditions, medications, allergies), Goals, Habits & Vices, '
+          'Medical (procedures, providers, insurance), Career (jobs, skills, '
+          'certifications), Assets (property, vehicles, valuables), '
+          'Relational Web (social connections), and Psyche Profile '
+          '(personality traits, values, fears).',
+    ),
+    _FaqItem(
+      question: 'Can I use biometrics instead of my PIN?',
+      answer:
+          'Yes. After setting up your Master PIN, you can enable biometric '
+          'unlock (fingerprint or face recognition) in the settings. Your '
+          'biometric data never leaves your device — it\'s handled entirely '
+          'by your phone\'s secure hardware (Android Keystore or iOS Secure '
+          'Enclave). The Master PIN remains your primary recovery method if '
+          'biometrics fail.',
+    ),
+    _FaqItem(
+      question: 'Is my data sent to any servers or third parties?',
+      answer:
+          'Never. The only outbound network calls ForgeVault makes are to '
+          'your chosen AI provider (using YOUR API key) during Forge '
+          'synthesis and Nexus chat. No analytics, no crash reporting, no '
+          'telemetry, no usage tracking. Your data stays on your device. '
+          'Period.',
+    ),
+    _FaqItem(
+      question: 'I need to talk to a human — how do I get support?',
+      answer:
+          'We\'re here to help. Send an email to '
+          'cyber.craft@craftedcybersolutions.com and a real human will '
+          'respond. Please include your device model, OS version, and a '
+          'description of the issue. Do NOT include your Master PIN or '
+          'license key in the email — we will never ask for them.',
+    ),
   ];
 
   @override
